@@ -3727,11 +3727,18 @@ body {
 .amb .sx-card:nth-child(6n + 5), .amb .plan-card:nth-child(6n + 5), .amb .stat-tile:nth-child(6n + 5) { --amb-d: -1.8s; }
 .amb .sx-card:nth-child(6n + 6), .amb .plan-card:nth-child(6n + 6), .amb .stat-tile:nth-child(6n + 6) { --amb-d: -2.9s; }
 
-@keyframes amb-breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.014); } }
-@keyframes amb-float   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-@keyframes amb-drift   { 0%,100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
-@keyframes amb-sway    { 0%,100% { transform: rotate(-0.5deg); } 50% { transform: rotate(0.5deg); } }
-@keyframes amb-ripple  { 0%,100% { transform: translateY(0) scale(1); } 45% { transform: translateY(-8px) scale(1.01); } }
+/*
+  الخصائصُ المستقلّة لا `transform`.
+  حركةُ الدخول تكتب `transform`، فلو كتبتها الحركةُ الدائمةُ أيضاً غلبت
+  إحداهما الأخرى — والغالبُ هو الدخول، فتسكن الصفحةُ بعد ثانية.
+  و`translate` و`scale` و`rotate` خصائصُ قائمةٌ بذاتها تتراكب مع
+  `transform` ولا تزاحمه، فتجري الحركتان معاً كلٌّ في مسارها.
+*/
+@keyframes amb-breathe { 0%,100% { scale: 1; }        50% { scale: 1.014; } }
+@keyframes amb-float   { 0%,100% { translate: 0 0; }  50% { translate: 0 -6px; } }
+@keyframes amb-drift   { 0%,100% { translate: 0 0; }  50% { translate: 5px 0; } }
+@keyframes amb-sway    { 0%,100% { rotate: -0.5deg; } 50% { rotate: 0.5deg; } }
+@keyframes amb-ripple  { 0%,100% { translate: 0 0; scale: 1; } 45% { translate: 0 -8px; scale: 1.01; } }
 
 .amb-breathe .sx-card, .amb-breathe .plan-card, .amb-breathe .stat-tile, .amb-breathe .course-card, .amb-breathe .fq-item,
 .amb-living  .sx-card, .amb-living  .plan-card, .amb-living  .stat-tile, .amb-living  .course-card, .amb-living  .fq-item {
@@ -3766,11 +3773,11 @@ body {
   inset: 0;
   pointer-events: none;
   background: linear-gradient(105deg, transparent 40%, hsl(var(--gold) / 0.28) 50%, transparent 60%);
-  transform: translateX(-130%);
+  translate: -130% 0;
   animation: amb-shine calc(7s * var(--amb-t)) ease-in-out infinite;
   animation-delay: var(--amb-d, 0s);
 }
-@keyframes amb-shine { 0%, 55% { transform: translateX(-130%); } 100% { transform: translateX(130%); } }
+@keyframes amb-shine { 0%, 55% { translate: -130% 0; } 100% { translate: 130% 0; } }
 
 /* ---------- نبض الذهب ---------- */
 @keyframes amb-gold { 0%,100% { border-color: hsl(var(--gold) / 0.35); } 50% { border-color: hsl(var(--gold) / 0.9); } }
@@ -3872,3 +3879,13 @@ body {
 
 .tb-stick-above #hero { padding-top: 2.5rem; }
 @media (min-width: 768px) { .tb-stick-above #hero { padding-top: 3.5rem; } }
+
+/* ============================================================
+   طولُ الشريط
+   ------------------------------------------------------------
+   الشريطُ النحيلُ يبدو شريطَ أدواتٍ لا واجهةَ منصّة. وزيادةُ الطول
+   تُقاس بحشوٍ لا بارتفاعٍ ثابت: الحشوُ يتمدّد بما فيه فلا يُقصّ شعارٌ
+   ولا يُحشر توقيع.
+   ============================================================ */
+.site-bar-wrap .site-bar { padding-block: 0.78rem; }
+@media (min-width: 768px) { .site-bar-wrap .site-bar { padding-block: 0.95rem; } }

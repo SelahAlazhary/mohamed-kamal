@@ -15,7 +15,6 @@ import { useContent } from "@/components/content/content-provider";
 import {
   IconCheck, IconSparkle, IconCalendar, IconLayers, IconBook, IconWhatsapp, IconArrowLeft,
 } from "@/components/brand/icons";
-import { GeoBackdrop } from "@/components/brand/pattern";
 import { EmptyPlans } from "@/components/brand/illustrations";
 import { useUid } from "@/components/brand/use-uid";
 import { planPrice, planColor, planForStudent, planWaLink } from "@/lib/plans";
@@ -258,7 +257,6 @@ export function Plans() {
 
   return (
     <section id="plans" className={`relative py-24 ${plansClass(PS)}`}>
-      <GeoBackdrop density={46} opacity={0.18} fade="center" tone="text-primary/10" />
       <div className="container">
         <SectionHeading
           eyebrow={sec.eyebrow || "الخطط"}

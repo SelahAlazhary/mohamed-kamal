@@ -14,7 +14,7 @@ import {
   IconRadio, IconPlay, IconCalendar, IconBell, IconLock, IconShield,
   IconGift, IconClock, IconArrowLeft,
 } from "@/components/brand/icons";
-import { GeoBackdrop, CornerKnot } from "@/components/brand/pattern";
+import { CornerKnot } from "@/components/brand/pattern";
 import { PageHeader, Card, StatusBadge } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
 import { liveVisible } from "@/lib/access";
@@ -248,7 +248,6 @@ function FeaturedStage({
 }) {
   const body = (
     <>
-      <GeoBackdrop density={52} opacity={0.6} fade="center" tone="text-white/50" className="!z-0" />
       {isLiveNow && (
         <span className="absolute right-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-rose-500 px-2.5 py-1 text-xs font-bold text-white">
           <span className="size-1.5 animate-pulse rounded-full bg-white" /> مباشر

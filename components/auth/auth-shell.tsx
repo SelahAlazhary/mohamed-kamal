@@ -5,7 +5,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { IconArrowLeft, IconShield, IconBook, IconScreen } from "@/components/brand/icons";
 import { BrandLockup } from "@/components/brand/logo";
-import { GeoBackdrop } from "@/components/brand/pattern";
 import { useContent } from "@/components/content/content-provider";
 import type { ReactNode } from "react";
 
@@ -13,12 +12,10 @@ export function AuthShell({ title, subtitle, children, footer }: { title: string
   const { content } = useContent();
   return (
     <main className="relative min-h-screen overflow-hidden">
-      <GeoBackdrop density={84} opacity={0.5} fade="center" />
       <div className="mx-auto grid min-h-screen max-w-6xl items-center gap-8 px-5 py-10 lg:grid-cols-2">
         {/* اللوحة الترويجية */}
         <motion.div initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}
           className="btn-glow relative order-2 hidden overflow-hidden rounded-[2rem] p-10 text-white lg:flex lg:flex-col lg:justify-between">
-          <GeoBackdrop density={60} opacity={0.6} fade="center" tone="text-white/70" className="!z-0" />
           <div className="relative">
             <Link href="/" className="inline-flex">
               <BrandLockup brand={content.brand} subtitle={content.platformSubtitle} logo={content.teacher.logo} size={44} className="[&_span:last-child_span:last-child]:text-white/80" />

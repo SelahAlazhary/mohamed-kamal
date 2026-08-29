@@ -8,7 +8,7 @@
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { SectionHeading, Reveal, Button } from "@/components/ui/primitives";
-import { GeoBackdrop, archPath } from "@/components/brand/pattern";
+import { archPath } from "@/components/brand/pattern";
 import { IconRadio, IconCalendar, IconPlay, IconArrowLeft } from "@/components/brand/icons";
 import { useContent } from "@/components/content/content-provider";
 import { publicLives } from "@/lib/access";
@@ -74,7 +74,6 @@ export function FreeLive() {
 
   return (
     <section id="free-live" className="relative py-20">
-      <GeoBackdrop density={88} opacity={0.4} fade="center" />
       <div className="container">
         <SectionHeading
           eyebrow="بث مجاني"
