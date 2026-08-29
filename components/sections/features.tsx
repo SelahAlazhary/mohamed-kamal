@@ -10,7 +10,7 @@ import { SectionHeading, Reveal } from "@/components/ui/primitives";
 import { useContent } from "@/components/content/content-provider";
 import { findSectionStyle, sectionClass, sxGridClass } from "@/lib/section-styles";
 import { FEATURE_ICONS, IconManuscript } from "@/components/brand/icons";
-import { ArchTile, CornerKnot, KuficBackdrop } from "@/components/brand/pattern";
+import { ArchTile, CornerKnot } from "@/components/brand/pattern";
 import { ArabicTextBackdrop } from "@/components/brand/text-backdrop";
 
 /** رقم عربي-هندي (١٢٣) لهوية أدقّ. */
@@ -32,7 +32,6 @@ export function Features() {
   return (
     <section id="features" className={`relative py-24 ${sectionClass(SX)}`} data-section-style={SX.id}>
       <ArabicTextBackdrop count={20} seed={29} fade="center" opacity={0.38} tone="text-primary/18" />
-      <KuficBackdrop density={46} opacity={0.14} fade="center" tone="text-primary/8" />
 
       <div className="container">
         <SectionHeading

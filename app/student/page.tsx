@@ -17,7 +17,7 @@ import {
   IconPlay, IconClipboardCheck, IconRadio, IconArrowLeft, IconClock,
   IconCalendar, IconLayers, IconBook, IconChart,
 } from "@/components/brand/icons";
-import { KuficBackdrop, CornerKnot, Shamsa, ElegantRule } from "@/components/brand/pattern";
+import { CornerKnot, Shamsa, ElegantRule } from "@/components/brand/pattern";
 import { ArabicTextBackdrop } from "@/components/brand/text-backdrop";
 import { CourseArt } from "@/components/brand/course-art";
 import { StatTile } from "@/components/brand/stat-tile";
@@ -165,7 +165,6 @@ export default function StudentHome() {
       >
         <EdgeArtLayer kind={D.edge} className="z-0 text-white/60" />
         <ArabicTextBackdrop count={20} seed={17} fade="center" opacity={0.5} tone="text-white/30" className="!z-0" />
-        <KuficBackdrop density={38} opacity={0.28} fade="center" tone="text-white/30" className="!z-0" />
         <Shamsa
           size={L.header === "compact" ? 220 : 340}
           rays={24}

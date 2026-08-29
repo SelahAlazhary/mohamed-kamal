@@ -18,7 +18,7 @@ import { Pill } from "@/components/ui/primitives";
 import { PlaqueButton } from "@/components/brand/plaque-button";
 import { CountUp, Stars, SpringArrow } from "@/components/ui/animated-icons";
 import { IconPlay, IconTrophy, IconWhatsapp } from "@/components/brand/icons";
-import { KuficBackdrop, HarakatField, Shamsa, RuleOrnament, ElegantRule } from "@/components/brand/pattern";
+import { Shamsa, RuleOrnament, ElegantRule } from "@/components/brand/pattern";
 import { DaadGlyph } from "@/components/brand/calligraphy";
 import { ArabicTextBackdrop } from "@/components/brand/text-backdrop";
 import { VideoModal } from "@/components/ui/video-modal";
@@ -80,8 +80,7 @@ export function Hero({ shape = "split" }: { shape?: HeroShape }) {
   return (
     <section id="hero" className={`relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28 ${heroClass(HS)}`}>
       <span className="hero-decor-text"><ArabicTextBackdrop count={28} seed={5} fade="top" opacity={0.5} tone="text-primary/22" /></span>
-      <span className="hero-decor"><KuficBackdrop density={42} opacity={0.2} fade="top" tone="text-primary/10" /></span>
-      <span className="hero-decor hero-decor-extra"><HarakatField count={14} seed={11} tone="text-accent/30" /></span>
+            <span className="hero-decor hero-decor-extra"></span>
 
       <div
         className={`hero-grid container grid items-center gap-14 ${

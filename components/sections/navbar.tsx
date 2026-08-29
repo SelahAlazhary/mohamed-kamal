@@ -8,7 +8,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import { IconMenu, IconClose, IconSun, IconMoon } from "@/components/brand/icons";
+import { LibIcon } from "@/components/brand/lib-icon";
 import { BrandLockup } from "@/components/brand/logo";
 import { navLinks } from "@/lib/data";
 import { Button } from "@/components/ui/primitives";
@@ -88,7 +88,7 @@ export function Navbar() {
             {content.showThemeToggle && (
               <button onClick={toggleView} aria-label="تبديل المظهر"
                 className="btn-foil grid size-9 place-items-center rounded-full text-muted-foreground transition hover:text-accent">
-                {viewLayout === "dark" ? <IconSun className="size-4" /> : <IconMoon className="size-4" />}
+                {viewLayout === "dark" ? <LibIcon slot="sun" className="size-4" /> : <LibIcon slot="moon" className="size-4" />}
               </button>
             )}
             <Link href="/login" className="font-kufi hidden rounded-full px-4 py-2 text-xs font-semibold text-muted-foreground transition hover:text-foreground sm:block">
@@ -100,7 +100,7 @@ export function Navbar() {
               </Button>
             )}
             <button onClick={() => setOpen(true)} aria-label="القائمة" className="btn-foil grid size-9 place-items-center rounded-full text-accent lg:hidden">
-              <IconMenu className="size-5" />
+              <LibIcon slot="menu" className="size-5" />
             </button>
           </div>
         </nav>
@@ -119,7 +119,7 @@ export function Navbar() {
               <div className="mb-6 flex items-center justify-between">
                 <span className="font-display text-lg font-bold">{content.brand}</span>
                 <button onClick={() => setOpen(false)} aria-label="إغلاق" className="btn-foil grid size-9 place-items-center rounded-full text-accent">
-                  <IconClose className="size-5" />
+                  <LibIcon slot="close" className="size-5" />
                 </button>
               </div>
               {navLinks.map((l, i) => (

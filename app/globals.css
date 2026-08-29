@@ -3818,3 +3818,57 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .amb *, .amb *::after, .amb *::before { animation: none !important; }
 }
+
+/* ============================================================
+   الشريطُ لا يلتصق
+   ------------------------------------------------------------
+   الشريطُ العائم كان يلامس حافّة الشاشة على الشاشات الضيّقة، ويمرّ
+   المحتوى تحته بلا فاصل. والفاصلُ هنا ليس زينةً: بلا هامشٍ يبدو الشريطُ
+   ملتصقاً بالزجاج لا طافياً فوقه، وهو أوّلُ ما يكسر إحساسَ العائم.
+   ============================================================ */
+
+.site-bar-wrap {
+  /* هامشٌ من كلّ جانب، ومن أعلى — ويحترم حافّة شاشة الهاتف المنحنية */
+  top: calc(1rem + env(safe-area-inset-top, 0px));
+  padding-inline: 1.15rem;
+}
+@media (min-width: 640px) { .site-bar-wrap { padding-inline: 1.75rem; } }
+@media (min-width: 1024px) { .site-bar-wrap { padding-inline: 2.5rem; } }
+
+/* والعناصرُ داخله لا تلتصق بحدّه */
+.site-bar-wrap .site-bar {
+  padding-inline: 1.1rem;
+  gap: 0.7rem;
+}
+
+/* والمحتوى تحته لا يبدأ من تحته مباشرةً */
+#hero { scroll-margin-top: 6rem; }
+
+/* شريطُ اللوحة كذلك */
+.app-body > header {
+  margin-inline: 0.75rem;
+  border-radius: 1.25rem;
+}
+@media (min-width: 1024px) { .app-body > header { margin-inline: 1.25rem; } }
+
+/* ============================================================
+   الشريطُ أعلى المحتوى لا فوقه
+   ------------------------------------------------------------
+   «يمشي مع الصفحة» يستعمل `absolute` — وهو خارجُ التدفّق، فيبقى فوق
+   القسم يحجب أعلاه وإن مشى معه. وهذا وضعٌ آخر: الشريطُ **في** التدفّق،
+   يشغل مكانَه ويدفع ما بعده — فلا يعلو شيئاً ولا يُخفي حرفاً.
+
+   وحشوُ الهيرو العلويُّ كان يعوّض شريطاً طافياً، فإن لم يطُف لم يبقَ ما
+   يُعوَّض — ويُقلَّص وإلّا بقيت فجوةٌ بلا سبب.
+   ============================================================ */
+
+.tb-stick-above .site-bar-wrap {
+  position: relative;
+  top: 0;
+  padding-top: 1rem;
+  padding-bottom: 0.25rem;
+}
+.tb-stick-above .app-body > header { position: relative; top: 0; }
+
+.tb-stick-above #hero { padding-top: 2.5rem; }
+@media (min-width: 768px) { .tb-stick-above #hero { padding-top: 3.5rem; } }

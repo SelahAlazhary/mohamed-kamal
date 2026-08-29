@@ -22,7 +22,6 @@ import {
 import type { IconSlot } from "@/lib/icon-libs";
 import { LibIcon } from "@/components/brand/lib-icon";
 import { BrandLockup } from "@/components/brand/logo";
-import { KuficBackdrop } from "@/components/brand/pattern";
 import { GoldRule } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
 import { navBadges } from "@/lib/admin-insights";
@@ -133,7 +132,6 @@ export function DashboardShell({
       {/* Sidebar سطح المكتب */}
       <aside className="fixed inset-y-0 right-0 z-40 hidden w-64 flex-col gap-5 overflow-y-auto overscroll-contain border-l border-border bg-card/40 p-5 backdrop-blur-xl lg:flex">
         {/* تبليط كوفي خافت داخل لوح الحبر */}
-        <KuficBackdrop density={34} opacity={0.14} fade="center" tone="text-accent/25" className="!-z-0" />
         <div className="relative">
           <Brand role={role} />
           <div className="mt-4 text-accent/70"><GoldRule /></div>

@@ -23,7 +23,6 @@ import { findIconCover, iconCoverClass } from "@/lib/icon-covers";
 import { siteDown, scopeDown, maintText, type MaintScope } from "@/lib/maintenance";
 import { Page3D, type Depth3D } from "@/components/brand/page-3d";
 import { findAmbient, ambientClass } from "@/lib/ambient-motion";
-import { AzhariBackdrop } from "@/components/brand/azhari-backdrop";
 import { MaintenancePanel, MaintenanceBar } from "@/components/brand/maintenance";
 import { getSession } from "@/lib/session";
 import { MobileDock } from "@/components/sections/mobile-dock";
@@ -76,11 +75,6 @@ export default async function Home() {
       data-toolbar={bar.id}
     >
       {/* خلفية الصفحة — تُضبط من «تخصيص الموقع ← الصور» */}
-      {/*
-        الخلفيةُ المرسومة تحت صورة الأدمن لا فوقها: من رفع صورةً أرادها
-        هي، ومن لم يرفع بقيت اللوحةُ ظاهرة.
-      */}
-      {content.azhariBackdrop !== false && <AzhariBackdrop />}
       <SiteBackground />
       {staff && (siteDown(content) || (content.maintenance?.scopes?.length ?? 0) > 0) && (
         <MaintenanceBar what={siteDown(content) ? "المنصّة كلّها" : `${(content.maintenance?.scopes ?? []).length.toLocaleString("ar-EG")} قسماً`} />

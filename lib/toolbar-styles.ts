@@ -71,7 +71,7 @@ export type BarHeight = "compact" | "normal" | "tall";
  *   float   = يطفو بهامش عن الحوافّ ويبقى ظاهراً.
  *   static  = يمشي مع الصفحة فيختفي عند النزول.
  */
-export type BarStick = "pinned" | "float" | "static";
+export type BarStick = "pinned" | "float" | "static" | "above";
 
 export type ToolbarStyle = {
   id: string;
@@ -172,13 +172,19 @@ export function findToolbar(id?: string): ToolbarStyle {
  * فارغاً يبقى السلوك الأصلي (عائم كما كان).
  */
 export function stickClass(v?: string): string {
-  return v === "pinned" || v === "static" || v === "float" ? `tb-stick-${v}` : "";
+  return v === "pinned" || v === "static" || v === "float" || v === "above" ? `tb-stick-${v}` : "";
 }
 
 export const BAR_STICKS: { id: BarStick; label: string; hint: string }[] = [
   { id: "float", label: "عائم", hint: "يطفو بهامش عن الحوافّ ويبقى ظاهراً" },
   { id: "pinned", label: "مثبّت", hint: "ملتصق بأعلى الشاشة بعرضها" },
   { id: "static", label: "يمشي مع الصفحة", hint: "يختفي عند النزول" },
+  /*
+    «أعلى المحتوى» غيرُ «يمشي مع الصفحة»: الثاني `absolute` فيبقى فوق
+    القسم يحجب أعلاه، والأوّلُ في تدفّق الصفحة فيدفع المحتوى لأسفل ولا
+    يعلوه شيء.
+  */
+  { id: "above", label: "أعلى المحتوى", hint: "في تدفّق الصفحة — يدفعها لأسفل ولا يعلوها" },
 ];
 
 export function toolbarClass(x: ToolbarStyle): string {

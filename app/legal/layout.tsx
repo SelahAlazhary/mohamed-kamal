@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { KuficBackdrop, RuleOrnament } from "@/components/brand/pattern";
+import { RuleOrnament } from "@/components/brand/pattern";
 import { getPublicDB, loadDB } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,6 @@ export default async function LegalLayout({ children }: { children: ReactNode })
 
   return (
     <main className="relative min-h-screen overflow-x-hidden py-20">
-      <KuficBackdrop density={46} opacity={0.18} fade="top" tone="text-primary/10" />
 
       <article className="container max-w-3xl">
         <Link

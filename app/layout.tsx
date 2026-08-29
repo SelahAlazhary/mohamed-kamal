@@ -5,6 +5,10 @@ import localFont from "next/font/local";
 import { ContentProvider } from "@/components/content/content-provider";
 import { glowCss } from "@/lib/glow";
 import { brandCss } from "@/lib/brand-theme";
+import { AzhariBackdrop } from "@/components/brand/azhari-backdrop";
+import { findIconFrame, iconFrameClass, iconFrameVars } from "@/lib/icon-frames";
+import { findIconMotion, iconMotionClass } from "@/lib/icon-motion";
+import { findIconCover, iconCoverClass } from "@/lib/icon-covers";
 import { RouteTransition } from "@/components/ui/route-transition";
 import { RegisterSW } from "@/components/pwa/register-sw";
 import { getPublicDB, getScopedDB, loadDB } from "@/lib/db";
@@ -186,7 +190,24 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         {brand && <style dangerouslySetInnerHTML={{ __html: brand }} />}
         {glow && <style dangerouslySetInnerHTML={{ __html: glow }} />}
       </head>
-      <body className={`${plex.variable} ${lalezar.variable} ${ruqaa.variable} font-sans`}>
+      <body
+        /*
+          أصنافُ الأيقونات على `<body>` لا على صفحةٍ بعينها: كانت على
+          جذر الواجهة وجذر اللوحة كلٌّ على حدة، فما اختير في اللوحة لم
+          يسرِ على صفحات الدخول والتسجيل والقانونية. وهنا تسري على
+          المنصّة كلِّها بلا استثناء.
+        */
+        style={iconFrameVars(pub.content?.iconFrameColors)}
+        className={`${plex.variable} ${lalezar.variable} ${ruqaa.variable} font-sans ${iconFrameClass(findIconFrame(pub.content?.iconFrame))} ${iconCoverClass(findIconCover(pub.content?.iconCover))} ${iconMotionClass(findIconMotion(pub.content?.iconMotion))}`}
+      >
+        {/*
+          الخلفيةُ خارج كلّ ما يتحرّك.
+          `position: fixed` تتصرّف تصرّفَ `absolute` إن كان في أسلافها
+          عنصرٌ عليه `transform` — وانتقالُ الصفحات يضع واحداً. فكانت
+          الخلفيةُ تنزلق مع المحتوى بدل أن تثبت. فمكانُها هنا: تحت
+          `<body>` مباشرةً، لا سلفَ متحرّكٌ فوقها.
+        */}
+        {pub.content?.azhariBackdrop !== false && <AzhariBackdrop />}
         <ContentProvider initialDB={db} initialSession={session}>
           <RouteTransition>{children}</RouteTransition>
           <RegisterSW />
