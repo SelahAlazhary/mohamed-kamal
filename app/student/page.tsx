@@ -18,7 +18,6 @@ import {
   IconCalendar, IconLayers, IconBook, IconChart,
 } from "@/components/brand/icons";
 import { CornerKnot, Shamsa, ElegantRule } from "@/components/brand/pattern";
-import { ArabicTextBackdrop } from "@/components/brand/text-backdrop";
 import { CourseArt } from "@/components/brand/course-art";
 import { StatTile } from "@/components/brand/stat-tile";
 import { EmptyCourses } from "@/components/brand/illustrations";
@@ -164,7 +163,6 @@ export default function StudentHome() {
         className={`student-header btn-glow relative mb-6 overflow-hidden text-[hsl(var(--primary-foreground))] [padding-block:calc(var(--h-pad)+var(--shape-pad-y,0px))] [padding-inline:calc(var(--h-pad)+var(--shape-pad-x,0px))]`}
       >
         <EdgeArtLayer kind={D.edge} className="z-0 text-white/60" />
-        <ArabicTextBackdrop count={20} seed={17} fade="center" opacity={0.5} tone="text-white/30" className="!z-0" />
         <Shamsa
           size={L.header === "compact" ? 220 : 340}
           rays={24}

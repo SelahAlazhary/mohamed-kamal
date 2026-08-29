@@ -24,7 +24,7 @@ export function AuthShell({ title, subtitle, children, footer }: { title: string
             <p className="mt-3 max-w-sm text-white/85">{content.teacher.tagline}</p>
           </div>
           <ul className="relative mt-10 space-y-3 text-sm">
-            <li className="flex items-center gap-2"><IconBook className="size-4" /> إعدادي وثانوي — النحو والصرف والبلاغة والأدب</li>
+            <li className="flex items-center gap-2"><IconBook className="size-4" /> {content.teacher.subject} — إعدادي وثانوي</li>
             <li className="flex items-center gap-2"><IconScreen className="size-4" /> بث مباشر ودروس مسجّلة</li>
             <li className="flex items-center gap-2"><IconShield className="size-4" /> حساب آمن وتدريب بعد كل درس</li>
           </ul>

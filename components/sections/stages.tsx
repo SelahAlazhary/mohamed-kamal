@@ -12,11 +12,11 @@
 import { motion } from "framer-motion";
 import { SectionHeading, Reveal } from "@/components/ui/primitives";
 import { ArchTile, CornerKnot, ElegantRule } from "@/components/brand/pattern";
-import { ArabicTextBackdrop } from "@/components/brand/text-backdrop";
 import { useContent } from "@/components/content/content-provider";
 import { mediaSrc } from "@/lib/media";
 import { findSectionStyle, sectionClass, sxGridClass } from "@/lib/section-styles";
 import type { StageCard } from "@/lib/types";
+import { ShariBackdrop } from "@/components/brand/shari-art";
 
 const ar = (n: number) => n.toLocaleString("ar-EG");
 
@@ -51,7 +51,7 @@ export function Stages() {
 
   return (
     <section id="stages" className={`relative py-24 ${sectionClass(SX)}`} data-section-style={SX.id}>
-      <ArabicTextBackdrop count={22} seed={13} fade="center" opacity={0.42} tone="text-accent/22" />
+      <ShariBackdrop count={12} seed={13} opacity={0.42} tone="text-accent/14" />
 
       <div className="container">
         <SectionHeading

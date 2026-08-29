@@ -18,7 +18,7 @@ export default function RegisterPage() {
 
   const { db, content } = useContent();
   const grades = db?.grades ?? [];
-  const [form, setForm] = useState({ name: "", username: "", password: "", phone: "", eduSystem: "", stage: "", grade: "", track: "", branch: "", gender: "", school: "", governorate: "" });
+  const [form, setForm] = useState({ name: "", username: "", password: "", phone: "", eduSystem: EDU_SYSTEMS.length === 1 ? EDU_SYSTEMS[0] : "", stage: "", grade: "", track: "", branch: "", gender: "", school: "", governorate: "" });
   const [confirm, setConfirm] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -144,12 +144,21 @@ export default function RegisterPage() {
               onChange={(e) => set("phone", normalizePhone(e.target.value).slice(0, 11))}
             />
           </Field>
-          <Field label="النظام التعليمي">
-            <select required className={inputCls} value={form.eduSystem} onChange={(e) => setEduSystem(e.target.value)}>
-              <option value="">اختر النظام…</option>
-              {EDU_SYSTEMS.map((sy) => <option key={sy} value={sy}>{sy}</option>)}
-            </select>
-          </Field>
+          {/*
+            النظامُ التعليميّ لا يُسأل عنه إن كان واحداً.
+            المنصّةُ أزهريّةٌ خالصة، وسؤالُ الطالب «اختر النظام» ثمّ عرضُ
+            خيارٍ واحدٍ لا يُفيده شيئاً — بل يوهمه أنّ ثمّة بديلاً. فيُضبط
+            تلقائياً ويُخفى الحقل. ولو عادت الأنظمةُ أكثرَ من واحد عاد
+            الحقلُ من نفسه بلا تعديل.
+          */}
+          {EDU_SYSTEMS.length > 1 && (
+            <Field label="النظام التعليمي">
+              <select required className={inputCls} value={form.eduSystem} onChange={(e) => setEduSystem(e.target.value)}>
+                <option value="">اختر النظام…</option>
+                {EDU_SYSTEMS.map((sy) => <option key={sy} value={sy}>{sy}</option>)}
+              </select>
+            </Field>
+          )}
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Field label="المرحلة الدراسية">

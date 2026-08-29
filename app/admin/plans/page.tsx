@@ -356,12 +356,19 @@ export default function PlansPage() {
                   </select>
                 </label>
 
-                <label><span className="lbl">النظام التعليمي</span>
-                  <select className="inp" value={f.audSystem} onChange={(e) => set({ audSystem: e.target.value, audBranch: e.target.value === AZHAR ? "" : f.audBranch })}>
-                    <option value="">كل الأنظمة</option>
-                    {EDU_SYSTEMS.map((x) => <option key={x} value={x}>{x}</option>)}
-                  </select>
-                </label>
+                {/*
+                  النظامُ التعليميّ لا يُضيّق شيئاً إن كان واحداً: المنصّةُ
+                  أزهريّةٌ خالصة، فكلُّ طالبٍ فيها أزهريّ. وحقلٌ لا يُضيّق
+                  لا يُعرض — يوهم بتصفيةٍ لا تقع.
+                */}
+                {EDU_SYSTEMS.length > 1 && (
+                  <label><span className="lbl">النظام التعليمي</span>
+                    <select className="inp" value={f.audSystem} onChange={(e) => set({ audSystem: e.target.value, audBranch: e.target.value === AZHAR ? "" : f.audBranch })}>
+                      <option value="">كل الأنظمة</option>
+                      {EDU_SYSTEMS.map((x) => <option key={x} value={x}>{x}</option>)}
+                    </select>
+                  </label>
+                )}
 
                 {/* الشعبة للثانوية وحدها — كما في شاشة التسجيل */}
                 {(!f.audStage || f.audStage === TRACK_STAGE) && (

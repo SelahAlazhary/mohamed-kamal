@@ -3837,10 +3837,12 @@ body {
 .site-bar-wrap {
   /* هامشٌ من كلّ جانب، ومن أعلى — ويحترم حافّة شاشة الهاتف المنحنية */
   top: calc(1rem + env(safe-area-inset-top, 0px));
-  padding-inline: 1.15rem;
+  padding-inline: calc(1.6rem + env(safe-area-inset-left, 0px));
 }
-@media (min-width: 640px) { .site-bar-wrap { padding-inline: 1.75rem; } }
-@media (min-width: 1024px) { .site-bar-wrap { padding-inline: 2.5rem; } }
+@media (min-width: 640px) { .site-bar-wrap { padding-inline: 2.75rem; } }
+@media (min-width: 1024px) { .site-bar-wrap { padding-inline: 4rem; } }
+/* وعلى الشاشات العريضة يضيق عن أقصى العرض فلا يمتدّ حتى الطرفين */
+@media (min-width: 1280px) { .site-bar-wrap .site-bar { max-width: 68rem; } }
 
 /* والعناصرُ داخله لا تلتصق بحدّه */
 .site-bar-wrap .site-bar {

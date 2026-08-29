@@ -20,13 +20,13 @@ import { CountUp, Stars, SpringArrow } from "@/components/ui/animated-icons";
 import { IconPlay, IconTrophy, IconWhatsapp } from "@/components/brand/icons";
 import { Shamsa, RuleOrnament, ElegantRule } from "@/components/brand/pattern";
 import { DaadGlyph } from "@/components/brand/calligraphy";
-import { ArabicTextBackdrop } from "@/components/brand/text-backdrop";
 import { VideoModal } from "@/components/ui/video-modal";
 import { HeroFrame } from "@/components/sections/hero-frame";
 import { useContent } from "@/components/content/content-provider";
 import { el, isHidden, btnStyle, textStyle } from "@/lib/ui-style";
 import type { HeroShape } from "@/lib/home-layouts";
 import { findHeroStyle, heroClass } from "@/lib/hero-styles";
+import { ShariBackdrop } from "@/components/brand/shari-art";
 
 /** يحوّل رابط يوتيوب إلى صيغة تضمين للنافذة المنبثقة. */
 function toEmbedSrc(url?: string): string | undefined {
@@ -79,8 +79,8 @@ export function Hero({ shape = "split" }: { shape?: HeroShape }) {
 
   return (
     <section id="hero" className={`relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28 ${heroClass(HS)}`}>
-      <span className="hero-decor-text"><ArabicTextBackdrop count={28} seed={5} fade="top" opacity={0.5} tone="text-primary/22" /></span>
-            <span className="hero-decor hero-decor-extra"></span>
+      <ShariBackdrop count={16} seed={5} opacity={0.5} tone="text-primary/12" />
+                  <span className="hero-decor hero-decor-extra"></span>
 
       <div
         className={`hero-grid container grid items-center gap-14 ${
