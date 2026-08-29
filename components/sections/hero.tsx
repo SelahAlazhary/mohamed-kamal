@@ -79,7 +79,7 @@ export function Hero({ shape = "split" }: { shape?: HeroShape }) {
 
   return (
     <section id="hero" className={`relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28 ${heroClass(HS)}`}>
-      <ShariBackdrop count={16} seed={5} opacity={0.5} tone="text-primary/12" />
+      <ShariBackdrop count={16} seed={5} opacity={0.15} />
                   <span className="hero-decor hero-decor-extra"></span>
 
       <div

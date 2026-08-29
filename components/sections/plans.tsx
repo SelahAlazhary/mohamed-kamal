@@ -258,9 +258,10 @@ export function Plans() {
 
   return (
     <section id="plans" className={`relative py-24 ${plansClass(PS)}`}>
-      <ShariBackdrop count={10} seed={41} opacity={0.3} tone="text-primary/10" />
+      <ShariBackdrop count={10} seed={41} opacity={0.15} />
       <div className="container">
         <SectionHeading
+        anim="domeAnim"
           eyebrow={sec.eyebrow || "الخطط"}
           title={(() => {
             /* العنوان يأتي كاملاً من اللوحة؛ نُبرز كلمته الأخيرة فقط.

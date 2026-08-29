@@ -3,6 +3,7 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { RuleOrnament } from "@/components/brand/pattern";
+import { ShariAnim, type ShariAnimId } from "@/components/brand/shari-art";
 
 /* ---------------- الزر ---------------- */
 type Variant = "glow" | "outline" | "ghost";
@@ -71,11 +72,14 @@ export function Pill({ children, className = "" }: { children: ReactNode; classN
 /* ---------------- عنوان قسم ---------------- */
 export function SectionHeading({
   eyebrow,
+  anim,
   title,
   desc,
   center = true,
 }: {
   eyebrow?: string;
+  /** علامةٌ متحرّكة تتصدّر القسم. */
+  anim?: ShariAnimId;
   title: ReactNode;
   desc?: string;
   center?: boolean;
@@ -89,6 +93,16 @@ export function SectionHeading({
       /* sx-head: خطّاف تصميم القسم — المعالجة تأتي من CSS لا من هنا. */
       className={`sx-head mb-12 max-w-2xl ${center ? "mx-auto text-center" : ""}`}
     >
+      {/*
+        العلامةُ المتحرّكة فوق العنوان الصغير لا بجانبه: بجانبه تُزاحم
+        الكلمةَ وتكسر سطرَها على الشاشات الضيّقة، وفوقه تتصدّر القسمَ
+        وتبقى العينُ تنزل إلى العنوان طبيعياً.
+      */}
+      {anim && (
+        <span className={`mb-3 flex ${center ? "justify-center" : ""}`}>
+          <ShariAnim id={anim} size={76} />
+        </span>
+      )}
       {eyebrow && (
         <span className={`mb-4 flex items-center gap-3 text-xs font-bold tracking-[0.18em] text-primary ${center ? "justify-center" : ""}`}>
           {center && <RuleOrnament width={64} className="hidden text-primary sm:block" />}

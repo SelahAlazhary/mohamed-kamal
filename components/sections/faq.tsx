@@ -23,7 +23,7 @@ export function Faq() {
 
   return (
     <section id="faq" className={`relative py-24 ${faqClass(FQ)}`} data-faq-style={FQ.id}>
-      <ShariBackdrop count={10} seed={37} opacity={0.34} tone="text-accent/12" />
+      <ShariBackdrop count={10} seed={37} opacity={0.15} />
       <div className="container max-w-3xl">
         <SectionHeading
           eyebrow="أسئلة شائعة"

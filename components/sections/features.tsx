@@ -31,10 +31,11 @@ export function Features() {
 
   return (
     <section id="features" className={`relative py-24 ${sectionClass(SX)}`} data-section-style={SX.id}>
-      <ShariBackdrop count={12} seed={29} opacity={0.38} tone="text-primary/11" />
+      <ShariBackdrop count={12} seed={29} opacity={0.15} />
 
       <div className="container">
         <SectionHeading
+        anim="quranAnim"
           eyebrow="لماذا نحن"
           title={
             <>

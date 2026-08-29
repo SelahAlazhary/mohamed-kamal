@@ -51,10 +51,11 @@ export function Stages() {
 
   return (
     <section id="stages" className={`relative py-24 ${sectionClass(SX)}`} data-section-style={SX.id}>
-      <ShariBackdrop count={12} seed={13} opacity={0.42} tone="text-accent/14" />
+      <ShariBackdrop count={12} seed={13} opacity={0.15} />
 
       <div className="container">
         <SectionHeading
+        anim="mosqueAnim"
           eyebrow="المراحل"
           title={
             <>
