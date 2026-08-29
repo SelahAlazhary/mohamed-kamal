@@ -1613,6 +1613,41 @@ export default function AppearancePage() {
             </div>
           </Card>
 
+          {/* ---------- العمق الثلاثي ---------- */}
+          <Card className="mb-5">
+            <p className="font-display mb-1 text-sm font-bold">العمق الثلاثيّ في الصفحة</p>
+            <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
+              كلُّ لوحٍ يميل نحو المؤشّر بحسب موضعه هو — والتفاوتُ بين الألواح هو ما تقرؤه
+              العينُ مجسّماً، لا شدّةُ الميل. وعلى الهاتف يُقاد بميل الجهاز نفسِه. ومن ضبط
+              جهازه على «تقليل الحركة» لا يُمال عنده شيء.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {([
+                ["off", "بلا عمق", "الصفحة مسطّحة كما كانت"],
+                ["soft", "خفيف", "ميلةٌ لطيفة تُحسّ ولا تُلفت"],
+                ["deep", "عميق", "ميلٌ ظاهرٌ وارتفاعٌ واضح"],
+                ["tilt", "ميلٌ فقط", "دورانٌ قويٌّ بلا ارتفاع"],
+                ["extreme", "الأقصى", "مجسّمٌ صريح — منظورٌ قريبٌ وميلٌ كبير"],
+              ] as const).map(([id, name, hint]) => {
+                const on = (content.hero3d ?? "off") === id;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    disabled={busy !== null}
+                    onClick={async () => { setBusy(id); await saveContent({ hero3d: id }); setBusy(null); }}
+                    title={hint}
+                    className={`rounded-2xl border px-4 py-2.5 text-xs font-bold transition disabled:opacity-60 ${
+                      on ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    {busy === id ? <Loader2 className="inline size-3.5 animate-spin" /> : null} {name}
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
+
           {/* ---------- مكتبة الأيقونات ---------- */}
           <Card className="mb-4">
             <p className="font-display mb-1 text-sm font-bold">

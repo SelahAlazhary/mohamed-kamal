@@ -3623,3 +3623,70 @@ body {
   .h3d .hero-actions,
   .h3d > svg { transform: none !important; transition: none !important; }
 }
+
+/* ============================================================
+   المستوى الثلاثيّ — الصفحة كلُّها
+   ------------------------------------------------------------
+   كلُّ لوحٍ يميل نحو المؤشّر بحسب موضعه هو، فيتفاوت الميلُ بين لوحٍ
+   ولوح — وهذا التفاوتُ نفسُه هو ما تقرؤه العينُ مجسّماً، لا شدّةُ الميل.
+
+   والمنظورُ على الأب لا على اللوح: منظورٌ لكلّ لوحٍ على حدة يجعل كلَّ
+   واحدٍ عالماً مستقلّاً فيتسطّح المشهد. ومنظورٌ واحدٌ للجميع يجعلهم في
+   حجرةٍ واحدة.
+   ============================================================ */
+
+.p3d { perspective: 1400px; perspective-origin: 50% 45%; }
+.p3d section, .p3d .container { transform-style: preserve-3d; }
+
+.t3d {
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease-out;
+  transform:
+    rotateY(calc(var(--t3d-x, 0) * var(--p3d-rot, 6deg)))
+    rotateX(calc(var(--t3d-y, 0) * var(--p3d-rot, 6deg) * -1))
+    translateZ(var(--p3d-lift, 18px));
+}
+
+/* الظلُّ يتبع الميل — بلا ظلٍّ يبدو الميلُ التواءَ ورقةٍ لا جسماً */
+.p3d .t3d {
+  box-shadow:
+    calc(var(--t3d-x, 0) * var(--p3d-sh, -16px))
+    calc(var(--t3d-y, 0) * var(--p3d-sh, -12px) + 18px)
+    calc(var(--p3d-lift, 18px) * 1.8) calc(var(--p3d-lift, 18px) * -0.8)
+    hsl(var(--foreground) / 0.34);
+}
+
+/* النصُّ يميل أقلّ — الميلُ القويُّ على نصٍّ طويلٍ يُتعب القراءة */
+.p3d .hero-text { --p3d-rot: 3deg; --p3d-lift: 10px; }
+.p3d .hero-text { box-shadow: none; }
+/* والصورةُ أقربُ ما يكون فأكثرُ ميلاً */
+.p3d .hero-media { --p3d-rot: calc(var(--p3d-rot-base, 6deg) * 1.5); --p3d-lift: 54px; }
+
+/* الزخارفُ تعاكس — والمعاكسةُ هي ما يصنع البُعد */
+.p3d section > svg,
+.p3d section > [aria-hidden="true"] {
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translate3d(calc(var(--h3d-x, 0) * -16px), calc(var(--h3d-y, 0) * -12px), -40px);
+}
+
+/* ---------- الشدّات ---------- */
+.p3d-soft    { --p3d-rot-base: 4deg;  --p3d-rot: 4deg;  --p3d-lift: 12px; --p3d-sh: -10px; }
+.p3d-deep    { --p3d-rot-base: 8deg;  --p3d-rot: 8deg;  --p3d-lift: 30px; --p3d-sh: -20px; }
+.p3d-tilt    { --p3d-rot-base: 11deg; --p3d-rot: 11deg; --p3d-lift: 16px; --p3d-sh: -14px; }
+/* الأقصى: ميلٌ ظاهرٌ وارتفاعٌ كبير — للصفحة التي تُراد مجسّمةً صراحةً */
+.p3d-extreme { --p3d-rot-base: 15deg; --p3d-rot: 15deg; --p3d-lift: 64px; --p3d-sh: -30px; }
+.p3d-extreme { perspective: 900px; }
+
+/* اللمسُ يقرّب اللوح — استجابةٌ تؤكّد أنّه جسمٌ لا صورة */
+.p3d .t3d:hover { --p3d-lift: calc(var(--p3d-lift, 18px) * 1.7); }
+
+@media (prefers-reduced-motion: reduce) {
+  .p3d .t3d, .p3d section > svg { transform: none !important; transition: none !important; }
+}
+
+/* الهواتفُ الضيّقة: ميلٌ أهدأ — الشاشةُ قريبةٌ من العين فيتضخّم أثرُه */
+@media (max-width: 640px) {
+  .p3d-deep    { --p3d-rot: 5deg;  --p3d-lift: 18px; }
+  .p3d-extreme { --p3d-rot: 8deg;  --p3d-lift: 30px; }
+}
