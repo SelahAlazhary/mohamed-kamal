@@ -6,6 +6,7 @@ import { ContentProvider } from "@/components/content/content-provider";
 import { glowCss } from "@/lib/glow";
 import { brandCss } from "@/lib/brand-theme";
 import { AzhariBackdrop } from "@/components/brand/azhari-backdrop";
+import { ToTop } from "@/components/brand/to-top";
 import { findIconFrame, iconFrameClass, iconFrameVars } from "@/lib/icon-frames";
 import { findIconMotion, iconMotionClass } from "@/lib/icon-motion";
 import { findIconCover, iconCoverClass } from "@/lib/icon-covers";
@@ -210,6 +211,13 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         {pub.content?.azhariBackdrop !== false && <AzhariBackdrop />}
         <ContentProvider initialDB={db} initialSession={session}>
           <RouteTransition>{children}</RouteTransition>
+          {/*
+            زرُّ العودة خارج انتقال الصفحات.
+            `position: fixed` تتصرّف تصرّفَ `absolute` إن كان في أسلافها
+            عنصرٌ عليه `transform` — وانتقالُ الصفحات يضع واحداً. فكان
+            الزرُّ يستقرّ في قاع المستند لا في زاوية الشاشة، فلا يراه أحد.
+          */}
+          <ToTop />
           <RegisterSW />
         </ContentProvider>
       </body>

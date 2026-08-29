@@ -22,7 +22,6 @@ import { findIconMotion, iconMotionClass } from "@/lib/icon-motion";
 import { findIconCover, iconCoverClass } from "@/lib/icon-covers";
 import { siteDown, scopeDown, maintText, type MaintScope } from "@/lib/maintenance";
 import { Page3D, type Depth3D } from "@/components/brand/page-3d";
-import { ToTop } from "@/components/brand/to-top";
 import { findAmbient, ambientClass } from "@/lib/ambient-motion";
 import { findShadow, shadowClass } from "@/lib/shadow-styles";
 import { MaintenancePanel, MaintenanceBar } from "@/components/brand/maintenance";
@@ -115,8 +114,6 @@ export default async function Home() {
         يقرأ الألواح ويكتب ميلَ كلٍّ منها، ولا يرسم شيئاً بنفسه.
       */}
       <Page3D mode={(content.hero3d as Depth3D) ?? "off"} />
-
-      <ToTop />
 
       <MobileDock />
     </main>
