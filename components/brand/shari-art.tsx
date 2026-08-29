@@ -58,17 +58,32 @@ export const SHARI_ANIM = [
 
 export type ShariAnimId = (typeof SHARI_ANIM)[number]["id"];
 
-/** صورةٌ متحرّكة — لترويسة قسمٍ أو بطاقةٍ مميّزة. */
+/**
+ * صورةٌ متحرّكة في إطارها — لترويسة قسمٍ أو بطاقةٍ مميّزة.
+ *
+ * والإطارُ ليس زخرفةً تُضاف هنا: هو الصنفُ `ic-frame` نفسُه الذي تحمله
+ * أيقوناتُ المنصّة كلُّها، فيأخذ الشكلَ والتعبئةَ والحدَّ والغلافَ من
+ * اختيار اللوحة. فإن بُدِّل الإطارُ من «المظهر» تبدّلت هذه معه ولا
+ * تشذّ عن أخواتها — وهذا هو المقصودُ من نظام إطارٍ واحد.
+ *
+ * والحشوةُ نسبةٌ من الحجم لا رقمٌ ثابت: إطارٌ بحشوةٍ ثابتة يخنق الصغيرَ
+ * ويترك الكبيرَ سابحاً في فراغه.
+ */
 export function ShariAnim({
   id,
   size = 84,
+  framed = true,
   className = "",
 }: {
   id: ShariAnimId;
   size?: number;
+  /** يُلبَس إطارَ المنصّة — يُطفأ لمن أرادها عاريةً. */
+  framed?: boolean;
   className?: string;
 }) {
-  return (
+  const pad = Math.round(size * 0.17);
+
+  const img = (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={`/art/${id}.webp`}
@@ -79,9 +94,20 @@ export function ShariAnim({
       /* لا `loading="lazy"` هنا: هي في الترويسة، وتأخيرُها يُظهر فجوةً
          ثمّ تقفز الحركةُ فجأةً — وهو أسوأُ من تحميلها مع القسم. */
       decoding="async"
-      className={`select-none object-contain ${className}`}
+      className="select-none object-contain"
       style={{ width: size, height: size }}
     />
+  );
+
+  if (!framed) return <span className={className}>{img}</span>;
+
+  return (
+    <span
+      className={`ic-frame grid place-items-center ${className}`}
+      style={{ width: size + pad * 2, height: size + pad * 2 }}
+    >
+      {img}
+    </span>
   );
 }
 
