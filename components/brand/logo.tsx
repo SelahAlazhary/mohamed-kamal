@@ -147,11 +147,18 @@ export function BrandLockup({
   const sigCls = signatureClass(sig);
   const sigImage = (signatureImage ?? "").trim();
   /* الارتفاعُ محصورٌ فلا تُفسد قيمةٌ شاردة ارتفاعَ الشريط. */
-  const sigH = Math.max(20, Math.min(80, signatureHeight ?? 34));
+  const sigH = Math.max(20, Math.min(96, signatureHeight ?? 46));
   const sigInvert = signatureInvert !== false;
 
   return (
     <span className={`flex items-center gap-2.5 ${className}`}>
+      {/*
+        التوقيعُ يقوم مقام العلامة والاسم معاً.
+        وضعُ العلامة بجانبه تكرارٌ لا إضافة: كلاهما يقول «هذه منصّة فلان»
+        في موضعٍ واحد، فيتزاحمان ويصغُر التوقيعُ ليتّسع لهما. فإن وُجد
+        التوقيعُ ذهبت العلامةُ واتّسع هو.
+      */}
+      {sigImage ? null : (
       <span
         className="grid shrink-0 place-items-center overflow-hidden rounded-2xl"
         style={{ width: size, height: size }}
@@ -170,6 +177,7 @@ export function BrandLockup({
           <BrandMark size={size} />
         )}
       </span>
+      )}
       {!compact && (
         <span className="flex flex-col leading-none">
           {/*
@@ -210,7 +218,7 @@ export function BrandLockup({
             )}
           </span>
           )}
-          {subtitle && (
+          {subtitle && !sigImage && (
             <span className="font-kufi mt-1.5 text-[9px] tracking-[0.14em] text-muted-foreground">
               {subtitle}
             </span>

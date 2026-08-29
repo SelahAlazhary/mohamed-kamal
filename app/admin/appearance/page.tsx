@@ -27,6 +27,7 @@ import { ICON_FRAMES, findIconFrame, DEFAULT_ICON_FRAME, type IconFrame } from "
 import { ICON_MOTIONS, findIconMotion, DEFAULT_ICON_MOTION, type IconMotion } from "@/lib/icon-motion";
 import { ICON_COVERS, findIconCover, DEFAULT_ICON_COVER, type IconCover } from "@/lib/icon-covers";
 import { ICON_LIBS, findIconLib, DEFAULT_ICON_LIB, ICON_SLOTS, type IconLib } from "@/lib/icon-libs";
+import { AMBIENTS, AMBIENT_SPEEDS, findAmbient, DEFAULT_AMBIENT } from "@/lib/ambient-motion";
 import { LibGlyph } from "@/components/brand/lib-icon";
 import {
   SECTION_STYLES, findSectionStyle, DEFAULT_SECTION_STYLE, SX_SECTIONS,
@@ -1610,6 +1611,59 @@ export default function AppearancePage() {
                   ) : null}
                 </div>
               ))}
+            </div>
+          </Card>
+
+          {/* ---------- الحركة الدائمة ---------- */}
+          <Card className="mb-5">
+            <p className="font-display mb-1 text-sm font-bold">الحركة الدائمة</p>
+            <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
+              حركاتُ الدخول تقع مرّةً حين يظهر العنصر ثمّ تسكن الصفحةُ أبداً. وهذه لا تتوقّف ما
+              دامت الصفحةُ مفتوحة. والتأخيرُ يُشتقّ من ترتيب اللوح فيتموّج المشهدُ ولا يخفق
+              كآلة، والمتنُ لا يتحرّك لأنّ العين تتبع الحرف.
+            </p>
+
+            <div className="mb-4 flex flex-wrap gap-2">
+              {AMBIENTS.map((x) => {
+                const on = (content.ambient ?? DEFAULT_AMBIENT) === x.id;
+                return (
+                  <button
+                    key={x.id}
+                    type="button"
+                    disabled={busy !== null}
+                    title={x.hint}
+                    onClick={async () => { setBusy(`amb-${x.id}`); await saveContent({ ambient: x.id }); setBusy(null); }}
+                    className={`rounded-2xl border px-3.5 py-2 text-xs font-bold transition disabled:opacity-60 ${
+                      on ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    {busy === `amb-${x.id}` ? <Loader2 className="inline size-3.5 animate-spin" /> : null} {x.name}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] font-semibold text-muted-foreground">السرعة:</span>
+              {AMBIENT_SPEEDS.map((v) => {
+                const on = (content.ambientSpeed ?? "normal") === v.id;
+                return (
+                  <button
+                    key={v.id}
+                    type="button"
+                    disabled={busy !== null}
+                    onClick={async () => { setBusy(`sp-${v.id}`); await saveContent({ ambientSpeed: v.id }); setBusy(null); }}
+                    className={`rounded-full border px-3 py-1.5 text-[11px] font-bold transition disabled:opacity-60 ${
+                      on ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    {v.name}
+                  </button>
+                );
+              })}
+              <span className="mr-auto text-[10px] text-muted-foreground">
+                الحاليّة: {findAmbient(content.ambient).name}
+              </span>
             </div>
           </Card>
 

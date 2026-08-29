@@ -440,6 +440,36 @@ export default function CustomizePage() {
 
 
           </Card>
+          {/*
+            صلاحيةُ Meet تُطلب أو لا تُطلب — وهذا يقرّر تجربةَ الربط كلَّها.
+            `drive.file` غيرُ حسّاسٍ عند جوجل: لا يرى إلّا ما أنشأه التطبيق
+            نفسُه. و`calendar.events` حسّاس، وطلبُه يجعل التطبيق يحتاج مراجعةً،
+            فتظهر شاشةُ «غير مُتحقَّق منه» لكلّ من يربط ويُفرض سقفُ مئة مستخدم.
+          */}
+          <Card className="lg:col-span-2">
+            <h3 className="mb-1 font-display font-extrabold">صلاحيات ربط جوجل</h3>
+            <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
+              رفعُ الملفات وحدَه لا يحتاج مراجعةً من جوجل — يربطه أيُّ بريدٍ مباشرةً بلا تحذير.
+              أمّا Google Meet فصلاحيتُه «حسّاسة»: طلبُها يجعل كلَّ من يربط يرى شاشة «تطبيق غير
+              مُتحقَّق منه»، ويُفرض سقفُ مئة مستخدم حتى تُراجَع.
+            </p>
+            <label className="flex items-start gap-3 rounded-2xl border border-border bg-muted/40 p-4">
+              <input
+                type="checkbox"
+                className="mt-0.5 size-4 accent-[hsl(var(--primary))]"
+                checked={form.googleMeet === true}
+                onChange={async (e) => { set({ googleMeet: e.target.checked }); await saveContent({ googleMeet: e.target.checked }); }}
+              />
+              <span>
+                <span className="block text-sm font-bold">اطلب صلاحية Google Meet أيضاً</span>
+                <span className="mt-0.5 block text-[11px] leading-relaxed text-muted-foreground">
+                  فعّلها فقط إن كنت ستنشئ روابط Meet للبثّ من المنصّة. وبعد تغييرها أعد ربط
+                  حساب جوجل — الصلاحياتُ تُمنح عند الربط لا بعده.
+                </span>
+              </span>
+            </label>
+          </Card>
+
           <Card className="lg:col-span-2">
             <h3 className="mb-1 font-display font-extrabold">مكان استضافة الملفات المرفوعة</h3>
             <p className="mb-4 text-xs text-muted-foreground">

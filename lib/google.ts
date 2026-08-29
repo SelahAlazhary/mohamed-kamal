@@ -17,16 +17,40 @@ const CALENDAR_EVENTS = "https://www.googleapis.com/calendar/v3/calendars/primar
 const DRIVE_UPLOAD = "https://www.googleapis.com/upload/drive/v3/files";
 const DRIVE_FILES = "https://www.googleapis.com/drive/v3/files";
 /** اسم مجلّد الوسائط داخل Drive حساب المعلّمة. */
-const MEDIA_FOLDER = "منصّة الشيماء أحمد — الوسائط";
+const MEDIA_FOLDER = "وسائط المنصّة";
 
-/** أقل صلاحية ممكنة: أحداث التقويم + الملفات التي ينشئها هذا التطبيق فقط + البريد.
- *  drive.file لا يمنح أي وصول لبقية ملفات الحساب. */
-export const GOOGLE_SCOPES = [
-  "https://www.googleapis.com/auth/calendar.events",
+/**
+ * النطاقات المطلوبة — وهي أقلُّ ما يكفي، وتتغيّر بحسب ما يُستعمل فعلاً.
+ *
+ * **ولماذا تُقسَم؟** لأنّ جوجل تصنّف النطاقات: `drive.file` غيرُ حسّاس —
+ * لا يرى إلّا ما أنشأه هذا التطبيق نفسُه، ولا يقترب من بقيّة ملفات
+ * الحساب. أمّا `calendar.events` فحسّاس.
+ *
+ * وهذا التصنيفُ يقرّر تجربةَ الربط كلَّها: تطبيقٌ لا يطلب إلّا غيرَ
+ * الحسّاس يُنشر للإنتاج فيربطه **أيُّ بريد** بلا شاشةِ «تطبيق غير
+ * مُتحقَّق منه» وبلا سقفِ المئة مستخدم. فإن طلب الحسّاسَ لزمته مراجعةُ
+ * جوجل، وإلّا ظهر التحذيرُ لكلّ من يربط.
+ *
+ * فالتقويمُ لا يُطلب إلّا لمن يريد Meet — ومن لا يريده لا يدفع ثمنه.
+ */
+const SCOPE_BASE = [
   "https://www.googleapis.com/auth/drive.file",
   "openid",
   "email",
-].join(" ");
+];
+const SCOPE_MEET = "https://www.googleapis.com/auth/calendar.events";
+
+/** هل طُلب Meet؟ الأصلُ لا — فالربطُ نظيفٌ ما لم يُطلب غيرُه. */
+export function meetWanted(): boolean {
+  return getDB().content.googleMeet === true;
+}
+
+export function googleScopes(): string {
+  return (meetWanted() ? [SCOPE_MEET, ...SCOPE_BASE] : SCOPE_BASE).join(" ");
+}
+
+/** للتوافق مع ما يستوردها نصّاً. */
+export const GOOGLE_SCOPES = [SCOPE_MEET, ...SCOPE_BASE].join(" ");
 
 export function googleConfigured(): boolean {
   return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
@@ -43,7 +67,7 @@ export function authUrl(req: Request, state: string): string {
     client_id: process.env.GOOGLE_CLIENT_ID!,
     redirect_uri: redirectUri(req),
     response_type: "code",
-    scope: GOOGLE_SCOPES,
+    scope: googleScopes(),
     access_type: "offline",     // نحتاج refresh_token
     prompt: "consent",          // لضمان إرجاع refresh_token في كل ربط
     include_granted_scopes: "true",

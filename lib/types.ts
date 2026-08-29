@@ -297,6 +297,17 @@ export type SiteContent = {
   /** مكتبة الأيقونات المطبَّقة (lib/icon-libs.ts). */
   /** اسمُ الأستاذ في الرأس توقيعاً (lib/brand-signature.ts). */
   /** عمقُ الواجهة الرئيسية: off · soft · deep · tilt. */
+  /**
+   * طلبُ صلاحية Google Meet عند ربط جوجل.
+   * الأصلُ لا: طلبُها يجعل التطبيق «حسّاساً» عند جوجل، فتظهر شاشةُ
+   * «غير مُتحقَّق منه» لكلّ من يربط ويُفرض سقفُ مئة مستخدم.
+   */
+  googleMeet?: boolean;
+  /** الحركة الدائمة (lib/ambient-motion.ts) وسرعتُها. */
+  /** الخلفية الأزهرية المرسومة — طبقةٌ ثابتةٌ بحجم الشاشة. */
+  azhariBackdrop?: boolean;
+  ambient?: string;
+  ambientSpeed?: string;
   hero3d?: string;
   brandSignature?: string;
   /**

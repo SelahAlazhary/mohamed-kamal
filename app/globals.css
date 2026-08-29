@@ -3690,3 +3690,131 @@ body {
   .p3d-deep    { --p3d-rot: 5deg;  --p3d-lift: 18px; }
   .p3d-extreme { --p3d-rot: 8deg;  --p3d-lift: 30px; }
 }
+
+/* ============================================================
+   الحركة الدائمة
+   ------------------------------------------------------------
+   حركاتُ الدخول تقع مرّةً ثمّ تسكن الصفحةُ أبداً. وهذه لا تتوقّف.
+
+   وثلاثُ قواعدَ تحكمها: التفاوتُ — التأخيرُ يُشتقّ من ترتيب اللوح فيتموّج
+   المشهدُ ولا يخفق كآلة. والصغرُ — تُقاس بالبكسل لا بالعشرة، فما يُلاحَظ
+   في الثانية الأولى يُتعب في الدقيقة الخامسة. والنصُّ لا يتحرّك — العينُ
+   تتبع الحرف، فحركتُه تمنع القراءة.
+   ============================================================ */
+
+.amb { --amb-t: 1; }
+.amb-slow   { --amb-t: 1.7; }
+.amb-normal { --amb-t: 1; }
+.amb-brisk  { --amb-t: 0.62; }
+
+/* الألواحُ التي تتحرّك — لا المتن */
+.amb .sx-card,
+.amb .plan-card,
+.amb .stat-tile,
+.amb .course-card,
+.amb .fq-item {
+  will-change: transform;
+}
+
+/*
+  التفاوتُ يُشتقّ من الترتيب: ستُّ درجاتٍ تكفي — أكثرُ منها لا تُدرَك،
+  وأقلُّ منها يُبقي الخفقان.
+*/
+.amb .sx-card:nth-child(6n + 1), .amb .plan-card:nth-child(6n + 1), .amb .stat-tile:nth-child(6n + 1) { --amb-d: 0s; }
+.amb .sx-card:nth-child(6n + 2), .amb .plan-card:nth-child(6n + 2), .amb .stat-tile:nth-child(6n + 2) { --amb-d: -1.1s; }
+.amb .sx-card:nth-child(6n + 3), .amb .plan-card:nth-child(6n + 3), .amb .stat-tile:nth-child(6n + 3) { --amb-d: -2.3s; }
+.amb .sx-card:nth-child(6n + 4), .amb .plan-card:nth-child(6n + 4), .amb .stat-tile:nth-child(6n + 4) { --amb-d: -0.6s; }
+.amb .sx-card:nth-child(6n + 5), .amb .plan-card:nth-child(6n + 5), .amb .stat-tile:nth-child(6n + 5) { --amb-d: -1.8s; }
+.amb .sx-card:nth-child(6n + 6), .amb .plan-card:nth-child(6n + 6), .amb .stat-tile:nth-child(6n + 6) { --amb-d: -2.9s; }
+
+@keyframes amb-breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.014); } }
+@keyframes amb-float   { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes amb-drift   { 0%,100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
+@keyframes amb-sway    { 0%,100% { transform: rotate(-0.5deg); } 50% { transform: rotate(0.5deg); } }
+@keyframes amb-ripple  { 0%,100% { transform: translateY(0) scale(1); } 45% { transform: translateY(-8px) scale(1.01); } }
+
+.amb-breathe .sx-card, .amb-breathe .plan-card, .amb-breathe .stat-tile, .amb-breathe .course-card, .amb-breathe .fq-item,
+.amb-living  .sx-card, .amb-living  .plan-card, .amb-living  .stat-tile, .amb-living  .course-card, .amb-living  .fq-item {
+  animation: amb-breathe calc(6s * var(--amb-t)) ease-in-out infinite;
+  animation-delay: var(--amb-d, 0s);
+}
+.amb-float .sx-card, .amb-float .plan-card, .amb-float .stat-tile, .amb-float .course-card, .amb-float .fq-item {
+  animation: amb-float calc(7s * var(--amb-t)) ease-in-out infinite;
+  animation-delay: var(--amb-d, 0s);
+}
+.amb-drift .sx-card, .amb-drift .plan-card, .amb-drift .stat-tile, .amb-drift .course-card {
+  animation: amb-drift calc(9s * var(--amb-t)) ease-in-out infinite;
+  animation-delay: var(--amb-d, 0s);
+}
+.amb-sway .sx-card, .amb-sway .plan-card, .amb-sway .stat-tile, .amb-sway .course-card {
+  animation: amb-sway calc(8s * var(--amb-t)) ease-in-out infinite;
+  animation-delay: var(--amb-d, 0s);
+}
+.amb-ripple .sx-card, .amb-ripple .plan-card, .amb-ripple .stat-tile, .amb-ripple .course-card {
+  animation: amb-ripple calc(5s * var(--amb-t)) ease-in-out infinite;
+  animation-delay: var(--amb-d, 0s);
+}
+
+/* ---------- اللمعان ---------- */
+/* بريقٌ يعبر السطح — طبقةٌ مقنّعة لا تحجب ضغطةً ولا تخرج عن اللوح */
+.amb-shimmer .sx-card, .amb-shimmer .plan-card, .amb-shimmer .stat-tile,
+.amb-living  .sx-card, .amb-living  .plan-card, .amb-living  .stat-tile { position: relative; overflow: hidden; }
+.amb-shimmer .sx-card::after, .amb-shimmer .plan-card::after, .amb-shimmer .stat-tile::after,
+.amb-living  .sx-card::after, .amb-living  .plan-card::after, .amb-living  .stat-tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 40%, hsl(var(--gold) / 0.28) 50%, transparent 60%);
+  transform: translateX(-130%);
+  animation: amb-shine calc(7s * var(--amb-t)) ease-in-out infinite;
+  animation-delay: var(--amb-d, 0s);
+}
+@keyframes amb-shine { 0%, 55% { transform: translateX(-130%); } 100% { transform: translateX(130%); } }
+
+/* ---------- نبض الذهب ---------- */
+@keyframes amb-gold { 0%,100% { border-color: hsl(var(--gold) / 0.35); } 50% { border-color: hsl(var(--gold) / 0.9); } }
+.amb-goldPulse .sx-card, .amb-goldPulse .plan-card, .amb-goldPulse .fq-item,
+.amb-living   .plan-card {
+  animation: amb-gold calc(4.5s * var(--amb-t)) ease-in-out infinite;
+  animation-delay: var(--amb-d, 0s);
+}
+
+/* ---------- نبض الهالة ---------- */
+@keyframes amb-halo {
+  0%,100% { box-shadow: 0 10px 30px -18px hsl(var(--primary) / 0.4); }
+  50%     { box-shadow: 0 18px 48px -20px hsl(var(--primary) / 0.85); }
+}
+.amb-glowPulse .sx-card, .amb-glowPulse .plan-card, .amb-glowPulse .stat-tile,
+.amb-living    .stat-tile {
+  animation: amb-halo calc(5.5s * var(--amb-t)) ease-in-out infinite;
+  animation-delay: var(--amb-d, 0s);
+}
+
+/* ---------- الشفق في الخلفية ---------- */
+@keyframes amb-aurora { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+.amb-aurora #hero, .amb-living #hero {
+  background-image: linear-gradient(
+    115deg,
+    hsl(var(--primary) / 0.10) 0%,
+    hsl(var(--gold) / 0.14) 28%,
+    transparent 52%,
+    hsl(var(--primary) / 0.12) 76%,
+    hsl(var(--gold) / 0.10) 100%
+  );
+  background-size: 320% 320%;
+  animation: amb-aurora calc(18s * var(--amb-t)) ease-in-out infinite;
+}
+
+/* ---------- دوران الزخارف ---------- */
+@keyframes amb-orbit { to { transform: rotate(360deg); } }
+.amb-orbit section > svg, .amb-orbit .sx-knot,
+.amb-living section > svg, .amb-living .sx-knot {
+  transform-origin: center;
+  animation: amb-orbit calc(50s * var(--amb-t)) linear infinite;
+}
+
+/* من فضّل تقليل الحركة تسكن الصفحةُ عنده تماماً — وهذا حقٌّ لا خيار. */
+@media (prefers-reduced-motion: reduce) {
+  .amb *, .amb *::after, .amb *::before { animation: none !important; }
+}
