@@ -15,6 +15,7 @@ import { findSideNav, sideNavClass, findDock, dockClass, navColorVars, DEFAULT_I
 import { findIconFrame, iconFrameClass, iconFrameVars } from "@/lib/icon-frames";
 import { findIconMotion, iconMotionClass } from "@/lib/icon-motion";
 import { findIconCover, iconCoverClass } from "@/lib/icon-covers";
+import { designVars } from "@/lib/designs";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "بوابة الطالب", robots: { index: false } };
@@ -53,8 +54,8 @@ export default async function StudentLayout({ children }: { children: ReactNode 
     {/* مراسل النشاط — بوابة الطالب وحدها، فنشاط المشرف ليس تقريراً */}
     <ActivityTracker />
     <div
-      className={`student-skin relative min-h-full ${mobileClass(mobile)} ${sideNavClass(side)} ${dockClass(dock)} ic-${icons} ${iconFrameClass(findIconFrame(pub.content?.iconFrame))} ${iconCoverClass(findIconCover(pub.content?.iconCover))} ${iconMotionClass(findIconMotion(pub.content?.iconMotion))} ${tileClass(tile)} ${tileArtClass(tileArt)} ${toolbarClass(bar)} ${stickClass(pub.content?.toolbarStick)} ${motionClass(findMotion(pub.content?.motionStyle))} ${pub.content?.toolbarHidden ? "tools-hidden" : ""}`}
-      style={{ ...navColorVars(pub.content?.navColors), ...tileColorVars(pub.content?.tileColors), ...tileArtVars(tileArt), ...motionVars(findMotion(pub.content?.motionStyle)), ...iconFrameVars(pub.content?.iconFrameColors) }}
+      className={`student-skin relative min-h-full ${mobileClass(mobile)} ${sideNavClass(side)} ${dockClass(dock)} ic-${icons} ${iconFrameClass(findIconFrame(pub.content?.iconFrame))} dsg ${iconCoverClass(findIconCover(pub.content?.iconCover))} ${iconMotionClass(findIconMotion(pub.content?.iconMotion))} ${tileClass(tile)} ${tileArtClass(tileArt)} ${toolbarClass(bar)} ${stickClass(pub.content?.toolbarStick)} ${motionClass(findMotion(pub.content?.motionStyle))} ${pub.content?.toolbarHidden ? "tools-hidden" : ""}`}
+      style={{ ...navColorVars(pub.content?.navColors), ...tileColorVars(pub.content?.tileColors), ...tileArtVars(tileArt), ...motionVars(findMotion(pub.content?.motionStyle)), ...iconFrameVars(pub.content?.iconFrameColors), ...designVars(pub.content?.designColors) }}
       data-skin={skin.id}
       data-layout={layout.id}
       data-card={skin.card}

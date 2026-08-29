@@ -4068,3 +4068,29 @@ body {
 .dsg-edge .welcome-panel,
 .dsg-edge .stat-tile,
 .dsg-edge .course-card { border-color: var(--dsg-edge, hsl(var(--border))) !important; }
+
+/* ============================================================
+   ألوانُ «الهيئة والشكل»
+   ------------------------------------------------------------
+   لوحُ الترحيب في بوابة الطالب يأخذ لونَه من `btn-glow` — وهو تدرّجُ
+   الهوية. ومن أراده أغمقَ أو أفتحَ لا يريد أن يُغيّر الهويةَ كلَّها من
+   أجله، فله لونُه هنا.
+
+   والقاعدةُ تُكتب بـ`background-image` لا `background-color`: `btn-glow`
+   يرسم تدرّجاً في `background-image`، ولونٌ خلفيٌّ تحته لا يظهر. وصورةٌ
+   مسطّحةٌ من لونٍ واحد تعلوه فتغلبه.
+   ============================================================ */
+
+.dsg .student-header {
+  background-image: linear-gradient(var(--dsg-panel), var(--dsg-panel));
+}
+.dsg .student-header:where([style*="--dsg-panel"], .x) { color: var(--dsg-panel-text, inherit); }
+
+/* لونُ البطاقات وحدُّها */
+.dsg .stat-tile,
+.dsg .course-card {
+  background-image: linear-gradient(var(--dsg-tile), var(--dsg-tile));
+}
+.dsg .stat-tile,
+.dsg .course-card,
+.dsg .student-header { border-color: var(--dsg-edge, hsl(var(--border))); }

@@ -307,6 +307,12 @@ export type SiteContent = {
   /** الخلفية الأزهرية المرسومة — طبقةٌ ثابتةٌ بحجم الشاشة. */
   azhariBackdrop?: boolean;
   /** ظلالُ العناصر (lib/shadow-styles.ts). */
+  /**
+   * ألوانُ «الهيئة والشكل» — لوحُ الترحيب والبطاقات في بوابة الطالب.
+   * مستقلّةٌ عن ألوان الهوية: قد يريدها الأستاذ لوحاً أغمقَ أو أفتحَ من
+   * أساسيّه دون أن يمسّ الهويةَ كلَّها.
+   */
+  designColors?: { panel?: string; panelText?: string; tile?: string; edge?: string };
   shadowStyle?: string;
   ambient?: string;
   ambientSpeed?: string;

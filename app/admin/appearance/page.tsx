@@ -632,6 +632,64 @@ export default function AppearancePage() {
       )}
 
       {tab === "design" && (
+        <>
+          {/* ---------- ألوان الهيئة ---------- */}
+          <Card className="mb-5">
+            <p className="font-display mb-1 text-sm font-bold">ألوان الهيئة</p>
+            <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
+              لوحُ الترحيب والبطاقات في بوابة الطالب يأخذان لونَهما من الهوية. ومن أرادهما
+              أغمقَ أو أفتحَ لا يريد أن يُغيّر الهويةَ كلَّها من أجلهما — فلهما لونُهما هنا.
+              واللونُ المتروك يرث لون الثيم.
+            </p>
+            <div className="grid gap-2.5">
+              {([
+                ["panel", "لوح الترحيب"],
+                ["panelText", "نصّ اللوح"],
+                ["tile", "البطاقات"],
+                ["edge", "الحدود"],
+              ] as const).map(([k, label]) => {
+                const cur = (content.designColors ?? {})[k] ?? "";
+                return (
+                  <div key={k} className="flex flex-wrap items-center gap-2">
+                    <span className="w-28 shrink-0 text-xs font-semibold text-muted-foreground">{label}</span>
+                    {SHELL_SWATCH.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        aria-label={c}
+                        onClick={() => void saveContent({ designColors: { ...(content.designColors ?? {}), [k]: c } })}
+                        className={`size-7 rounded-lg border transition ${
+                          cur.toLowerCase() === c ? "border-primary ring-2 ring-primary/40" : "border-border"
+                        }`}
+                        style={{ background: c }}
+                      />
+                    ))}
+                    <label
+                      className="grid size-7 cursor-pointer place-items-center rounded-lg border border-dashed border-border"
+                      style={{ background: cur || "transparent" }}
+                    >
+                      <input
+                        type="color"
+                        className="size-0 opacity-0"
+                        value={cur || "#2c456a"}
+                        onChange={(e) => void saveContent({ designColors: { ...(content.designColors ?? {}), [k]: e.target.value } })}
+                      />
+                    </label>
+                    {cur ? (
+                      <button
+                        type="button"
+                        onClick={() => void saveContent({ designColors: { ...(content.designColors ?? {}), [k]: "" } })}
+                        className="rounded-lg border border-border px-2 py-1 text-[10px] font-bold text-muted-foreground transition hover:border-primary/40"
+                      >
+                        لون الثيم
+                      </button>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {STUDENT_DESIGNS.map((x) => {
             const on = x.id === design.id;
@@ -663,6 +721,7 @@ export default function AppearancePage() {
             );
           })}
         </div>
+        </>
       )}
 
       {tab === "tiles" && (

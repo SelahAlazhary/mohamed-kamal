@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * مجموعة أيقونات الهوية — SVG مرسومة يدوياً على شبكة 24×24.
  * القواعد: مساحة أمان 2px من كل جهة · سُمك خط 1.5 · نهايات وزوايا دائرية ·
@@ -5,6 +7,8 @@
  * لا اعتماد على مكتبة أيقونات في واجهة الموقع العامة.
  */
 import type { ReactElement, SVGProps } from "react";
+import { useContent } from "@/components/content/content-provider";
+import { findIconLib, slotPath, slotOverlay, libAttrs, type IconSlot } from "@/lib/icon-libs";
 
 /** حركة الأيقونة: رسم عند الظهور · تأرجح · نبض · اهتزاز لهب · طفو · ظهور نطّي. */
 type IconAnim = "draw" | "swing" | "pulse" | "flick" | "bob" | "pop" | "tick";
@@ -59,7 +63,7 @@ export function IconEvidence(p: IconProps) {
 }
 
 /** درع الحماية بجهاز واحد. */
-export function IconShield(p: IconProps) {
+function IconShieldRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <path d="M12 2.8 4.8 5.6v6.1c0 4.2 2.9 7.6 7.2 9.5 4.3-1.9 7.2-5.3 7.2-9.5V5.6L12 2.8Z" />
@@ -91,7 +95,7 @@ export function IconScreen(p: IconProps) {
 
 /* ---------- أيقونات الواجهة ---------- */
 
-export function IconCheck(p: IconProps) {
+function IconCheckRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <path d="m4.6 12.4 4.6 4.6L19.4 6.8" />
@@ -116,7 +120,7 @@ export function IconArrowLeft(p: IconProps) {
   );
 }
 
-export function IconPlay(p: IconProps) {
+function IconPlayRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <circle cx="12" cy="12" r="8.8" />
@@ -125,7 +129,7 @@ export function IconPlay(p: IconProps) {
   );
 }
 
-export function IconCalendar(p: IconProps) {
+function IconCalendarRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <rect x="3.6" y="5.4" width="16.8" height="15" rx="2.4" />
@@ -134,7 +138,7 @@ export function IconCalendar(p: IconProps) {
   );
 }
 
-export function IconLayers(p: IconProps) {
+function IconLayersRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <path d="m12 3.4 8.4 4.2-8.4 4.2-8.4-4.2 8.4-4.2Z" />
@@ -144,7 +148,7 @@ export function IconLayers(p: IconProps) {
   );
 }
 
-export function IconBook(p: IconProps) {
+function IconBookRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <path d="M5 4.4h9.6a3.4 3.4 0 0 1 3.4 3.4v11.8H8.4A3.4 3.4 0 0 1 5 16.2V4.4Z" />
@@ -209,7 +213,7 @@ export function IconStar({ filled = false, ...p }: IconProps & { filled?: boolea
 
 /* ---------- أيقونات الشريط العلوي ---------- */
 
-export function IconSun(p: IconProps) {
+function IconSunRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <circle cx="12" cy="12" r="4.2" />
@@ -218,7 +222,7 @@ export function IconSun(p: IconProps) {
   );
 }
 
-export function IconMoon(p: IconProps) {
+function IconMoonRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <path d="M20.4 14.6A8.8 8.8 0 0 1 9.4 3.6a8.8 8.8 0 1 0 11 11Z" />
@@ -226,7 +230,7 @@ export function IconMoon(p: IconProps) {
   );
 }
 
-export function IconMenu(p: IconProps) {
+function IconMenuRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <path d="M4 7.2h16M4 12h16M4 16.8h10" />
@@ -234,7 +238,7 @@ export function IconMenu(p: IconProps) {
   );
 }
 
-export function IconClose(p: IconProps) {
+function IconCloseRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <path d="m6.4 6.4 11.2 11.2M17.6 6.4 6.4 17.6" />
@@ -264,7 +268,7 @@ export function IconSparkle(p: IconProps) {
 
 /* ---------- أيقونات لوحات التحكّم وبوابة الطالب ---------- */
 
-export function IconHome(p: IconProps) {
+function IconHomeRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <path d="M3.8 10.4 12 3.6l8.2 6.8" />
@@ -274,7 +278,7 @@ export function IconHome(p: IconProps) {
   );
 }
 
-export function IconGrid(p: IconProps) {
+function IconGridRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <rect x="3.6" y="3.6" width="7" height="7" rx="1.8" />
@@ -285,7 +289,7 @@ export function IconGrid(p: IconProps) {
   );
 }
 
-export function IconUsers(p: IconProps) {
+function IconUsersRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <circle cx="9.6" cy="8.4" r="3.4" />
@@ -295,7 +299,7 @@ export function IconUsers(p: IconProps) {
   );
 }
 
-export function IconRadio(p: IconProps) {
+function IconRadioRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <circle cx="12" cy="12" r="2.6" />
@@ -305,7 +309,7 @@ export function IconRadio(p: IconProps) {
   );
 }
 
-export function IconBell(p: IconProps) {
+function IconBellRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <path d="M12 3.4a5.8 5.8 0 0 0-5.8 5.8v3.4l-1.4 2.8h14.4l-1.4-2.8V9.2A5.8 5.8 0 0 0 12 3.4Z" />
@@ -314,7 +318,7 @@ export function IconBell(p: IconProps) {
   );
 }
 
-export function IconLifebuoy(p: IconProps) {
+function IconLifebuoyRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <circle cx="12" cy="12" r="8.6" />
@@ -324,7 +328,7 @@ export function IconLifebuoy(p: IconProps) {
   );
 }
 
-export function IconClipboardCheck(p: IconProps) {
+function IconClipboardCheckRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <path d="M8.6 4.6H6.8a2 2 0 0 0-2 2v12.2a2 2 0 0 0 2 2h10.4a2 2 0 0 0 2-2V6.6a2 2 0 0 0-2-2h-1.8" />
@@ -334,7 +338,7 @@ export function IconClipboardCheck(p: IconProps) {
   );
 }
 
-export function IconChart(p: IconProps) {
+function IconChartRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <path d="M4 20.2V4" />
@@ -344,7 +348,7 @@ export function IconChart(p: IconProps) {
   );
 }
 
-export function IconWallet(p: IconProps) {
+function IconWalletRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <rect x="3.4" y="6" width="17.2" height="13" rx="2.6" />
@@ -354,7 +358,7 @@ export function IconWallet(p: IconProps) {
   );
 }
 
-export function IconPalette(p: IconProps) {
+function IconPaletteRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <path d="M12 3.6a8.4 8.4 0 0 0 0 16.8c1.3 0 1.9-.9 1.9-1.8 0-1.5-1.1-1.8-1.1-2.9 0-.9.7-1.5 1.7-1.5h1.6a4.3 4.3 0 0 0 4.3-4.3c0-3.6-3.7-6.3-8.4-6.3Z" />
@@ -365,7 +369,7 @@ export function IconPalette(p: IconProps) {
   );
 }
 
-export function IconKey(p: IconProps) {
+function IconKeyRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <circle cx="7.6" cy="16.4" r="3.4" />
@@ -374,7 +378,7 @@ export function IconKey(p: IconProps) {
   );
 }
 
-export function IconSearch(p: IconProps) {
+function IconSearchRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <circle cx="10.8" cy="10.8" r="6.4" />
@@ -383,7 +387,7 @@ export function IconSearch(p: IconProps) {
   );
 }
 
-export function IconLogout(p: IconProps) {
+function IconLogoutRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <path d="M14.6 3.8h3.6a2 2 0 0 1 2 2v12.4a2 2 0 0 1-2 2h-3.6" />
@@ -393,7 +397,7 @@ export function IconLogout(p: IconProps) {
 }
 
 
-export function IconLock(p: IconProps) {
+function IconLockRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <rect x="4.6" y="10.2" width="14.8" height="10.2" rx="2.4" />
@@ -413,7 +417,7 @@ export function IconCart(p: IconProps) {
   );
 }
 
-export function IconClock(p: IconProps) {
+function IconClockRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <circle cx="12" cy="12" r="8.6" />
@@ -430,7 +434,7 @@ export function IconFlame(p: IconProps) {
   );
 }
 
-export function IconDownload(p: IconProps) {
+function IconDownloadRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <path d="M12 3.8v10.6" />
@@ -570,7 +574,7 @@ export function IconMail(p: IconProps) {
 }
 
 
-export function IconDatabase(p: IconProps) {
+function IconDatabaseRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <ellipse cx="12" cy="6" rx="7.6" ry="3.2" />
@@ -580,20 +584,107 @@ export function IconDatabase(p: IconProps) {
   );
 }
 
-/** خريطة مفاتيح المزايا القادمة من لوحة الأدمن → أيقونات الهوية. */
-export const FEATURE_ICONS: Record<string, (p: IconProps) => ReactElement> = {
-  BookOpenCheck: IconManuscript,
-  ScrollText: IconEvidence,
-  ShieldCheck: IconShield,
-  MessagesSquare: IconSupport,
-  MonitorPlay: IconScreen,
-};
+/**
+ * خريطة مفاتيح المزايا القادمة من لوحة الأدمن → أيقونات الهوية.
+ *
+ * وتُبنى **دالّةً لا ثابتاً**: بعضُ الأيقونات صارت تتبع المكتبة المختارة،
+ * وهي مصرَّحةٌ بـ`const` في آخر الملفّ. وثابتٌ يُقرأ عند التحميل يقرؤها
+ * قبل أن تُعرَّف — وهو خطأُ «استُعمل قبل التصريح» بعينه. والدالّةُ لا
+ * تُقرأ إلّا حين تُستدعى، وحينها يكون كلُّ شيءٍ معرَّفاً.
+ */
+export function featureIcon(key: string): (p: IconProps) => ReactElement {
+  const map: Record<string, (p: IconProps) => ReactElement> = {
+    BookOpenCheck: IconManuscript,
+    ScrollText: IconEvidence,
+    ShieldCheck: IconShield,
+    MessagesSquare: IconSupport,
+    MonitorPlay: IconScreen,
+  };
+  return map[key] ?? IconManuscript;
+}
 
 /** مفتاحُ ربط — الصيانة. */
-export function IconWrench(p: IconProps) {
+function IconWrenchRaw(p: IconProps) {
   return (
     <Icon {...p}>
       <path d="M15.5 3.5a5.5 5.5 0 0 0-6.9 6.9L3.6 15.4a2 2 0 0 0 2.8 2.8l5-5a5.5 5.5 0 0 0 6.9-6.9l-3 3-2.8-2.8z" />
     </Icon>
   );
 }
+
+/* ============================================================
+   أيقوناتُ الهوية تتبع المكتبة
+   ------------------------------------------------------------
+   كانت المكتبةُ تصل القائمةَ الجانبية وشريطَ الواجهة وحدَهما، وما عداهما
+   يكتب أيقونةَ الهوية مباشرةً — نحوَ مئتَي موضعٍ في خمسةٍ وعشرين ملفّاً.
+   فكان تبديلُ المكتبة يبدّل عشرَ أيقوناتٍ ويترك الباقي.
+
+   وإبدالُ المواضع كلِّها واحداً واحداً عملٌ طويلٌ يُنسى بعضُه ويعود
+   الخللُ مع أوّل أيقونةٍ جديدة. فالإصلاحُ من الجذر: الأيقونةُ نفسُها
+   تسأل عن المكتبة المختارة. فمن كتب `<IconBook/>` في أيّ موضعٍ نال
+   المكتبةَ المختارة بلا أن يعلم.
+
+   **ولا دورةَ استيراد:** هذا الملفّ يستورد بيانات المكتبة (`icon-libs`)
+   وهي بياناتٌ صرفة، ولا يستورد `lib-icon` الذي يستورده هو. والاتّجاهُ
+   واحدٌ فلا تنعقد حلقة.
+
+   **والشعاراتُ مستثناة:** يوتيوب وواتساب وفيسبوك وتليجرام علاماتٌ
+   مسجّلة لا رموزُ واجهة، وإبدالُها برمزٍ عامّ يُفقدها معناها.
+   ============================================================ */
+
+function withLib(slot: IconSlot, Raw: (p: IconProps) => ReactElement) {
+  const Wrapped = ({ className = "", anim, ...rest }: IconProps) => {
+    const { content } = useContent();
+    const lib = findIconLib(content.iconLib);
+
+    /* «المخطوط» هو الأصل: رسمُ الهوية بيدها، فلا يُستبدل به مسارٌ عامّ. */
+    if (lib.geo === "brand") return <Raw className={className} anim={anim} {...rest} />;
+
+    const a = libAttrs(lib);
+    const over = slotOverlay(lib, slot);
+    return (
+      <svg
+        viewBox="0 0 24 24"
+        className={`${anim ? `ico-${anim}` : ""} ${className}`.trim()}
+        focusable="false"
+        aria-hidden="true"
+        {...a}
+        {...rest}
+      >
+        <path d={slotPath(lib, slot)} opacity={over ? 0.22 : undefined} />
+        {over && <path d={over} fill="none" stroke="currentColor" strokeWidth={lib.width} />}
+      </svg>
+    );
+  };
+  Wrapped.displayName = `Lib(${slot})`;
+  return Wrapped;
+}
+
+export const IconHome = withLib("home", IconHomeRaw);
+export const IconGrid = withLib("grid", IconGridRaw);
+export const IconUsers = withLib("users", IconUsersRaw);
+export const IconLayers = withLib("layers", IconLayersRaw);
+export const IconBook = withLib("book", IconBookRaw);
+export const IconKey = withLib("key", IconKeyRaw);
+export const IconClipboardCheck = withLib("exam", IconClipboardCheckRaw);
+export const IconRadio = withLib("radio", IconRadioRaw);
+export const IconChart = withLib("chart", IconChartRaw);
+export const IconLifebuoy = withLib("lifebuoy", IconLifebuoyRaw);
+export const IconPalette = withLib("palette", IconPaletteRaw);
+export const IconBell = withLib("bell", IconBellRaw);
+export const IconWallet = withLib("wallet", IconWalletRaw);
+export const IconDatabase = withLib("database", IconDatabaseRaw);
+export const IconShield = withLib("shield", IconShieldRaw);
+export const IconSearch = withLib("search", IconSearchRaw);
+export const IconMenu = withLib("menu", IconMenuRaw);
+export const IconClose = withLib("close", IconCloseRaw);
+export const IconMoon = withLib("moon", IconMoonRaw);
+export const IconSun = withLib("sun", IconSunRaw);
+export const IconLogout = withLib("logout", IconLogoutRaw);
+export const IconWrench = withLib("wrench", IconWrenchRaw);
+export const IconPlay = withLib("play", IconPlayRaw);
+export const IconCalendar = withLib("calendar", IconCalendarRaw);
+export const IconClock = withLib("clock", IconClockRaw);
+export const IconCheck = withLib("check", IconCheckRaw);
+export const IconDownload = withLib("download", IconDownloadRaw);
+export const IconLock = withLib("lock", IconLockRaw);

@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { SectionHeading, Reveal } from "@/components/ui/primitives";
 import { useContent } from "@/components/content/content-provider";
 import { findSectionStyle, sectionClass, sxGridClass } from "@/lib/section-styles";
-import { FEATURE_ICONS, IconManuscript } from "@/components/brand/icons";
+import { featureIcon } from "@/components/brand/icons";
 import { ArchTile, CornerKnot } from "@/components/brand/pattern";
 
 /** رقم عربي-هندي (١٢٣) لهوية أدقّ. */
@@ -45,7 +45,7 @@ export function Features() {
 
         <div className={`sx-grid grid items-stretch gap-4 ${sxGridClass(SX.grid, content.features.length)}`}>
           {content.features.map((f, i) => {
-            const Icon = FEATURE_ICONS[f.icon] ?? IconManuscript;
+            const Icon = featureIcon(f.icon);
             return (
               <Reveal key={f.title} delay={i * 0.08} className={f.span}>
                 <motion.article

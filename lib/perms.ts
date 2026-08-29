@@ -140,7 +140,7 @@ const APPEARANCE_KEYS = new Set([
   "studentSkin", "studentLayout", "studentMobile", "studentDesign",
   "sideNav", "dockStyle", "navIcons", "navColors",
   "tileStyle", "tileColors", "tileArt",
-  "toolbarStyle", "navbarStyle", "navbarStick", "toolbarStick", "navbarHidden", "toolbarHidden", "appIcon", "appIconImage", "buttonStyle", "glow", "heroShell", "heroShellOpts", "googleMeet", "azhariBackdrop", "shadowStyle", "ambient", "ambientSpeed", "hero3d", "brandSignature", "signatureImage", "signatureHeight", "signatureInvert", "iconLib", "iconFrame", "iconFrameColors", "iconCover", "iconMotion", "developer", "maintenance", "mobileHome", "motionStyle",
+  "toolbarStyle", "navbarStyle", "navbarStick", "toolbarStick", "navbarHidden", "toolbarHidden", "appIcon", "appIconImage", "buttonStyle", "glow", "heroShell", "heroShellOpts", "googleMeet", "azhariBackdrop", "designColors", "shadowStyle", "ambient", "ambientSpeed", "hero3d", "brandSignature", "signatureImage", "signatureHeight", "signatureInvert", "iconLib", "iconFrame", "iconFrameColors", "iconCover", "iconMotion", "developer", "maintenance", "mobileHome", "motionStyle",
   "heroStyle", "plansStyle", "homeLayout",
   "stagesStyle", "featuresStyle", "testimonialsStyle",
   "faqStyle", "ctaStyle", "footerStyle",
