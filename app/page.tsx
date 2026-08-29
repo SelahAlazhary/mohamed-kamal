@@ -21,6 +21,7 @@ import { findIconFrame, iconFrameClass, iconFrameVars } from "@/lib/icon-frames"
 import { findIconMotion, iconMotionClass } from "@/lib/icon-motion";
 import { findIconCover, iconCoverClass } from "@/lib/icon-covers";
 import { siteDown, scopeDown, maintText, type MaintScope } from "@/lib/maintenance";
+import { Hero3D, type Depth3D } from "@/components/brand/hero-3d";
 import { MaintenancePanel, MaintenanceBar } from "@/components/brand/maintenance";
 import { getSession } from "@/lib/session";
 import { MobileDock } from "@/components/sections/mobile-dock";
@@ -83,7 +84,11 @@ export default async function Home() {
           <MaintenancePanel title={mt.title} message={mt.message} until={mt.until} />
         </div>
       ) : (
-        <Hero shape={L.hero} />
+        <>
+          <Hero shape={L.hero} />
+          {/* العمق يُركَّب بعد الهيرو: يقرأ #hero ويكتب متغيّراته، ولا يرسم شيئاً. */}
+          <Hero3D mode={(content.hero3d as Depth3D) ?? "soft"} />
+        </>
       )}
 
       {L.order.map((id, i) => {

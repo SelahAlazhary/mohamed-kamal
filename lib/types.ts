@@ -83,6 +83,10 @@ export type Theme = {
   layout: Layout;
   preset: Preset;
   customPrimary: string | null;
+  /** الذهبي — للزخرفة والحدود؛ ويُشتقّ منه ذهبٌ غائرٌ للنصّ. */
+  customGold?: string | null;
+  /** لون الورق — خلفية الوضع الفاتح، وتُشتقّ منه البطاقةُ والحدّ. */
+  customPaper?: string | null;
 };
 
 /* ---------- خطط الاشتراك (تُضاف وتُدار من لوحة الأدمن) ---------- */
@@ -292,6 +296,8 @@ export type SiteContent = {
   iconFrameColors?: { bg?: string; bg2?: string; fg?: string; edge?: string };
   /** مكتبة الأيقونات المطبَّقة (lib/icon-libs.ts). */
   /** اسمُ الأستاذ في الرأس توقيعاً (lib/brand-signature.ts). */
+  /** عمقُ الواجهة الرئيسية: off · soft · deep · tilt. */
+  hero3d?: string;
   brandSignature?: string;
   /**
    * صورةُ توقيع الأستاذ — تحلّ محلَّ الاسم المكتوب في الرأس.

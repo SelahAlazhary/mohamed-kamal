@@ -180,13 +180,50 @@ export default function CustomizePage() {
                 </button>
               ))}
             </div>
-            <label className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-border bg-muted/40 px-4 py-3">
-              <span className="text-sm font-semibold">لون مخصّص</span>
-              <span className="flex items-center gap-2">
-                {preset === "custom" && <Check className="size-4 text-primary" />}
-                <input type="color" value={customPrimary ?? "#12b981"} onChange={(e) => setCustomPrimary(e.target.value)} className="size-9 cursor-pointer rounded-lg border border-border bg-transparent" />
-              </span>
-            </label>
+            {/*
+              الهويةُ ثلاثةُ ألوانٍ لا لونٌ واحد.
+              كان المخصّصُ لوناً يُشتقّ منه الباقي بتدوير الدرجة — وهذا
+              يكفي لتلوينٍ سريع ولا يكفي لهويةٍ معطاة بأرقامها: من يملك
+              ذهبَه لا يقبل أن يُشتقّ من كحليّه.
+            */}
+            <div className="mt-4 rounded-2xl border border-border bg-muted/40 p-4">
+              <p className="mb-1 text-sm font-bold">هوية بصرية مخصّصة</p>
+              <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
+                الذهبيُّ الفاتح لا يصلح نصّاً — تباينُه مع الورق دون الحدّ المقروء. فيُؤخذ
+                للزخرفة والحدود، ويُشتقّ منه ذهبٌ غائرٌ للنصّ والشارات وحدها.
+              </p>
+              <div className="grid gap-2.5">
+                {([
+                  ["primary", "الأساسي (كحلي)", customPrimary ?? "#2c456a"],
+                  ["gold", "الذهبي (زخرفة)", form.theme.customGold ?? "#e5caa5"],
+                  ["paper", "الورق (خلفية)", form.theme.customPaper ?? "#fbfaf7"],
+                ] as const).map(([k, label, val]) => (
+                  <div key={k} className="flex items-center justify-between gap-3">
+                    <span className="text-xs font-semibold">{label}</span>
+                    <span className="flex items-center gap-2">
+                      <code dir="ltr" className="font-mono text-[10px] text-muted-foreground">{val}</code>
+                      <input
+                        type="color"
+                        value={val}
+                        onChange={async (e) => {
+                          const hex = e.target.value;
+                          if (k === "primary") { setCustomPrimary(hex); return; }
+                          const next = { ...form.theme, preset: "custom" as const, [k === "gold" ? "customGold" : "customPaper"]: hex };
+                          set({ theme: next });
+                          await saveContent({ theme: next });
+                        }}
+                        className="size-9 cursor-pointer rounded-lg border border-border bg-transparent"
+                      />
+                    </span>
+                  </div>
+                ))}
+              </div>
+              {preset === "custom" && (
+                <p className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-bold text-primary">
+                  <Check className="size-3.5" /> الهوية المخصّصة مفعّلة
+                </p>
+              )}
+            </div>
           </Card>
         </div>
       )}

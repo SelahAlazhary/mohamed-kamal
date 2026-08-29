@@ -14,6 +14,14 @@ import {
 } from "react";
 import type { PublicDB, SiteContent, Theme, Layout, Preset } from "@/lib/types";
 import { defaultContent } from "@/lib/defaults";
+import { brandVars } from "@/lib/brand-theme";
+
+/** كلُّ ما قد تكتبه الهوية — يُمسح ما لم يُكتب فلا يبقى أثرُ ثيمٍ سابق. */
+const BRAND_KEYS = [
+  "--primary", "--primary-foreground", "--glow", "--ring",
+  "--gold", "--gold-light", "--gold-deep", "--accent", "--accent-foreground",
+  "--background", "--card", "--muted", "--border",
+];
 
 type Session = { uid: string; role: "admin" | "student"; name: string } | null;
 
@@ -62,15 +70,21 @@ function applyTheme(theme: Theme, effectiveLayout: Layout) {
   const root = document.documentElement;
   root.setAttribute("data-layout", effectiveLayout);
   root.setAttribute("data-preset", theme.preset);
-  if (theme.preset === "custom" && theme.customPrimary) {
-    const [h, s, l] = hexToHsl(theme.customPrimary);
-    root.style.setProperty("--primary", `${h} ${s}% ${l}%`);
-    root.style.setProperty("--accent", `${(h + 26) % 360} ${Math.min(s + 4, 96)}% ${Math.min(l + 4, 66)}%`);
-    root.style.setProperty("--glow", `${(h + 8) % 360} ${Math.min(s + 12, 98)}% ${Math.min(l + 8, 70)}%`);
-  } else {
-    root.style.removeProperty("--primary");
-    root.style.removeProperty("--accent");
-    root.style.removeProperty("--glow");
+  /*
+    البنّاءُ نفسُه الذي يستعمله الخادم — فلا تفترق المعاينةُ الحيّة عمّا
+    يُرسَل للزائر، وهو أوّلُ ما يفسد حين يُكتب الاشتقاقُ مرّتين.
+  */
+  const vars = theme.preset === "custom"
+    ? brandVars({
+        primary: theme.customPrimary ?? undefined,
+        gold: theme.customGold ?? undefined,
+        paper: theme.customPaper ?? undefined,
+      })
+    : {};
+  for (const k of BRAND_KEYS) {
+    const val = vars[k];
+    if (val) root.style.setProperty(k, val);
+    else root.style.removeProperty(k);
   }
 }
 

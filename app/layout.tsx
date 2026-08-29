@@ -4,6 +4,7 @@ import { IBM_Plex_Sans_Arabic, Aref_Ruqaa } from "next/font/google";
 import localFont from "next/font/local";
 import { ContentProvider } from "@/components/content/content-provider";
 import { glowCss } from "@/lib/glow";
+import { brandCss } from "@/lib/brand-theme";
 import { RouteTransition } from "@/components/ui/route-transition";
 import { RegisterSW } from "@/components/pwa/register-sw";
 import { getPublicDB, getScopedDB, loadDB } from "@/lib/db";
@@ -146,6 +147,18 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const pub = getPublicDB();
   /* الوهج من الحمولة العامّة — تنسيقُ الصفحة واحدٌ لكل من يراها. */
   const glow = glowCss(pub.content?.glow);
+  /*
+    هويةُ الألوان تُحقن على الخادم لا في المتصفّح: لو كُتبت بعد الترطيب
+    ومض الثيمُ الافتراضيُّ لحظةً ثمّ انقلب — وهو أظهرُ ما يكون على أوّل
+    زيارة، وهي التي تُبنى عليها الانطباعات.
+  */
+  const brand = theme.preset === "custom"
+    ? brandCss({
+        primary: theme.customPrimary ?? undefined,
+        gold: theme.customGold ?? undefined,
+        paper: theme.customPaper ?? undefined,
+      })
+    : "";
   const base = await siteUrl(pub.content?.url);
   const jsonLd = buildJsonLd(pub.content ?? defaultContent, {
     base,
@@ -170,6 +183,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           فيعمل في الواجهة وبوابة الطالب واللوحة معاً بلا تكرار. ولا
           يُكتب شيءٌ إن لم تكن قاعدةٌ مفعّلة.
         */}
+        {brand && <style dangerouslySetInnerHTML={{ __html: brand }} />}
         {glow && <style dangerouslySetInnerHTML={{ __html: glow }} />}
       </head>
       <body className={`${plex.variable} ${lalezar.variable} ${ruqaa.variable} font-sans`}>

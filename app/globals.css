@@ -3539,3 +3539,87 @@ body {
    ============================================================ */
 .sig-img { display: block; }
 .dark .sig-img-invert { filter: brightness(0) invert(1); }
+
+/* ============================================================
+   عمقُ الواجهة الرئيسية
+   ------------------------------------------------------------
+   ثلاثيُّ الأبعاد هنا عمقٌ في المستوى لا مشهدٌ مُجسَّم: الطبقاتُ تتباعد
+   عن العين بمقاديرَ مختلفة فتتحرّك بسرعاتٍ مختلفة — وهذا ما تراه العينُ
+   عمقاً، لا كثرةُ المضلّعات.
+
+   وكلُّ الحركة على `transform` وحدَها: مسرَّعةٌ بالعتاد، لا تُعيد تخطيطاً
+   ولا طلاءً، فتبقى ٦٠ إطاراً على هاتفٍ متوسّط.
+   ============================================================ */
+
+.h3d {
+  perspective: 1200px;
+  perspective-origin: 50% 40%;
+}
+
+/* الطبقاتُ الثلاث — كلٌّ بعمقها ومقدارِ ميلها */
+.h3d .hero-media,
+.h3d .hero-text,
+.h3d .hero-actions {
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* الصورةُ أقربُ ما يكون، فأكثرُ ميلاً وأبعدُ إزاحة */
+.h3d .hero-media {
+  transform:
+    rotateY(calc(var(--h3d-x, 0) * var(--h3d-rot, 7deg)))
+    rotateX(calc(var(--h3d-y, 0) * var(--h3d-rot, 7deg) * -1))
+    translate3d(calc(var(--h3d-x, 0) * var(--h3d-shift, 14px)),
+                calc(var(--h3d-y, 0) * var(--h3d-shift, 14px)),
+                var(--h3d-lift, 40px));
+}
+
+/* النصُّ أبعدُ قليلاً — يتحرّك أقلّ، فيُقرأ ولا يرقص */
+.h3d .hero-text {
+  transform: translate3d(
+    calc(var(--h3d-x, 0) * var(--h3d-shift, 14px) * -0.35),
+    calc(var(--h3d-y, 0) * var(--h3d-shift, 14px) * -0.35),
+    calc(var(--h3d-lift, 40px) * 0.3)
+  );
+}
+
+/* الأزرارُ بين الاثنين */
+.h3d .hero-actions {
+  transform: translate3d(
+    calc(var(--h3d-x, 0) * var(--h3d-shift, 14px) * -0.2),
+    0,
+    calc(var(--h3d-lift, 40px) * 0.5)
+  );
+}
+
+/* الزخارفُ في الخلفية تعاكس الاتّجاه — والمعاكسةُ هي ما يصنع البُعد */
+.h3d > svg,
+.h3d [aria-hidden="true"] {
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translate3d(
+    calc(var(--h3d-x, 0) * -10px),
+    calc(var(--h3d-y, 0) * -10px),
+    0
+  );
+}
+
+/* ---------- الشدّات ---------- */
+.h3d-soft { --h3d-rot: 5deg;  --h3d-shift: 10px; --h3d-lift: 28px; }
+.h3d-deep { --h3d-rot: 9deg;  --h3d-shift: 20px; --h3d-lift: 60px; }
+/* الميلُ وحدَه: دورانٌ بلا إزاحة — أهدأُ وأنسبُ للنصّ الطويل */
+.h3d-tilt { --h3d-rot: 11deg; --h3d-shift: 0px;  --h3d-lift: 34px; }
+
+/* ظلٌّ يتبع الميل فيُصدّق العمق — بلا ظلٍّ يبدو الميلُ التواءَ ورقة */
+.h3d .hero-media > * {
+  box-shadow: calc(var(--h3d-x, 0) * -18px) calc(var(--h3d-y, 0) * -14px + 22px)
+    46px -26px hsl(var(--foreground) / 0.45);
+  transition: box-shadow 260ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .h3d .hero-media,
+  .h3d .hero-text,
+  .h3d .hero-actions,
+  .h3d > svg { transform: none !important; transition: none !important; }
+}
