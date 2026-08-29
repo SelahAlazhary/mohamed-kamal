@@ -306,6 +306,8 @@ export type SiteContent = {
   /** الحركة الدائمة (lib/ambient-motion.ts) وسرعتُها. */
   /** الخلفية الأزهرية المرسومة — طبقةٌ ثابتةٌ بحجم الشاشة. */
   azhariBackdrop?: boolean;
+  /** ظلالُ العناصر (lib/shadow-styles.ts). */
+  shadowStyle?: string;
   ambient?: string;
   ambientSpeed?: string;
   hero3d?: string;

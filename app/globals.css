@@ -3928,3 +3928,143 @@ body {
 
 /* شريطُ اللوحة: كان بحدٍّ سفليٍّ يقطعه، فيُرفع ليستقيم الاستدارة */
 .app-body > header { border-bottom-width: 0; overflow: hidden; }
+
+/* ============================================================
+   زرُّ العودة إلى الأعلى
+   ------------------------------------------------------------
+   يغيب حتى يُحتاج، ويعلن كم قُرئ من الصفحة بحلقةٍ حوله.
+   ============================================================ */
+
+.to-top {
+  position: fixed;
+  inset-block-end: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  inset-inline-start: 1.25rem;
+  z-index: 80;
+  width: 3.25rem;
+  height: 3.25rem;
+  /* يبدأ مخفياً ومزاحاً لأسفل — الظهورُ صعودٌ لا وميض */
+  opacity: 0;
+  translate: 0 14px;
+  scale: 0.92;
+  pointer-events: none;
+  transition: opacity 260ms ease, translate 260ms cubic-bezier(0.22, 1, 0.36, 1), scale 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.to-top-on { opacity: 1; translate: 0 0; scale: 1; pointer-events: auto; }
+.to-top:hover { scale: 1.07; }
+.to-top:active { scale: 0.96; }
+
+@media (min-width: 768px) {
+  .to-top { inset-block-end: 2rem; inset-inline-start: 2rem; width: 3.6rem; height: 3.6rem; }
+}
+
+/* السطح — زجاجٌ فوق ما تحته لا لوحٌ مصمت يحجبه */
+.to-top .tt-face {
+  fill: hsl(var(--card) / 0.82);
+  stroke: hsl(var(--border));
+  stroke-width: 1;
+  filter: drop-shadow(0 10px 22px hsl(var(--foreground) / 0.28));
+}
+.to-top .tt-track {
+  stroke: hsl(var(--border));
+  stroke-width: 2.6;
+  opacity: 0.55;
+}
+.to-top .tt-fill {
+  stroke: hsl(var(--primary));
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  /* لا انتقالَ على الطول: التمريرُ يحدّثه في كلّ إطارٍ أصلاً، والانتقالُ
+     فوقه يجعله يتأخّر عن الصفحة بدل أن يصفها. */
+}
+.to-top .tt-arrow {
+  stroke: hsl(var(--primary));
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: translate 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* السهمُ يقفز قليلاً عند المرور — يقول ما سيفعله قبل أن يُضغط */
+.to-top:hover .tt-arrow { translate: 0 -2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .to-top, .to-top .tt-arrow { transition: none; }
+  .to-top:hover { scale: 1; }
+}
+
+/* ============================================================
+   ظلالُ العناصر
+   ------------------------------------------------------------
+   الظلُّ معلومةُ ارتفاعٍ لا زخرفة. وطبقتان لا واحدة: قريبةٌ ضيّقةٌ ترسم
+   الحافّة، وبعيدةٌ واسعةٌ تعطي الارتفاع — والواحدةُ تُنتج هالةً رماديّةً
+   مسطّحة. ولونُه من لون النصّ لا أسودُ خالص: الأسودُ يُوسّخ الورقَ
+   الدافئ. والإزاحةُ لأسفل وحدَه لأنّ الضوءَ في الواجهات من أعلى دائماً.
+
+   و`!important` هنا في موضعه: كثيرٌ من الألواح تحمل `shadow-bento` من
+   تيلويند، والمقصودُ استبدالُه لا مزاحمتُه.
+   ============================================================ */
+
+.sh .sx-card,
+.sh .plan-card,
+.sh .stat-tile,
+.sh .course-card,
+.sh .fq-item,
+.sh .ct-panel { transition: box-shadow 240ms ease-out; }
+
+.sh-hairline .sx-card, .sh-hairline .plan-card, .sh-hairline .stat-tile,
+.sh-hairline .course-card, .sh-hairline .fq-item, .sh-hairline .ct-panel {
+  box-shadow: 0 1px 0 hsl(var(--foreground) / 0.10), 0 2px 4px -2px hsl(var(--foreground) / 0.12) !important;
+}
+
+.sh-soft .sx-card, .sh-soft .plan-card, .sh-soft .stat-tile,
+.sh-soft .course-card, .sh-soft .fq-item, .sh-soft .ct-panel {
+  box-shadow: 0 2px 4px -2px hsl(var(--foreground) / 0.10), 0 12px 24px -14px hsl(var(--foreground) / 0.28) !important;
+}
+
+.sh-lifted .sx-card, .sh-lifted .plan-card, .sh-lifted .stat-tile,
+.sh-lifted .course-card, .sh-lifted .fq-item, .sh-lifted .ct-panel {
+  box-shadow: 0 3px 6px -3px hsl(var(--foreground) / 0.14), 0 22px 40px -20px hsl(var(--foreground) / 0.38) !important;
+}
+
+.sh-float .sx-card, .sh-float .plan-card, .sh-float .stat-tile,
+.sh-float .course-card, .sh-float .fq-item, .sh-float .ct-panel {
+  box-shadow: 0 4px 8px -4px hsl(var(--foreground) / 0.16), 0 40px 70px -30px hsl(var(--foreground) / 0.48) !important;
+}
+
+.sh-crisp .sx-card, .sh-crisp .plan-card, .sh-crisp .stat-tile,
+.sh-crisp .course-card, .sh-crisp .fq-item, .sh-crisp .ct-panel {
+  box-shadow: 0 2px 0 hsl(var(--foreground) / 0.08), 0 6px 10px -6px hsl(var(--foreground) / 0.35) !important;
+}
+
+.sh-hard .sx-card, .sh-hard .plan-card, .sh-hard .stat-tile,
+.sh-hard .course-card, .sh-hard .fq-item, .sh-hard .ct-panel {
+  box-shadow: 6px 6px 0 hsl(var(--foreground) / 0.85) !important;
+}
+
+.sh-inner .sx-card, .sh-inner .plan-card, .sh-inner .stat-tile,
+.sh-inner .course-card, .sh-inner .fq-item, .sh-inner .ct-panel {
+  box-shadow: inset 0 2px 8px hsl(var(--foreground) / 0.14), inset 0 -1px 0 hsl(0 0% 100% / 0.5) !important;
+}
+
+.sh-gold .sx-card, .sh-gold .plan-card, .sh-gold .stat-tile,
+.sh-gold .course-card, .sh-gold .fq-item, .sh-gold .ct-panel {
+  box-shadow: 0 2px 5px -2px hsl(var(--gold) / 0.5), 0 20px 40px -22px hsl(var(--gold) / 0.9) !important;
+}
+
+.sh-ink .sx-card, .sh-ink .plan-card, .sh-ink .stat-tile,
+.sh-ink .course-card, .sh-ink .fq-item, .sh-ink .ct-panel {
+  box-shadow: 0 2px 5px -2px hsl(var(--primary) / 0.35), 0 22px 42px -22px hsl(var(--primary) / 0.75) !important;
+}
+
+/* اللمسُ يرفع اللوحَ درجةً — والظلُّ هو ما يقول إنّه ارتفع */
+.sh .sx-card:hover, .sh .plan-card:hover, .sh .course-card:hover {
+  box-shadow: 0 6px 12px -6px hsl(var(--foreground) / 0.2), 0 34px 60px -26px hsl(var(--foreground) / 0.5) !important;
+}
+
+/* ألوانُ «الهيئة والشكل» — لوحُ الترحيب والبطاقات في بوابة الطالب */
+.dsg-tint .welcome-panel,
+.dsg-tint .stat-tile,
+.dsg-tint .course-card { background: var(--dsg-bg, hsl(var(--card))) !important; }
+.dsg-tint .welcome-panel { color: var(--dsg-text, inherit); }
+.dsg-edge .welcome-panel,
+.dsg-edge .stat-tile,
+.dsg-edge .course-card { border-color: var(--dsg-edge, hsl(var(--border))) !important; }

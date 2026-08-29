@@ -22,7 +22,9 @@ import { findIconMotion, iconMotionClass } from "@/lib/icon-motion";
 import { findIconCover, iconCoverClass } from "@/lib/icon-covers";
 import { siteDown, scopeDown, maintText, type MaintScope } from "@/lib/maintenance";
 import { Page3D, type Depth3D } from "@/components/brand/page-3d";
+import { ToTop } from "@/components/brand/to-top";
 import { findAmbient, ambientClass } from "@/lib/ambient-motion";
+import { findShadow, shadowClass } from "@/lib/shadow-styles";
 import { MaintenancePanel, MaintenanceBar } from "@/components/brand/maintenance";
 import { getSession } from "@/lib/session";
 import { MobileDock } from "@/components/sections/mobile-dock";
@@ -69,7 +71,7 @@ export default async function Home() {
 
   return (
     <main
-      className={`relative min-h-screen overflow-x-hidden ${WIDTH_CLASS[L.width]} ${DENSITY_CLASS[L.density]} ${toolbarClass(bar)} ${stickClass(content.navbarStick)} ${mobileHomeClass(MH)} ${motionClass(MO)} ${content.navbarHidden ? "bar-hidden" : ""} ${buttonClass(findButtonStyle(content.buttonStyle))} ${heroShellClass(SH)} ${shOpts?.text ? "hsh-text" : ""} ${iconFrameClass(IF)} ${iconCoverClass(IC)} ${iconMotionClass(IM)} ${ambientClass(findAmbient(content.ambient), content.ambientSpeed)}`}
+      className={`relative min-h-screen overflow-x-hidden ${WIDTH_CLASS[L.width]} ${DENSITY_CLASS[L.density]} ${toolbarClass(bar)} ${stickClass(content.navbarStick)} ${mobileHomeClass(MH)} ${motionClass(MO)} ${content.navbarHidden ? "bar-hidden" : ""} ${buttonClass(findButtonStyle(content.buttonStyle))} ${heroShellClass(SH)} ${shOpts?.text ? "hsh-text" : ""} ${iconFrameClass(IF)} ${iconCoverClass(IC)} ${iconMotionClass(IM)} ${ambientClass(findAmbient(content.ambient), content.ambientSpeed)} ${shadowClass(findShadow(content.shadowStyle))}`}
       style={{ ...motionVars(MO), ...heroShellVars(shOpts), ...iconFrameVars(content.iconFrameColors) }}
       data-home-layout={L.id}
       data-toolbar={bar.id}
@@ -113,6 +115,8 @@ export default async function Home() {
         يقرأ الألواح ويكتب ميلَ كلٍّ منها، ولا يرسم شيئاً بنفسه.
       */}
       <Page3D mode={(content.hero3d as Depth3D) ?? "off"} />
+
+      <ToTop />
 
       <MobileDock />
     </main>

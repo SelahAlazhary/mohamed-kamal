@@ -28,6 +28,7 @@ import { ICON_MOTIONS, findIconMotion, DEFAULT_ICON_MOTION, type IconMotion } fr
 import { ICON_COVERS, findIconCover, DEFAULT_ICON_COVER, type IconCover } from "@/lib/icon-covers";
 import { ICON_LIBS, findIconLib, DEFAULT_ICON_LIB, ICON_SLOTS, type IconLib } from "@/lib/icon-libs";
 import { AMBIENTS, AMBIENT_SPEEDS, findAmbient, DEFAULT_AMBIENT } from "@/lib/ambient-motion";
+import { SHADOW_STYLES, findShadow, DEFAULT_SHADOW } from "@/lib/shadow-styles";
 import { LibGlyph } from "@/components/brand/lib-icon";
 import {
   SECTION_STYLES, findSectionStyle, DEFAULT_SECTION_STYLE, SX_SECTIONS,
@@ -1612,6 +1613,38 @@ export default function AppearancePage() {
                 </div>
               ))}
             </div>
+          </Card>
+
+          {/* ---------- ظلال العناصر ---------- */}
+          <Card className="mb-5">
+            <p className="font-display mb-1 text-sm font-bold">ظلال العناصر</p>
+            <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
+              الظلُّ معلومةُ ارتفاعٍ لا زخرفة: يقول للعين أيُّ لوحٍ أقربُ إليها. وكلُّ ظلٍّ هنا
+              طبقتان — قريبةٌ ترسم الحافّة وبعيدةٌ تعطي الارتفاع — ولونُه من لون النصّ لا أسودُ
+              خالص، فالأسودُ يُوسّخ الورقَ الدافئ.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {SHADOW_STYLES.map((x) => {
+                const on = (content.shadowStyle ?? DEFAULT_SHADOW) === x.id;
+                return (
+                  <button
+                    key={x.id}
+                    type="button"
+                    disabled={busy !== null}
+                    title={x.hint}
+                    onClick={async () => { setBusy(`sh-${x.id}`); await saveContent({ shadowStyle: x.id }); setBusy(null); }}
+                    className={`rounded-2xl border px-3.5 py-2 text-xs font-bold transition disabled:opacity-60 ${
+                      on ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    {busy === `sh-${x.id}` ? <Loader2 className="inline size-3.5 animate-spin" /> : null} {x.name}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-3 text-[10px] text-muted-foreground">
+              الحاليّ: {findShadow(content.shadowStyle).name} — {findShadow(content.shadowStyle).hint}
+            </p>
           </Card>
 
           {/* ---------- الحركة الدائمة ---------- */}

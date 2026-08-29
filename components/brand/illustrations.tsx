@@ -46,15 +46,43 @@ export function EmptyPlans(p: Props) {
   return (
     <Frame {...p}>
       <Ground uid={uid} />
+      {/*
+        اللوحُ الفارغ يتحرّك: حالةُ الفراغ أطولُ ما يقف عندها الزائرُ
+        حائراً، وحركةٌ خفيفةٌ فيها تقول «المكانُ حيٌّ وينتظر» بدل «الصفحةُ
+        معطّلة». والحركةُ SMIL داخل الـSVG فتعمل حيث لا يصل CSS خارجيّ.
+      */}
       <g stroke="currentColor" strokeWidth={1.5} fill="none" strokeLinejoin="round">
-        <rect x="26" y="34" width="38" height="60" rx="7" opacity={0.45} />
-        <rect x="96" y="34" width="38" height="60" rx="7" opacity={0.45} />
-        <rect x="60" y="22" width="40" height="72" rx="8" />
-        <path d="M70 40h20M70 50h12" opacity={0.6} />
-        <path d="M68 66h24M68 76h16" opacity={0.35} />
-        <path d="M36 48h18M36 58h12" opacity={0.3} />
-        <path d="M106 48h18M106 58h12" opacity={0.3} />
-        <path d="m74 14 6 6 6-6" opacity={0.55} />
+        {/* اللوحان الجانبيّان — يتنفّسان بتفاوتٍ فلا يخفقان معاً */}
+        <rect x="26" y="34" width="38" height="60" rx="7" opacity={0.45}>
+          <animate attributeName="y" values="34;30;34" dur="3.6s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.45;0.62;0.45" dur="3.6s" repeatCount="indefinite" />
+        </rect>
+        <rect x="96" y="34" width="38" height="60" rx="7" opacity={0.45}>
+          <animate attributeName="y" values="34;30;34" dur="3.6s" begin="1.2s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.45;0.62;0.45" dur="3.6s" begin="1.2s" repeatCount="indefinite" />
+        </rect>
+        {/* اللوحُ الأوسط — أبطأُ وأوسعُ مدىً فيبقى هو المتصدّر */}
+        <rect x="60" y="22" width="40" height="72" rx="8">
+          <animate attributeName="y" values="22;17;22" dur="4.4s" begin="0.4s" repeatCount="indefinite" />
+        </rect>
+        <g>
+          <animateTransform attributeName="transform" type="translate" values="0 0;0 -5;0 0" dur="4.4s" begin="0.4s" repeatCount="indefinite" />
+          <path d="M70 40h20M70 50h12" opacity={0.6} />
+          <path d="M68 66h24M68 76h16" opacity={0.35} />
+        </g>
+        <g>
+          <animateTransform attributeName="transform" type="translate" values="0 0;0 -4;0 0" dur="3.6s" repeatCount="indefinite" />
+          <path d="M36 48h18M36 58h12" opacity={0.3} />
+        </g>
+        <g>
+          <animateTransform attributeName="transform" type="translate" values="0 0;0 -4;0 0" dur="3.6s" begin="1.2s" repeatCount="indefinite" />
+          <path d="M106 48h18M106 58h12" opacity={0.3} />
+        </g>
+        {/* السهمُ يهبط ويصعد — يشير إلى المكان الذي ستُضاف فيه الخطط */}
+        <path d="m74 14 6 6 6-6" opacity={0.55}>
+          <animateTransform attributeName="transform" type="translate" values="0 -3;0 3;0 -3" dur="2.2s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.3;0.75;0.3" dur="2.2s" repeatCount="indefinite" />
+        </path>
       </g>
     </Frame>
   );
