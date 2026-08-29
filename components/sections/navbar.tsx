@@ -50,7 +50,7 @@ export function Navbar() {
           className="site-bar glass foil flex w-full max-w-5xl items-center justify-between gap-2 rounded-full px-4 py-2.5 shadow-bento"
         >
           <a href="#hero" className="shrink-0 ps-1">
-            <BrandLockup brand={content.brand} subtitle={content.platformSubtitle} logo={content.teacher.logo} size={36} />
+            <BrandLockup brand={content.brand} subtitle={content.platformSubtitle} logo={content.teacher.logo} size={36} signature={content.brandSignature} signatureImage={content.signatureImage} signatureHeight={content.signatureHeight} signatureInvert={content.signatureInvert} />
           </a>
 
           <ul className="site-bar-links hidden items-center lg:flex">

@@ -3472,3 +3472,70 @@ body {
   [class*="icv-"] .ic-frame::before,
   [class*="icv-"] .ic-frame::after { animation: none !important; }
 }
+
+/* ============================================================
+   اسمُ الأستاذ توقيعاً
+   ------------------------------------------------------------
+   الاسمُ في الرأس كان يُكتب بخطّ العناوين كأيّ عنوان. والتوقيعُ أثرُ يدٍ
+   لا حرفٌ مطبوع: فيه ميلٌ وذيلٌ وحركةُ قلم.
+
+   والذيلُ يُرسم SVG لا `border-bottom` — الحدُّ خطٌّ مستقيمٌ لا ينساب،
+   وانسيابُه هو ما يجعله توقيعاً. وهو `preserveAspectRatio="none"` فيتمدّد
+   بطول الاسم مهما طال أو قصر، ولا يُقصّ منه شيء.
+   ============================================================ */
+
+.sig .sig-name {
+  font-family: var(--font-sig), var(--font-display), serif;
+  /* الرقعةُ أقصرُ جسماً من خطّ العناوين، فتُكبَّر قليلاً ليستويا */
+  font-size: 1.24em;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.25;
+  display: inline-block;
+}
+
+/* الذيل */
+.sig { display: inline-block; }
+.sig-tail {
+  display: block;
+  width: 100%;
+  height: 0.55em;
+  margin-top: 0.1em;
+  overflow: visible;
+  color: hsl(var(--gold));
+  opacity: 0.85;
+}
+/* يُرسَم عند الظهور مرّةً واحدة — كما يُرسم التوقيعُ بيدٍ لا يظهر دفعة */
+.sig-tail path {
+  stroke-dasharray: 130;
+  stroke-dashoffset: 130;
+  animation: sig-draw 1.1s 0.25s ease-out forwards;
+}
+@keyframes sig-draw { to { stroke-dashoffset: 0; } }
+
+/* الميل — على الاسم وذيله معاً، وإلّا انفصل الذيلُ عن صاحبه */
+.sig-tilt, .sig-stamp { transform: rotate(-4deg); transform-origin: right center; }
+.sig-stamp { transform: rotate(-5deg); }
+.sig-stamp .sig-name { color: hsl(var(--primary)); }
+
+/* من فضّل تقليل الحركة يرى التوقيعَ مكتملاً بلا رسم */
+@media (prefers-reduced-motion: reduce) {
+  .sig-tail path { animation: none; stroke-dashoffset: 0; }
+}
+
+/* ============================================================
+   صورةُ التوقيع
+   ------------------------------------------------------------
+   التوقيعُ حبرٌ داكنٌ على ورق. وهذا يعمل في الوضع الفاتح وحدَه؛ فعلى
+   خلفيةٍ داكنة يختفي الحبرُ في السواد.
+
+   فيُقلب في الداكن قلباً كاملاً: `brightness(0)` يجعل كلَّ ما ليس
+   شفّافاً أسودَ خالصاً — فيسقط تدرّجُ الحبر وتبقى صورتُه — ثم
+   `invert(1)` يجعله أبيضَ نقيّاً. والنتيجةُ توقيعٌ أبيضُ نظيفُ الحواف،
+   لا حبرٌ مقلوبُ الطيف يميل إلى لونٍ غريب.
+
+   وهذا يفترض صورةً شفّافةَ الخلفية — ولذلك تُفتح في أستوديو الصورة عند
+   الرفع فتُقصّ خلفيتُها البيضاء.
+   ============================================================ */
+.sig-img { display: block; }
+.dark .sig-img-invert { filter: brightness(0) invert(1); }

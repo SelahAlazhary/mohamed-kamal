@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Sans_Arabic } from "next/font/google";
+import { IBM_Plex_Sans_Arabic, Aref_Ruqaa } from "next/font/google";
 import localFont from "next/font/local";
 import { ContentProvider } from "@/components/content/content-provider";
 import { glowCss } from "@/lib/glow";
@@ -27,6 +27,17 @@ const lalezar = localFont({
   weight: "400",
   style: "normal",
   variable: "--font-display",
+  display: "swap",
+});
+/*
+  خطُّ الرقعة — للتوقيع وحدَه لا للمتن.
+  وهو خطُّ المكاتبة والتوقيع في العربية تاريخياً، فالاسمُ به يبدو أثرَ
+  يدٍ لا حرفاً مطبوعاً. ويُستضاف مع البناء فلا ينتظره الزائر.
+*/
+const ruqaa = Aref_Ruqaa({
+  subsets: ["arabic", "latin"],
+  weight: ["400", "700"],
+  variable: "--font-sig",
   display: "swap",
 });
 const plex = IBM_Plex_Sans_Arabic({
@@ -161,7 +172,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         */}
         {glow && <style dangerouslySetInnerHTML={{ __html: glow }} />}
       </head>
-      <body className={`${plex.variable} ${lalezar.variable} font-sans`}>
+      <body className={`${plex.variable} ${lalezar.variable} ${ruqaa.variable} font-sans`}>
         <ContentProvider initialDB={db} initialSession={session}>
           <RouteTransition>{children}</RouteTransition>
           <RegisterSW />

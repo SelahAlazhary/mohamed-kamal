@@ -291,6 +291,21 @@ export type SiteContent = {
   iconFrame?: string;
   iconFrameColors?: { bg?: string; bg2?: string; fg?: string; edge?: string };
   /** مكتبة الأيقونات المطبَّقة (lib/icon-libs.ts). */
+  /** اسمُ الأستاذ في الرأس توقيعاً (lib/brand-signature.ts). */
+  brandSignature?: string;
+  /**
+   * صورةُ توقيع الأستاذ — تحلّ محلَّ الاسم المكتوب في الرأس.
+   * التوقيعُ الحقيقيُّ أصدقُ من أيّ خطٍّ يحاكيه، فإن رُفعت صورتُه سقط
+   * الخطُّ ولم يُرسم.
+   */
+  signatureImage?: string;
+  /** ارتفاعُ التوقيع بالبكسل (٢٠..٨٠) — العرضُ يتبعه بالنسبة. */
+  signatureHeight?: number;
+  /**
+   * يقلب لونَه في الوضع الداكن.
+   * الحبرُ الداكن يختفي على خلفيةٍ داكنة — فيُقلب أبيضَ نقيّاً.
+   */
+  signatureInvert?: boolean;
   iconLib?: string;
   iconCover?: string;
   iconMotion?: string;

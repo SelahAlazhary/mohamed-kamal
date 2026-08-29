@@ -14,6 +14,8 @@ import { HeroFrame } from "@/components/sections/hero-frame";
 import { FRAME_SHAPES, findFrame, DEFAULT_FRAME } from "@/lib/frame-shapes";
 import type { SiteContent, Preset, ColorSpec, ElementStyle } from "@/lib/types";
 import { mediaSrc } from "@/lib/media";
+import { SIGNATURES } from "@/lib/brand-signature";
+import { BrandLockup } from "@/components/brand/logo";
 
 const ELEMENTS: { key: string; label: string; fill?: boolean; text?: boolean }[] = [
   { key: "section.features", label: "قسم: لماذا نحن" },
@@ -44,7 +46,7 @@ const FRAME_SWATCH = ["#233b8b", "#095e86", "#245c4b", "#87263a", "#8a6212", "#4
 export default function CustomizePage() {
   /* الصورة تمرّ باستوديو القصّ وإزالة الخلفية قبل الرفع — الهيرو أكثر
      صورة يراها الزائر، فتستحقّ تنظيفاً قبل أن تُنشر. */
-  const [studio, setStudio] = useState<{ file: File; target: "avatar" | "logo" } | null>(null);
+  const [studio, setStudio] = useState<{ file: File; target: "avatar" | "logo" | "signature" } | null>(null);
 
   /** إعدادات الإطار تعيش داخل hero فتُدمج معه لا تستبدله. */
   /** المراحل تُحفظ كاملة — مصفوفة تُستبدل لا تُدمج. */
@@ -196,6 +198,122 @@ export default function CustomizePage() {
             أيقونة التطبيق — ما يراه الطالب على شاشة هاتفه بعد التثبيت.
             كانت تتبع الشعار وحده، ومن أراد صورتَه لم يجد سبيلاً.
           */}
+          {/*
+            اسمُ الأستاذ توقيعاً.
+            التوقيعُ أثرُ يدٍ لا حرفٌ مطبوع — فيه ميلٌ وذيلٌ وحركةُ قلم.
+            والمعاينةُ بالمكوّن نفسِه الذي في الرأس، لا رسمٌ يحاكيه.
+          */}
+          <Card className="lg:col-span-2">
+            <h3 className="mb-1 font-display font-extrabold">اسم الأستاذ في الرأس — توقيعاً</h3>
+            <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
+              يُكتب بخطّ الرقعة، وهو خطُّ المكاتبة والتوقيع في العربية تاريخياً — فيبدو الاسمُ
+              أثرَ يدٍ لا عنواناً مطبوعاً. والذيلُ يُرسم عند فتح الصفحة كما يُرسم التوقيعُ بيد.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {SIGNATURES.map((x) => {
+                const on = (form.brandSignature ?? "off") === x.id;
+                return (
+                  <button
+                    key={x.id}
+                    type="button"
+                    onClick={async () => { set({ brandSignature: x.id }); await saveContent({ brandSignature: x.id }); }}
+                    className={`rounded-3xl border-2 p-3 text-right transition ${
+                      on ? "border-primary shadow-bento" : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <div className="mb-2 grid min-h-[64px] place-items-center rounded-2xl bg-muted/40 px-3 py-2">
+                      <BrandLockup brand={form.brand} logo={form.teacher.logo} size={32} signature={x.id} />
+                    </div>
+                    <p className="text-sm font-bold">{x.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{x.hint}</p>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* ---------- صورة التوقيع ---------- */}
+            <div className="mt-5 border-t border-border pt-4">
+              <p className="mb-1 text-sm font-bold">أو ارفع توقيعك صورةً</p>
+              <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
+                التوقيعُ الحقيقيُّ أصدقُ من أيّ خطٍّ يحاكيه — فإن رُفعت صورتُه حلّت محلَّ الاسم في
+                الرأس وسقط الخطُّ ولم يُرسم. تُفتح الصورةُ في أستوديو الصورة أوّلاً لتُقصّ خلفيتُها
+                البيضاء، فيظهر الحبرُ وحدَه على أيّ لون.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <div
+                  className="grid min-w-[150px] place-items-center rounded-2xl border border-dashed border-border bg-muted/30 px-4 py-3"
+                  style={{ minHeight: 60 }}
+                >
+                  {form.signatureImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={mediaSrc(form.signatureImage)}
+                      alt="التوقيع"
+                      className="w-auto max-w-[190px] object-contain"
+                      style={{ height: Math.max(20, Math.min(80, form.signatureHeight ?? 34)) }}
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <span className="text-[11px] text-muted-foreground">لا توقيع</span>
+                  )}
+                </div>
+
+                <input
+                  id="sig-file"
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    e.target.value = "";
+                    if (f) setStudio({ file: f, target: "signature" });
+                  }}
+                />
+                <Button variant="outline" onClick={() => document.getElementById("sig-file")?.click()}>
+                  <Upload className="size-4" /> رفع التوقيع
+                </Button>
+                {form.signatureImage ? (
+                  <button
+                    type="button"
+                    className="rounded-xl border border-border px-3 py-2 text-[11px] font-bold text-muted-foreground transition hover:border-rose-500/50 hover:text-rose-500"
+                    onClick={async () => { set({ signatureImage: "" }); await saveContent({ signatureImage: "" }); }}
+                  >
+                    إزالة
+                  </button>
+                ) : null}
+              </div>
+
+              {form.signatureImage ? (
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <label className="flex items-center gap-3">
+                    <span className="w-28 shrink-0 text-[11px] font-semibold text-muted-foreground">
+                      الارتفاع {(form.signatureHeight ?? 34).toLocaleString("ar-EG")}px
+                    </span>
+                    <input
+                      type="range"
+                      min={20}
+                      max={80}
+                      value={form.signatureHeight ?? 34}
+                      onChange={(e) => set({ signatureHeight: Number(e.target.value) })}
+                      onMouseUp={() => void saveContent({ signatureHeight: form.signatureHeight ?? 34 })}
+                      onTouchEnd={() => void saveContent({ signatureHeight: form.signatureHeight ?? 34 })}
+                      className="h-1.5 flex-1 accent-[hsl(var(--primary))]"
+                    />
+                  </label>
+                  <label className="flex items-center gap-2 text-xs font-bold">
+                    <input
+                      type="checkbox"
+                      checked={form.signatureInvert !== false}
+                      onChange={async (e) => { set({ signatureInvert: e.target.checked }); await saveContent({ signatureInvert: e.target.checked }); }}
+                    />
+                    اقلبه أبيضَ في الوضع الداكن
+                  </label>
+                </div>
+              ) : null}
+            </div>
+          </Card>
+
           <Card className="lg:col-span-2">
             <h3 className="mb-1 font-display font-extrabold">أيقونة التطبيق</h3>
             <p className="mb-4 text-xs text-muted-foreground">
@@ -813,7 +931,11 @@ export default function CustomizePage() {
             const url = await uploadImage(out);
             setStudio(null);
             if (!url) return;
-            if (studio.target === "avatar") {
+            if (studio.target === "signature") {
+              /* المقصوصةُ شفّافةُ الخلفية، فيظهر الحبرُ وحدَه على أيّ لون. */
+              set({ signatureImage: url });
+              await saveContent({ signatureImage: url });
+            } else if (studio.target === "avatar") {
               setTeacher({ avatar: url });
               await saveContent({ teacher: { ...form.teacher, avatar: url } });
             } else {

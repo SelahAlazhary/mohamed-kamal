@@ -13,6 +13,7 @@
 import Image from "next/image";
 import { useUid } from "./use-uid";
 import { mediaSrc } from "@/lib/media";
+import { findSignature, signatureClass } from "@/lib/brand-signature";
 
 /** خرزات الحلقة الذهبية — 16 حبّة موزّعة بالتساوي. */
 function beads(cx: number, cy: number, r: number, n = 16, rr = 0.95) {
@@ -124,6 +125,10 @@ export function BrandLockup({
   size = 40,
   compact = false,
   className = "",
+  signature,
+  signatureImage,
+  signatureHeight,
+  signatureInvert,
 }: {
   brand: string;
   subtitle?: string;
@@ -131,7 +136,20 @@ export function BrandLockup({
   size?: number;
   compact?: boolean;
   className?: string;
+  /** هيئةُ التوقيع — تُمرَّر من الرأس وحدَه. */
+  signature?: string;
+  /** صورةُ التوقيع المرفوعة — تغلب الخطّ إن وُجدت. */
+  signatureImage?: string;
+  signatureHeight?: number;
+  signatureInvert?: boolean;
 }) {
+  const sig = findSignature(signature);
+  const sigCls = signatureClass(sig);
+  const sigImage = (signatureImage ?? "").trim();
+  /* الارتفاعُ محصورٌ فلا تُفسد قيمةٌ شاردة ارتفاعَ الشريط. */
+  const sigH = Math.max(20, Math.min(80, signatureHeight ?? 34));
+  const sigInvert = signatureInvert !== false;
+
   return (
     <span className={`flex items-center gap-2.5 ${className}`}>
       <span
@@ -154,7 +172,44 @@ export function BrandLockup({
       </span>
       {!compact && (
         <span className="flex flex-col leading-none">
-          <span className="font-display text-[0.95rem] font-bold tracking-tight">{brand}</span>
+          {/*
+            الاسمُ توقيعاً حين يُطلب: الذيلُ يُرسم SVG لا حدّاً سفلياً،
+            لأنّ الحدَّ خطٌّ مستقيمٌ لا ينساب — والتوقيعُ انسيابُه.
+          */}
+          {sigImage ? (
+            /*
+              التوقيعُ الحقيقيُّ يحلّ محلَّ الاسم لا يُضاف إليه — اسمان في
+              موضعٍ واحد يتزاحمان. والاسمُ يبقى في `alt` فيقرؤه القارئُ
+              الصوتيُّ ومحرّكُ البحث وإن لم يُرَ.
+            */
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={mediaSrc(sigImage)}
+              alt={brand}
+              className={`sig-img w-auto max-w-[190px] object-contain ${sigInvert ? "sig-img-invert" : ""}`}
+              style={{ height: sigH }}
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+          <span className={`relative font-display text-[0.95rem] font-bold tracking-tight ${sigCls}`}>
+            <span className="sig-name">{brand}</span>
+            {sig.tail !== "none" && (
+              <svg className="sig-tail" viewBox="0 0 120 14" preserveAspectRatio="none" aria-hidden="true">
+                {sig.tail === "rule" ? (
+                  <path d="M2 7h116" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                ) : (
+                  <path
+                    d="M2 8c14 4 34 4 52 1s34-5 48-1c8 2 12 5 16 4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                  />
+                )}
+              </svg>
+            )}
+          </span>
+          )}
           {subtitle && (
             <span className="font-kufi mt-1.5 text-[9px] tracking-[0.14em] text-muted-foreground">
               {subtitle}
