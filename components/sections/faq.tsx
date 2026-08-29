@@ -7,7 +7,6 @@ import { IconPlus } from "@/components/brand/icons";
 import { SectionHeading, Button } from "@/components/ui/primitives";
 import { useContent } from "@/components/content/content-provider";
 import { findFaqStyle, faqClass } from "@/lib/block-styles";
-import { ShariBackdrop } from "@/components/brand/shari-art";
 
 export function Faq() {
   const { content, wa } = useContent();
@@ -23,7 +22,6 @@ export function Faq() {
 
   return (
     <section id="faq" className={`relative py-24 ${faqClass(FQ)}`} data-faq-style={FQ.id}>
-      <ShariBackdrop count={10} seed={37} opacity={0.15} />
       <div className="container max-w-3xl">
         <SectionHeading
           eyebrow="أسئلة شائعة"

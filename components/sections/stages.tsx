@@ -16,7 +16,6 @@ import { useContent } from "@/components/content/content-provider";
 import { mediaSrc } from "@/lib/media";
 import { findSectionStyle, sectionClass, sxGridClass } from "@/lib/section-styles";
 import type { StageCard } from "@/lib/types";
-import { ShariBackdrop } from "@/components/brand/shari-art";
 
 const ar = (n: number) => n.toLocaleString("ar-EG");
 
@@ -51,7 +50,6 @@ export function Stages() {
 
   return (
     <section id="stages" className={`relative py-24 ${sectionClass(SX)}`} data-section-style={SX.id}>
-      <ShariBackdrop count={12} seed={13} opacity={0.15} />
 
       <div className="container">
         <SectionHeading

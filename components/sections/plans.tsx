@@ -20,7 +20,6 @@ import { useUid } from "@/components/brand/use-uid";
 import { planPrice, planColor, planForStudent, planWaLink } from "@/lib/plans";
 import { findPlansStyle, plansClass, plansGridClass } from "@/lib/plans-styles";
 import type { SitePlan } from "@/lib/types";
-import { ShariBackdrop } from "@/components/brand/shari-art";
 
 /** وصف مدّة الخطة بلغة الطالب. */
 export function planDuration(p: SitePlan, termEnd?: string): string {
@@ -258,7 +257,6 @@ export function Plans() {
 
   return (
     <section id="plans" className={`relative py-24 ${plansClass(PS)}`}>
-      <ShariBackdrop count={10} seed={41} opacity={0.15} />
       <div className="container">
         <SectionHeading
         anim="domeAnim"
