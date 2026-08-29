@@ -76,8 +76,6 @@ export function brandVars(c: BrandColors): Record<string, string> {
     const [h, s, l] = hexToHsl(primary);
     out["--primary"] = v([h, s, l]);
     out["--primary-foreground"] = l > 62 ? "224 44% 12%" : "0 0% 100%";
-    /* الوهجُ من الأساسيّ نفسِه أفتحَ وأشبعَ قليلاً — لا لونٌ غريبٌ عنه. */
-    out["--glow"] = v([h, clamp(s + 10), clamp(l + 10, 0, 70)]);
     out["--ring"] = v([h, s, l]);
   }
 
@@ -93,6 +91,14 @@ export function brandVars(c: BrandColors): Record<string, string> {
     out["--gold"] = v([h, sat, l]);
     out["--gold-light"] = v([h, sat, l]);
     out["--gold-deep"] = v([h, sat, l]);
+    /*
+      والوهجُ ذهبيٌّ لا كحليّ.
+      كان يُشتقّ من الأساسيّ فيخرج أزرقَ باهتاً حول الألواح — لونٌ رابعٌ
+      لا في الهوية ولا في القائمة الجانبية، فيبدو غريباً عنهما. والذهبُ
+      هو ما يُضيء في هذه الهوية: القائمةُ الجانبية تُضيء به، فيستوي معها
+      المتنُ ولا ينشقّ عنه.
+    */
+    out["--glow"] = v([h, clamp(sat + 8), clamp(l - 4)]);
   }
 
   /*
