@@ -2169,8 +2169,13 @@ body {
   margin-inline: auto;
   margin-bottom: 0.9rem;
   border-radius: 9999px;
-  background: hsl(var(--gold) / 0.16);
-  color: hsl(var(--gold));
+  /*
+    الذهبُ على الورق ١٫٥١:١ — لا يُقرأ. فالسطحُ يبقى غلالةً ذهبيّة
+    والرمزُ يأخذ الكحليّ: ٩٫٢٩:١ على الورق. اللونان من الهوية،
+    والرمزُ يُقرأ.
+  */
+  background: hsl(var(--gold) / 0.22);
+  color: hsl(var(--primary));
   font-size: 0.9rem;
 }
 
@@ -4081,16 +4086,49 @@ body {
    مسطّحةٌ من لونٍ واحد تعلوه فتغلبه.
    ============================================================ */
 
-.dsg .student-header {
+/*
+  ولا تُكتب القاعدةُ إلّا إذا اختِير اللون فعلاً.
+  `linear-gradient(var(--x), var(--x))` والمتغيّرُ غيرُ مضبوطٍ قيمةٌ
+  **باطلة**، وCSS يُسقط الخاصيّة كلَّها عند البطلان — فيسقط معها تدرّجُ
+  اللوح الكحليّ الذي يرسمه `btn-glow`، ويبقى النصُّ الأبيضُ على فراغ.
+  فتُشترط القاعدةُ بوجود المتغيّر في نمط الجذر السطريّ، فلا تُكتب لمن
+  لم يختر.
+*/
+.dsg[style*="--dsg-panel"] .student-header {
   background-image: linear-gradient(var(--dsg-panel), var(--dsg-panel));
 }
-.dsg .student-header:where([style*="--dsg-panel"], .x) { color: var(--dsg-panel-text, inherit); }
+.dsg[style*="--dsg-panel-text"] .student-header,
+.dsg[style*="--dsg-panel-text"] .student-header * { color: var(--dsg-panel-text); }
 
-/* لونُ البطاقات وحدُّها */
-.dsg .stat-tile,
-.dsg .course-card {
+.dsg[style*="--dsg-tile"] .stat-tile,
+.dsg[style*="--dsg-tile"] .course-card {
   background-image: linear-gradient(var(--dsg-tile), var(--dsg-tile));
 }
-.dsg .stat-tile,
-.dsg .course-card,
-.dsg .student-header { border-color: var(--dsg-edge, hsl(var(--border))); }
+.dsg[style*="--dsg-edge"] .stat-tile,
+.dsg[style*="--dsg-edge"] .course-card,
+.dsg[style*="--dsg-edge"] .student-header { border-color: var(--dsg-edge); }
+
+/* ============================================================
+   قاعدةُ الهوية: الذهبُ لا يُوضع على الورق
+   ------------------------------------------------------------
+   قِيست النسبُ فحسمت القاعدة، ولا اجتهادَ بعد القياس:
+
+     أبيضُ على الكحليّ   ٩٫٦٩:١  ✓
+     كحليٌّ على الورق     ٩٫٢٩:١  ✓
+     ذهبٌ على الكحليّ    ٦٫١٥:١  ✓
+     ذهبٌ على الورق      ١٫٥١:١  ✗
+
+   فالذهبُ لونُ **حدٍّ وزخرفةٍ وسطحٍ تحت الكحليّ**، لا لونُ نصٍّ على
+   الورق. وحدُّ الحدود ٣:١ — والذهبُ على الورق دونه أيضاً، فحتى حدُّه
+   يحتاج سماكةً أو غلالةً تحته.
+   ============================================================ */
+
+/* الشاراتُ والأرقامُ الذهبية على أسطحٍ فاتحة تأخذ الكحليّ */
+.sx-eyebrow,
+.plan-badge,
+.stat-tile .tile-label { color: hsl(var(--primary)); }
+
+/* والذهبُ على الكحليّ يبقى ذهباً — هناك يُقرأ */
+.btn-glow .text-gold,
+[class*="-ink"] .text-gold,
+.student-header .text-gold { color: hsl(var(--gold)); }

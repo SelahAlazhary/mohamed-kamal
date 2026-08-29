@@ -301,7 +301,7 @@ function WhatsappMedal() {
           strokeLinejoin="round"
         />
       </svg>
-      <IconWhatsapp className="relative size-4 text-[hsl(var(--gold-light))]" />
+      <IconWhatsapp className="relative size-4 text-[hsl(var(--primary))]" />
     </span>
   );
 }

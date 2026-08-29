@@ -89,8 +89,14 @@ export function StatTile({
       <div className="tile-head relative flex items-start justify-between gap-2">
         {icon && (
           <span
-            className="ic-frame tile-badge grid size-10 place-items-center rounded-2xl text-[hsl(var(--accent-foreground))] shadow-sm"
-            style={{ background: "linear-gradient(135deg, hsl(var(--gold-light)), hsl(var(--gold)))" }}
+            /*
+              الشارةُ بيضاءُ بظلٍّ غائر.
+              والرمزُ فيها كحليٌّ لا ذهبيّ — لا اختياراً بل قياساً: الذهبُ
+              على الأبيض ١٫٥١:١ فلا يُظهر شكلاً، والكحليُّ ٩٫٢٩:١. فلو
+              وُضع الذهبُ هنا لبدت الشارةُ فارغةً لا رمزَ فيها.
+            */
+            className="ic-frame tile-badge grid size-10 place-items-center rounded-2xl bg-white text-[hsl(var(--primary))]"
+            style={{ boxShadow: "0 2px 4px -1px rgb(0 0 0 / 0.28), 0 8px 18px -8px rgb(0 0 0 / 0.55)" }}
           >
             {icon}
           </span>

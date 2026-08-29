@@ -43,7 +43,7 @@ export function MobileDock() {
             target="_blank"
             rel="noreferrer"
             aria-label="تواصل على واتساب"
-            className="grid size-12 shrink-0 place-items-center rounded-2xl border border-[hsl(var(--gold)/0.45)] bg-card text-[hsl(var(--gold))] shadow-bento"
+            className="grid size-12 shrink-0 place-items-center rounded-2xl border border-[hsl(var(--gold))] bg-card text-[hsl(var(--primary))] shadow-bento"
           >
             <IconWhatsapp className="size-5" />
           </a>
