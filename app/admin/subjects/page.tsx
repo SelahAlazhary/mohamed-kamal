@@ -34,6 +34,7 @@ import { PageHeader, DataTable, StatusBadge } from "@/components/dashboard/ui";
 import { Fold } from "@/components/dashboard/fold";
 import { Button } from "@/components/ui/primitives";
 import { useContent } from "@/components/content/content-provider";
+import { gradeHasTrack } from "@/lib/data";
 import type { Subject } from "@/lib/types";
 
 const TERMS = [
@@ -136,10 +137,14 @@ export default function SubjectsPage() {
             </div>
           </td>
           <td className="px-4 py-3">
-            <select value={s.track || "الكل"} onChange={(e) => setTrack(s.id, e.target.value)}
-              className="rounded-lg border border-border bg-card/60 px-2 py-1 text-xs outline-none focus:border-primary/50">
-              <option value="الكل">الكل</option><option value="علمي">علمي</option><option value="أدبي">أدبي</option>
-            </select>
+            {gradeHasTrack(s.grade) ? (
+              <select value={s.track || "الكل"} onChange={(e) => setTrack(s.id, e.target.value)}
+                className="rounded-lg border border-border bg-card/60 px-2 py-1 text-xs outline-none focus:border-primary/50">
+                <option value="الكل">الكل</option><option value="علمي">علمي</option><option value="أدبي">أدبي</option>
+              </select>
+            ) : (
+              <span className="text-xs text-muted-foreground">—</span>
+            )}
           </td>
           <td className="px-4 py-3 font-semibold">{s.lessons}</td>
           <td className="px-4 py-3"><span className="inline-flex items-center gap-1 text-muted-foreground"><Users className="size-3.5" /> {s.students.toLocaleString("ar-EG")}</span></td>
@@ -180,13 +185,25 @@ export default function SubjectsPage() {
               <Field label="اسم الكورس">
                 <input autoFocus value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inp} placeholder="مثال: الفقه الشافعي — الباب الأول" />
               </Field>
-              <Field label="الشعبة">
-                <select value={form.track} onChange={(e) => setForm({ ...form, track: e.target.value })} className={inp}>
-                  <option value="الكل">الكل (علمي وأدبي)</option>
-                  <option value="علمي">علمي</option>
-                  <option value="أدبي">أدبي</option>
-                </select>
-              </Field>
+              {/*
+                الشعبةُ للثانويّ وحدَه.
+                الإعداديُّ صفٌّ لا ينقسم، والتسجيلُ لا يعطي طالبَه شعبةً —
+                فكورسٌ إعداديٌّ «علميّ» يُخفى عن طلابه كلِّهم بلا رسالةِ خطأ.
+                والحقلُ يظهر بعد اختيار الصفّ في الخطوة الثانية.
+              */}
+              {gradeHasTrack(form.grade) ? (
+                <Field label="الشعبة">
+                  <select value={form.track} onChange={(e) => setForm({ ...form, track: e.target.value })} className={inp}>
+                    <option value="الكل">الكل (علمي وأدبي)</option>
+                    <option value="علمي">علمي</option>
+                    <option value="أدبي">أدبي</option>
+                  </select>
+                </Field>
+              ) : (
+                <Field label="الشعبة">
+                  <p className={`${inp} text-muted-foreground`}>لا شُعَب في المرحلة الإعدادية</p>
+                </Field>
+              )}
             </div>
           </section>
 
@@ -194,7 +211,15 @@ export default function SubjectsPage() {
             <Step n={2} title="موضعه في المنهج" hint="الصفُّ والفصلُ — بهما يُعرض للطالب الصحيح" icon={<GraduationCap className="size-4" />} />
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="الصف الدراسي">
-                <select value={form.grade} onChange={(e) => setForm({ ...form, grade: e.target.value })} className={inp}>
+                <select
+                  value={form.grade}
+                  onChange={(e) => {
+                    const g = e.target.value;
+                    /* الإعداديُّ لا شعبةَ له — فتُمحى ولا تُحفظ من اختيارٍ سابق */
+                    setForm({ ...form, grade: g, track: gradeHasTrack(g) ? form.track : "الكل" });
+                  }}
+                  className={inp}
+                >
                   <option>كل الصفوف</option>
                   {grades.map((g) => <option key={g.id}>{g.name}</option>)}
                 </select>

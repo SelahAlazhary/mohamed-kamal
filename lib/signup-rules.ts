@@ -8,7 +8,7 @@
  */
 import {
   EGYPT_GOVERNORATES, TRACKS, STAGES, TRACK_STAGE,
-  EDU_SYSTEMS, AZHAR, BRANCH_TRACK, SCIENCE_BRANCHES,
+  EDU_SYSTEMS, AZHAR, BRANCH_TRACK, SCIENCE_BRANCHES, gradeInStage,
 } from "./data";
 
 export type SignupInput = {
@@ -146,6 +146,14 @@ export function signupProblem(
     oneOf(f.stage, STAGES, "المرحلة الدراسية مطلوبة", "المرحلة الدراسية غير صحيحة") ??
     // الصفوف يضبطها الأدمن، فتُقارن بالموجود فعلاً وقت التسجيل
     oneOf(f.grade, gradeNames, "الصف الدراسي مطلوب", "الصف الدراسي غير صحيح") ??
+    /*
+      والصفُّ من المرحلة المختارة.
+      كانت الشاشةُ تعرض الصفوفَ الستّةَ كلَّها مهما اختار المرحلة، فيُقبل
+      «ثانوية · الأول الإعدادي» — تركيبٌ لا وجودَ له، ولا يظهر أثرُه إلّا
+      بعد أشهرٍ حين لا تطابقه خطّةٌ ولا يُفهم لماذا. والشاشةُ صُفِّيت،
+      ويبقى القيدُ هنا لأنّ الطلبَ يُرسَل من غيرها أيضاً.
+    */
+    (gradeInStage(f.grade, f.stage) ? null : "الصف الدراسي لا يتبع المرحلة المختارة") ??
     (showsTrack(f) ? oneOf(f.track, TRACKS, "الشعبة مطلوبة", "الشعبة غير صحيحة") : null) ??
     (showsBranch(f)
       ? oneOf(f.branch, SCIENCE_BRANCHES, "فرع الشعبة العلمية مطلوب", "فرع الشعبة العلمية غير صحيح")

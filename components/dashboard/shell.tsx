@@ -25,6 +25,7 @@ import { BrandLockup } from "@/components/brand/logo";
 import { GoldRule } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
 import { navBadges } from "@/lib/admin-insights";
+import { CommandPalette } from "@/components/dashboard/command-palette";
 import { groupNav, type NavItem } from "@/lib/dashboard-data";
 
 /** مفتاحُ حفظ المجموعات المفتوحة — يبقى بين الزيارات فلا يُعاد الطيُّ كلّ مرّة. */
@@ -324,13 +325,22 @@ export function DashboardShell({
 
           {/* موبايل: الهوية · سطح المكتب: بحث سريع */}
           <span className="lg:hidden"><Brand role={role} /></span>
-          <div className="tb-search relative hidden w-full max-w-sm flex-1 sm:block">
-            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"><LibIcon slot="search" className="size-4" /></span>
-            <input
-              placeholder="بحث سريع…"
-              className="btn-foil w-full rounded-full border-0 py-2.5 pr-10 pl-4 text-sm outline-none transition focus:ring-2 focus:ring-accent/40"
-            />
-          </div>
+          {/*
+            الصندوقُ يفتح لوحَ الأوامر ولا يكتب فيه.
+            كان حقلاً حقيقيّاً بلا حالةٍ ولا معالج: يُكتب فيه ولا يبحث —
+            وهذا أسوأُ من غيابه، فالواجهةُ تَعِد ولا تفي. وصار زرّاً يقول
+            ما يفعل: يفتح البحثَ الذي يبلغ الأقسامَ والكورساتِ والطلابَ
+            والخططَ في نتيجةٍ واحدة.
+          */}
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event("open-command-palette"))}
+            className="tb-search btn-foil relative hidden w-full max-w-sm flex-1 items-center rounded-full border-0 py-2.5 pr-10 pl-4 text-right text-sm text-muted-foreground outline-none transition hover:text-foreground focus:ring-2 focus:ring-accent/40 sm:flex"
+          >
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2"><LibIcon slot="search" className="size-4" /></span>
+            بحث سريع…
+            <kbd className="ms-auto hidden rounded border border-border px-1.5 py-0.5 text-[10px] lg:block">Ctrl K</kbd>
+          </button>
 
           <div className="tb-actions mr-auto flex items-center gap-2">
             {content.showThemeToggle && (
@@ -350,6 +360,9 @@ export function DashboardShell({
 
         <main className="app-scroll p-4 pb-6 sm:p-6 lg:pb-8">{children}</main>
       </div>
+
+      {/* لوحُ الأوامر — واحدٌ للوحة كلِّها، يُفتح بالمفتاح أو بالصندوق */}
+      <CommandPalette role={role} />
 
       {/* شريط تبويبات عائم بأسلوب التطبيقات (الطالب · موبايل) */}
       {role === "student" && (

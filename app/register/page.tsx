@@ -7,8 +7,7 @@ import { AuthShell, inputCls } from "@/components/auth/auth-shell";
 import { useContent } from "@/components/content/content-provider";
 import {
   EGYPT_GOVERNORATES, TRACKS, STAGES, TRACK_STAGE,
-  EDU_SYSTEMS, AZHAR, BRANCH_TRACK, SCIENCE_BRANCHES,
-} from "@/lib/data";
+  EDU_SYSTEMS, AZHAR, BRANCH_TRACK, SCIENCE_BRANCHES, gradeInStage } from "@/lib/data";
 import { showsTrack, showsBranch, signupProblem, normalizePhone } from "@/lib/signup-rules";
 import { useMaintGate } from "@/components/brand/maint-gate";
 
@@ -43,6 +42,13 @@ export default function RegisterPage() {
     setForm((f) => ({
       ...f,
       stage: v,
+      /*
+        والصفُّ يُمحى إن لم يعد من المرحلة الجديدة.
+        وإلّا بقي «الأول الإعدادي» تحت مرحلةٍ «ثانوية» لأنّه اختير قبل
+        تبديلها — فيُسجَّل تركيبٌ لا وجودَ له، ولا يُكشف إلّا بعد أشهرٍ حين
+        تقول لوحةُ الخطط «لا يطابقها أحد» ولا يُفهم لماذا.
+      */
+      ...(gradeInStage(f.grade, v) ? {} : { grade: "" }),
       ...(v === TRACK_STAGE ? {} : { track: "", branch: "" }),
     }));
 
@@ -173,7 +179,8 @@ export default function RegisterPage() {
           <Field label="الصف الدراسي">
             <select required className={inputCls} value={form.grade} onChange={(e) => set("grade", e.target.value)}>
               <option value="">اختر الصف الدراسي…</option>
-              {grades.map((g) => <option key={g.id} value={g.name}>{g.name}</option>)}
+              {/* صفوفُ المرحلة المختارة وحدَها — والكلُّ قبل أن تُختار */}
+              {grades.filter((g) => gradeInStage(g.name, form.stage)).map((g) => <option key={g.id} value={g.name}>{g.name}</option>)}
             </select>
           </Field>
           {needsTrack && (

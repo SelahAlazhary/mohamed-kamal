@@ -2,6 +2,7 @@ import type { PublicDB, User } from "./types";
 import { can, type AdminPerm } from "./perms";
 import { gatewayOn, activeMethods } from "./payments";
 import { lessonCount } from "./course-units";
+import { gradeInStage } from "./data";
 
 /**
  * ما يحتاج انتباه المشرف الآن.
@@ -214,6 +215,235 @@ export function adminInsights(
       hint: "الإشعارات تصل داخل المنصّة فقط حتى يسمح الطالب بها من صفحة الإشعارات",
       href: "/admin/notifications",
       perm: "notifications",
+    });
+  }
+
+  /* ---------- تكاملُ الأقسام: ما يُكسَر حين يُعدَّل قسمٌ وحدَه ----------
+     أخطرُ ما في لوحةٍ متعدّدةِ الأقسام ليس خطأً داخلَ قسم، بل تعارضاً
+     بين قسمين: كورسٌ يُحذف وتبقى خطّتُه، وصفٌّ يُسمّى في الصفوف بغير ما
+     يُكتب في الكورس، وكودٌ يُولَّد لخطّةٍ ذهبت. ولا يظهر شيءٌ من ذلك في
+     الشاشة التي عُدِّلت — بل في شاشةٍ أخرى، أو عند الطالب وحدَه.
+     فتُفحص الروابطُ هنا مرّةً واحدةً، ويُعرض ما انكسر منها.            */
+
+  const subjects = db.subjects ?? [];
+  const plans = db.plans ?? [];
+  const codes = db.codes ?? [];
+  const grades = db.grades ?? [];
+
+  /* كورسٌ محذوفٌ وخطّتُه باقية — تُعرض للطالب وتُفضي إلى لا شيء */
+  const orphanPlans = plans.filter(
+    (p) => p.scope === "subject" && p.subjectId && !subjects.some((s) => s.id === p.subjectId)
+  );
+  if (orphanPlans.length > 0) {
+    out.push({
+      id: "plan-orphan",
+      level: "urgent",
+      count: orphanPlans.length,
+      label: "خطط تُشير إلى كورسات محذوفة",
+      hint: `${orphanPlans.map((p) => p.name).slice(0, 3).join(" · ")} — من يشتريها لا يفتح شيئاً`,
+      href: "/admin/plans",
+      perm: "plans",
+    });
+  }
+
+  /*
+    كورسٌ لا سبيلَ إلى شرائه.
+    لا خطّةٌ تشمله ولا سعرَ في بطاقته — فهو منشورٌ يراه الطالبُ ولا يملك
+    زرّاً يفتحه. والشمولُ ثلاثةُ أوجه: خطّةُ «كلّ المواد»، أو خطّةُ فصلٍ
+    هو فصلُه، أو خطّةٌ باسمه.
+  */
+  const unbuyable = subjects.filter((s) => {
+    if (s.status !== "منشورة") return false;
+    if ((s.prices?.length ?? 0) > 0 || (s.price ?? 0) > 0) return false;
+    return !plans.some(
+      (p) =>
+        p.visible !== false &&
+        (p.scope === "all" ||
+          (p.scope === "term" && (p.termNo ?? 1) === (s.term ?? 1)) ||
+          (p.scope === "subject" && p.subjectId === s.id))
+    );
+  });
+  if (unbuyable.length > 0) {
+    out.push({
+      id: "course-unbuyable",
+      level: "urgent",
+      count: unbuyable.length,
+      label: "كورسات منشورة لا سبيل إلى شرائها",
+      hint: `${unbuyable.map((s) => s.name).slice(0, 3).join(" · ")} — لا خطّة تشملها ولا سعر في بطاقتها`,
+      href: "/admin/plans",
+      perm: "plans",
+    });
+  }
+
+  /*
+    كورسٌ لصفٍّ لا وجودَ له في «الصفوف».
+    الكورسُ يُعرض للطالب بمطابقة اسم صفّه؛ فحرفٌ يختلف يُخفيه عن كلّ
+    طالبٍ ولا يظهر خطأٌ في أيّ شاشة — الكورسُ في اللوحة، والطالبُ لا يراه.
+  */
+  const gradeNames = new Set(grades.map((g) => g.name));
+  const strayGrade = subjects.filter(
+    (s) => s.grade && s.grade !== "كل الصفوف" && !gradeNames.has(s.grade)
+  );
+  if (strayGrade.length > 0 && grades.length > 0) {
+    out.push({
+      id: "course-stray-grade",
+      level: "urgent",
+      count: strayGrade.length,
+      label: "كورسات لصفوف غير مسجَّلة",
+      hint: `${Array.from(new Set(strayGrade.map((s) => s.grade))).slice(0, 3).join(" · ")} — لا طالبَ يراها`,
+      href: "/admin/subjects",
+      perm: "subjects",
+    });
+  }
+
+  /* صفٌّ مسجَّلٌ ولا كورسَ فيه — طالبُه يفتح «الكورسات» على فراغ */
+  const emptyGrades = grades.filter(
+    (g) => !subjects.some((s) => s.grade === g.name || s.grade === "كل الصفوف")
+  );
+  if (emptyGrades.length > 0 && subjects.length > 0) {
+    out.push({
+      id: "grade-empty",
+      level: "warn",
+      count: emptyGrades.length,
+      label: "صفوف بلا كورسات",
+      hint: `${emptyGrades.map((g) => g.name).slice(0, 3).join(" · ")} — طلابها يفتحون شاشةً فارغة`,
+      href: "/admin/subjects",
+      perm: "subjects",
+    });
+  }
+
+  /* فصلٌ دراسيٌّ خالٍ والآخرُ عامر — يُنبَّه ولا يُعدّ خطأً */
+  if (subjects.length > 0) {
+    const t1 = subjects.filter((s) => (s.term ?? 1) === 1).length;
+    const t2 = subjects.filter((s) => (s.term ?? 1) === 2).length;
+    if (t1 > 0 && t2 === 0) {
+      out.push({
+        id: "term2-empty",
+        level: "tip",
+        label: "الفصل الدراسي الثاني بلا كورسات",
+        hint: "تبويبُه يظهر للطالب فارغاً — أضِف كورساته أو انقل ما يخصّه",
+        href: "/admin/subjects",
+        perm: "subjects",
+      });
+    } else if (t2 > 0 && t1 === 0) {
+      out.push({
+        id: "term1-empty",
+        level: "tip",
+        label: "الفصل الدراسي الأول بلا كورسات",
+        hint: "تبويبُه يظهر للطالب فارغاً — راجع فصلَ كل كورس",
+        href: "/admin/subjects",
+        perm: "subjects",
+      });
+    }
+  }
+
+  /* كودٌ متاحٌ لخطّةٍ أو كورسٍ ذهب — يُفعَّل فلا يفتح شيئاً */
+  const deadCodes = codes.filter((c) => {
+    if (c.status !== "متاح") return false;
+    const planGone = !!c.planId && !plans.some((p) => p.id === c.planId);
+    const subGone =
+      !!c.subjectId &&
+      c.subjectId !== "*" &&
+      !/^T[12]$/.test(c.subjectId) &&
+      !subjects.some((s) => s.id === c.subjectId);
+    return planGone || subGone;
+  });
+  if (deadCodes.length > 0) {
+    out.push({
+      id: "code-dead",
+      level: "warn",
+      count: deadCodes.length,
+      label: "أكواد متاحة لخطط أو كورسات محذوفة",
+      hint: "الطالبُ يُفعّلها ولا يُفتح له شيء — احذفها أو أعِد الخطة",
+      href: "/admin/codes",
+      perm: "codes",
+    });
+  }
+
+  /* اختبارٌ منشورٌ بلا أسئلةٍ ولا رابط */
+  const hollowExams = (db.exams ?? []).filter(
+    (e) => e.status === "منشور" && (e.questions?.length ?? 0) === 0 && !e.url?.trim()
+  );
+  if (hollowExams.length > 0) {
+    out.push({
+      id: "exam-hollow",
+      level: "urgent",
+      count: hollowExams.length,
+      label: "اختبارات منشورة بلا أسئلة",
+      hint: hollowExams.map((e) => e.title).slice(0, 3).join(" · "),
+      href: "/admin/exams",
+      perm: "exams",
+    });
+  }
+
+  /*
+    بثٌّ فات موعدُه وما زال «مجدولاً».
+    مهلةُ ساعتين تحتمل تأخّرَ البداية ولا تُنبّه على درسٍ يجري الآن.
+  */
+  const late = (db.live ?? []).filter((l) => {
+    if (l.status !== "مجدول" || !l.startsAt) return false;
+    const t = Date.parse(l.startsAt);
+    return Number.isFinite(t) && Date.now() - t > 2 * 3600 * 1000;
+  });
+  if (late.length > 0) {
+    out.push({
+      id: "live-late",
+      level: "warn",
+      count: late.length,
+      label: "بثّ مجدول فات موعدُه",
+      hint: `${late.map((l) => l.title).slice(0, 3).join(" · ")} — يبقى في قائمة الطالب منتظَراً`,
+      href: "/admin/live",
+      perm: "live",
+    });
+  }
+
+  /*
+    اشتراكاتٌ توشك أن تنتهي.
+    وهذه ليست عطلاً بل فرصةٌ تفوت: من ذكّرته قبل الانتهاء بأسبوعٍ جدّد،
+    ومن علم بعده انقطع.
+  */
+  const soon = (db.users ?? []).filter((u) => {
+    if (u.role !== "student") return false;
+    return (u.subscriptions ?? []).some((sub) => {
+      if (!sub.expiresAt) return false;
+      const t = Date.parse(sub.expiresAt);
+      if (!Number.isFinite(t)) return false;
+      const days = (t - Date.now()) / 86400000;
+      return days > 0 && days <= 7;
+    });
+  });
+  if (soon.length > 0) {
+    out.push({
+      id: "subs-ending",
+      level: "tip",
+      count: soon.length,
+      label: "اشتراكات تنتهي خلال أسبوع",
+      hint: `${soon.map((u) => u.name).slice(0, 3).join(" · ")} — تذكيرُهم الآن يجدّد اشتراكهم`,
+      href: "/admin/students",
+      perm: "students",
+    });
+  }
+
+  /*
+    طلابٌ صفُّهم يخالف مرحلتَهم.
+    كانت شاشةُ التسجيل تعرض الصفوفَ الستّةَ كلَّها مهما اختار الطالبُ
+    مرحلتَه، فسُجّل من اختار «ثانوية» ثمّ «الأول الإعدادي». وقد صُفّيت
+    الشاشةُ وقُيّد الخادم، لكنّ من سجّل قبل ذلك يبقى بسجلٍّ متناقض: لا
+    تطابقه خطّةٌ مقيَّدةٌ بمرحلته ولا بصفّه، وتقول اللوحةُ «لا يطابقها
+    أحد» ولا يُفهم لماذا. فيُعرض ليُصحَّح من صفحة الطالب.
+  */
+  const mixedStage = (db.users ?? []).filter(
+    (u) => u.role === "student" && !gradeInStage(u.grade, u.stage)
+  );
+  if (mixedStage.length > 0) {
+    out.push({
+      id: "student-stage-mismatch",
+      level: "warn",
+      count: mixedStage.length,
+      label: "طلاب صفُّهم يخالف مرحلتَهم",
+      hint: `${mixedStage.map((u) => `${u.name} (${u.stage} · ${u.grade})`).slice(0, 2).join(" · ")} — لا تطابقهم خطّة`,
+      href: "/admin/students",
+      perm: "students",
     });
   }
 
