@@ -9,6 +9,7 @@ import { artFilter } from "@/lib/art-tint";
 import { depthFilter, depthLit } from "@/lib/art-depth";
 import { AzhariBackdrop } from "@/components/brand/azhari-backdrop";
 import { ToTop } from "@/components/brand/to-top";
+import { CookieConsent } from "@/components/brand/cookie-consent";
 import { findIconFrame, iconFrameClass, iconFrameVars } from "@/lib/icon-frames";
 import { findIconMotion, iconMotionClass } from "@/lib/icon-motion";
 import { findIconCover, iconCoverClass } from "@/lib/icon-covers";
@@ -247,6 +248,12 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             الزرُّ يستقرّ في قاع المستند لا في زاوية الشاشة، فلا يراه أحد.
           */}
           <ToTop />
+          {/*
+            لافتةُ الكوكيز — تحت `<body>` لا داخلَ انتقال الصفحات، للسبب
+            نفسِه الذي أخرج زرَّ العودة: `fixed` تتصرّف تصرّفَ `absolute`
+            تحت سلفٍ عليه `transform`، فتستقرّ اللافتةُ في قاع المستند.
+          */}
+          <CookieConsent />
           <RegisterSW />
         </ContentProvider>
       </body>

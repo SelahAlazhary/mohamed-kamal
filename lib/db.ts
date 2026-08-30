@@ -6,9 +6,10 @@ import {
   defaultCodes, defaultExams, defaultLive, defaultTickets, defaultNotifications,
 } from "./defaults";
 import { seedUsers } from "./seed-admin";
-import { courseActive, lessonActive, planExpiry, planSubjectId, eligibleFor, liveVisible, publicLives } from "./access";
+import { courseActive, lessonActive, planExpiry, planTargets, eligibleFor, liveVisible, publicLives } from "./access";
 import { resolvePlan } from "./plans";
 import { allLessons, courseUnits, findLesson, isSplit, lessonCount } from "./course-units";
+import { parsePick } from "./picks";
 import { dropActivity } from "./activity-store";
 import { firebaseConfigured } from "./firebase";
 import { pushConfigured } from "./push";
@@ -381,15 +382,37 @@ export function redeemCode(userId: string, rawCode: string, subjectId?: string):
     createdAt: code.createdAt,
   };
 
-  const target = planSubjectId(plan);
-  if (!target) return { ok: false, error: "الخطة غير مكتملة — تواصل مع الدعم" };
+  /*
+    الخطّةُ قد تفتح أكثرَ من شيء.
+    كانت تفتح مفتاحاً واحداً فيُكتب اشتراكٌ واحد؛ وخطّةُ «المختارة» تفتح
+    ما أُشّر عليه — كورساتٍ وموادَّ — فيُكتب لكلٍّ اشتراكُه. والكودُ يبقى
+    كوداً واحداً: الطالبُ يُفعّل مرّةً ويُفتح له ما اشتراه كلُّه.
+  */
+  const targets = planTargets(plan);
+  if (targets.length === 0) return { ok: false, error: "الخطة غير مكتملة — تواصل مع الدعم" };
+  const target = targets[0];
 
-  const isTermScope = /^T[12]$/.test(target);
-  if (target !== "*" && !isTermScope) {
-    const subj = db.subjects.find((x) => x.id === target);
+  const isTermScope = (t: string) => /^T[12]$/.test(t);
+
+  /* يُفحص كلُّ مفتاحٍ قبل كتابة شيء — فإمّا أن يمرّ الكودُ كلُّه أو لا يُكتب
+     منه شيء، ولا يبقى اشتراكٌ نصفُه صحيح. */
+  for (const t of targets) {
+    if (t === "*" || isTermScope(t)) continue;
+    const { subjectId: sid, unitId } = parsePick(t);
+    const subj = db.subjects.find((x) => x.id === sid);
     if (!subj) return { ok: false, error: "الكورس غير موجود" };
-    if (subjectId && target !== subjectId) return { ok: false, error: "هذا الكود مخصّص لكورس آخر" };
+    if (unitId && !courseUnits(subj).some((u) => u.id === unitId)) {
+      return { ok: false, error: "المادّة لم تعد موجودة في الكورس" };
+    }
     if (!eligibleFor(subj, user)) return { ok: false, error: "هذا الكورس غير متاح لصفّك/شعبتك" };
+  }
+
+  /*
+    وحصرُ الكود بكورسٍ بعينه يُفحص على المجموعة لا على الأوّل: كودُ خطّةٍ
+    مختارةٍ تشمل كورسَك صالحٌ وإن لم يكن كورسُك أوّلَ ما فيها.
+  */
+  if (subjectId && !targets.some((t) => t === "*" || isTermScope(t) || parsePick(t).subjectId === subjectId)) {
+    return { ok: false, error: "هذا الكود مخصّص لكورس آخر" };
   }
 
   const now = new Date();
@@ -400,18 +423,22 @@ export function redeemCode(userId: string, rawCode: string, subjectId?: string):
 
   user.progress = user.progress ?? {};
   user.subscriptions = user.subscriptions ?? [];
-  user.subscriptions.push({
-    id: `SUB-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    subjectId: target,
-    scope: plan.scope,
-    termNo: plan.termNo,
-    plan: plan.kind === "term" ? "ترم" : "شهر",
-    planId: plan.id,
-    planName: plan.name,
-    activatedAt: now.toISOString(),
-    expiresAt,
+  targets.forEach((t, i) => {
+    user.subscriptions!.push({
+      id: `SUB-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}`,
+      subjectId: t,
+      scope: plan.scope,
+      termNo: plan.termNo,
+      plan: plan.kind === "term" ? "ترم" : "شهر",
+      planId: plan.id,
+      planName: plan.name,
+      activatedAt: now.toISOString(),
+      expiresAt,
+    });
+    /* التقدّمُ يُفتح للكورس لا للمادّة — تقدّمُ الطالب في الكورس واحد. */
+    const sid = parsePick(t).subjectId;
+    if (t !== "*" && !isTermScope(t) && !(sid in user.progress!)) user.progress![sid] = 0;
   });
-  if (target !== "*" && !isTermScope && !(target in user.progress)) user.progress[target] = 0;
 
   code.status = "مستخدم";
   code.student = user.name;
@@ -425,9 +452,13 @@ export function redeemCode(userId: string, rawCode: string, subjectId?: string):
     if (req) req.redeemedAt = now.toISOString();
   }
 
-  // تحديث عدّاد طلاب الكورس
-  if (target !== "*" && !isTermScope) {
-    const subj = db.subjects.find((x) => x.id === target);
+  /* عدّادُ طلاب الكورس — مرّةً لكلّ كورسٍ لا لكلّ مفتاح، وإلّا عُدّ من
+     اشترى ثلاثَ موادَّ من كورسٍ ثلاثةَ طلاب. */
+  const touched = new Set(
+    targets.filter((t) => t !== "*" && !isTermScope(t)).map((t) => parsePick(t).subjectId)
+  );
+  for (const sid of touched) {
+    const subj = db.subjects.find((x) => x.id === sid);
     if (subj) subj.students = (subj.students ?? 0) + 1;
   }
 

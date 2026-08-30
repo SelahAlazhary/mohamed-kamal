@@ -29,6 +29,7 @@ import { Card } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
 import { allLessons } from "@/lib/course-units";
 import type { Lesson, Material, Subject, Unit } from "@/lib/types";
+import { setPref } from "@/lib/consent";
 
 /** تحويل رابط الفيديو إلى صيغة تضمين (YouTube / Vimeo / Bunny Stream / mp4). */
 export function toEmbed(url: string): { kind: "video" | "iframe"; src: string; drive?: boolean } {
@@ -76,7 +77,12 @@ export function useDone(courseId: string, uid?: string) {
     const next = new Set(done);
     next.add(lessonId);
     setDone(next);
-    try { localStorage.setItem(storeKey, JSON.stringify([...next])); } catch { /* تجاهل */ }
+    /*
+      علامةُ المشاهدة تُحفظ في الجهاز بإذن، وتُرسَل نسبتُها للخادم دائماً:
+      التقدّمُ سجلُّ الطالب لا تفضيلٌ يُنسى، فمن منع الحفظَ المحلّيَّ يبقى
+      تقدّمُه محفوظاً في حسابه.
+    */
+    setPref(storeKey, JSON.stringify([...next]));
     const pct = totalInCourse ? Math.round((next.size / totalInCourse) * 100) : 0;
     await fetch("/api/progress", {
       method: "POST",

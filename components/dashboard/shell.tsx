@@ -27,6 +27,7 @@ import { useContent } from "@/components/content/content-provider";
 import { navBadges } from "@/lib/admin-insights";
 import { CommandPalette } from "@/components/dashboard/command-palette";
 import { groupNav, type NavItem } from "@/lib/dashboard-data";
+import { setPref } from "@/lib/consent";
 
 /** مفتاحُ حفظ المجموعات المفتوحة — يبقى بين الزيارات فلا يُعاد الطيُّ كلّ مرّة. */
 const NAV_OPEN_KEY = "mk.adminNav.open";
@@ -134,7 +135,7 @@ export function DashboardShell({
   const toggleGroup = (id: string) => {
     const next = shown.includes(id) ? shown.filter((x) => x !== id) : [...shown, id];
     try {
-      localStorage.setItem(NAV_OPEN_KEY, JSON.stringify(next));
+      setPref(NAV_OPEN_KEY, JSON.stringify(next));
     } catch {
       /* التخزينُ زينةٌ لا شرط — الطيُّ يعمل بدونه في هذه الجلسة */
     }
@@ -335,11 +336,23 @@ export function DashboardShell({
           <button
             type="button"
             onClick={() => window.dispatchEvent(new Event("open-command-palette"))}
-            className="tb-search btn-foil relative hidden w-full max-w-sm flex-1 items-center rounded-full border-0 py-2.5 pr-10 pl-4 text-right text-sm text-muted-foreground outline-none transition hover:text-foreground focus:ring-2 focus:ring-accent/40 sm:flex"
+            className="tb-search btn-foil relative hidden w-full max-w-sm flex-1 items-center gap-2 rounded-full border-0 py-2.5 pe-10 ps-3 text-right text-sm text-muted-foreground outline-none transition hover:text-foreground focus:ring-2 focus:ring-accent/40 sm:flex"
           >
-            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2"><LibIcon slot="search" className="size-4" /></span>
-            بحث سريع…
-            <kbd className="ms-auto hidden rounded border border-border px-1.5 py-0.5 text-[10px] lg:block">Ctrl K</kbd>
+            {/*
+              الأيقونةُ في الطرف المنطقيّ لا في `right` الثابت: الصفحةُ
+              من اليمين لليسار، و`right` يصيبها هنا ويُخطئها في أيّ سياقٍ
+              يُقلب. و`end` تتبع الاتجاه في الحالين.
+            */}
+            <span className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2"><LibIcon slot="search" className="size-4" /></span>
+            {/*
+              النصُّ يُقصّ والمفتاحُ لا ينكسر.
+              كان كلاهما بلا قيد، فيضغط المفتاحُ على النصّ في العرض الضيّق
+              وينكسر «Ctrl K» سطرين داخل إطارٍ ارتفاعُه سطرٌ واحد.
+            */}
+            <span className="min-w-0 flex-1 truncate">بحث سريع…</span>
+            <kbd className="hidden shrink-0 whitespace-nowrap rounded border border-border px-1.5 py-0.5 font-sans text-[10px] leading-none lg:block">
+              Ctrl K
+            </kbd>
           </button>
 
           <div className="tb-actions mr-auto flex items-center gap-2">

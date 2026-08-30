@@ -15,6 +15,12 @@ import { Plus, Trash2, Star, Percent } from "lucide-react";
 import { COURSE_PRICE_KINDS, planPrice } from "@/lib/plans";
 import type { CoursePrice, CoursePriceKind, Subject } from "@/lib/types";
 
+/**
+ * محرّرُ الكورس — غلافٌ رقيق.
+ * يُبقي قاعدةَ «السعر الأساسي يتبع أوّل خيار»: مصدرٌ واحدٌ لا رقمان
+ * يفترقان. والمحرّرُ نفسُه عامٌّ يُستعمل للمادّة أيضاً (`PricesEditor`) —
+ * فلا تُنسخ مئةُ سطرٍ من الواجهة لتفعل الشيءَ نفسَه بحقلٍ آخر.
+ */
 export function CoursePricesEditor({
   subject,
   onChange,
@@ -22,11 +28,27 @@ export function CoursePricesEditor({
   subject: Subject;
   onChange: (patch: Partial<Subject>) => void;
 }) {
-  const list = subject.prices ?? [];
+  return (
+    <PricesEditor
+      value={subject.prices ?? []}
+      fallbackPrice={subject.price ?? 0}
+      onChange={(next) => onChange({ prices: next, price: next[0]?.price ?? subject.price ?? 0 })}
+    />
+  );
+}
 
-  /** السعر الأساسي يتبع أوّل خيار — مصدر واحد لا رقمان يفترقان. */
-  const commit = (next: CoursePrice[]) =>
-    onChange({ prices: next, price: next[0]?.price ?? subject.price ?? 0 });
+export function PricesEditor({
+  value,
+  onChange,
+  fallbackPrice = 0,
+}: {
+  value: CoursePrice[];
+  onChange: (next: CoursePrice[]) => void;
+  /** سعرٌ يُقترح لأوّل خيارٍ يُضاف — سعرُ الكورس الأساسيّ حين يوجد. */
+  fallbackPrice?: number;
+}) {
+  const list = value;
+  const commit = onChange;
 
   const add = () =>
     commit([
@@ -35,7 +57,7 @@ export function CoursePricesEditor({
         id: `CP-${Date.now().toString(36)}`,
         label: list.length === 0 ? "شهري" : "خيار جديد",
         kind: list.length === 0 ? "month" : "term",
-        price: list.length === 0 ? (subject.price ?? 0) : 0,
+        price: list.length === 0 ? fallbackPrice : 0,
       },
     ]);
 
@@ -59,8 +81,9 @@ export function CoursePricesEditor({
         <div className="rounded-2xl border border-dashed border-border p-5 text-center">
           <p className="text-sm font-bold">لا خيارات أسعار بعد</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            الكورس يُباع الآن بسعر واحد ({(subject.price ?? 0).toLocaleString("ar-EG")} ج.م).
-            أضف خيارات ليختار الطالب بين الشهري والترم والحصّة.
+            {fallbackPrice > 0
+              ? `يُباع الآن بسعرٍ واحد (${fallbackPrice.toLocaleString("ar-EG")} ج.م). أضف خيارات ليختار الطالب بين الشهري والترم والحصّة.`
+              : "لا يُباع وحدَه بعد — أضف خيار سعرٍ ليظهر للطالب زرُّ شرائه."}
           </p>
         </div>
       )}

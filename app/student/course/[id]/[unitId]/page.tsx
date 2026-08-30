@@ -20,7 +20,7 @@ import { PageHeader, Card } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
 import { CaptureGuard } from "@/components/student/capture-guard";
 import { UnitView } from "@/components/student/unit-view";
-import { subjectActive, subscriptionFor, daysLeft } from "@/lib/access";
+import { subscriptionFor, daysLeft, unitActive, unitSubscription } from "@/lib/access";
 import { courseUnits } from "@/lib/course-units";
 
 export default function UnitPage({ params }: { params: Promise<{ id: string; unitId: string }> }) {
@@ -28,7 +28,6 @@ export default function UnitPage({ params }: { params: Promise<{ id: string; uni
   const { db, session, content } = useContent();
   const me = db?.users.find((u) => u.id === session?.uid);
   const subject = db?.subjects.find((s) => s.id === id);
-  const owned = subjectActive(me, subject);
   const fem = me?.gender === "female";
 
   const units = subject ? courseUnits(subject) : [];
@@ -36,25 +35,43 @@ export default function UnitPage({ params }: { params: Promise<{ id: string; uni
   const unit = units.find((u) => u.id === wanted);
   const order = units.findIndex((u) => u.id === wanted);
 
-  const sub = subscriptionFor(me, id);
-  const left = daysLeft(sub?.expiresAt);
   const back = `/student/course/${id}`;
 
   if (!subject) return <NotFound msg="الكورس غير موجود." href="/student/subjects" label="كل الكورسات" />;
 
-  if (!owned) {
+  /* مادّةٌ حُذفت أو رابطٌ قديم — يُردّ إلى موادّ الكورس لا إلى شاشةِ خطأ */
+  if (!unit) return <NotFound msg="هذه المادّة لم تعد موجودة في الكورس." href={back} label="موادّ الكورس" />;
+
+  /*
+    الصلاحيةُ على المادّة لا على الكورس وحدَه.
+    من اشترى هذه المادّةَ يدخلها وإن لم يملك الكورسَ كلَّه؛ ومن لا يملكها
+    يدخل إن كان فيها درسٌ مجّانيٌّ ليُجرّبها، ويُردّ إن لم يكن.
+
+    و`unitActive` تشمل صلاحيةَ الكورس، فلا تُفحص مرّتين.
+  */
+  const mine = unitActive(me, id, unit.id, Date.now(), subject.term);
+  const hasFree = (unit.lessons ?? []).some((l) => l.isFree);
+  if (!mine && !hasFree) {
     return (
       <Card className="mx-auto max-w-md text-center">
         <EmptyLock className="mx-auto mb-2 text-primary" width={176} />
-        <h2 className="font-display text-xl font-extrabold">هذا الكورس غير مُفعّل</h2>
-        <p className="mt-2 text-sm text-muted-foreground">{fem ? "فعّلي" : "فعّل"} الكورس بكود التفعيل لمشاهدة الدروس.</p>
-        <Link href="/student/subjects" className="mt-5 inline-flex rounded-full btn-glow px-6 py-2.5 text-sm font-bold text-white">{fem ? "اذهبي للتفعيل" : "اذهب للتفعيل"}</Link>
+        <h2 className="font-display text-xl font-extrabold">«{unit.title}» غير مُفعّلة</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {fem ? "اشتري" : "اشترِ"} هذه المادّة وحدَها، أو {fem ? "فعّلي" : "فعّل"} الكورس كلَّه.
+        </p>
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+          <Link href={`/student/pay?subject=${id}&unit=${encodeURIComponent(unit.id)}`}
+            className="inline-flex rounded-full btn-glow px-6 py-2.5 text-sm font-bold text-white">خيارات شراء المادّة</Link>
+          <Link href={back}
+            className="inline-flex rounded-full border border-border px-5 py-2.5 text-sm font-bold transition hover:border-primary hover:text-primary">موادّ الكورس</Link>
+        </div>
       </Card>
     );
   }
 
-  /* مادّةٌ حُذفت أو رابطٌ قديم — يُردّ إلى موادّ الكورس لا إلى شاشةِ خطأ */
-  if (!unit) return <NotFound msg="هذه المادّة لم تعد موجودة في الكورس." href={back} label="موادّ الكورس" />;
+  /* الشارةُ تصف ما يملكه في هذه المادّة — اشتراكَها هي أو اشتراكَ كورسها */
+  const sub = unitSubscription(me, id, unit.id) ?? subscriptionFor(me, id);
+  const left = daysLeft(sub?.expiresAt);
 
   return (
     <>
@@ -76,7 +93,7 @@ export default function UnitPage({ params }: { params: Promise<{ id: string; uni
         }
       />
 
-      <UnitView course={subject} unit={unit} owned={owned} backHref={back} backLabel="موادّ الكورس" />
+      <UnitView course={subject} unit={unit} owned={mine} backHref={back} backLabel="موادّ الكورس" />
     </>
   );
 }

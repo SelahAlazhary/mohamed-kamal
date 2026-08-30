@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { IconInstall, IconShare, IconPlus, IconClose, IconCheckCircle } from "@/components/brand/icons";
 import { CornerKnot } from "@/components/brand/pattern";
+import { setPref } from "@/lib/consent";
 
 type InstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -65,7 +66,7 @@ export function InstallApp({ className = "" }: { className?: string }) {
 
   const dismiss = () => {
     setDismissed(true);
-    try { localStorage.setItem(DISMISS_KEY, "1"); } catch { /* تجاهل */ }
+    try { setPref(DISMISS_KEY, "1"); } catch { /* تجاهل */ }
   };
 
   // لا نعرض شيئاً: مثبّت بالفعل، أو مُستبعَد، أو متصفّح لا يدعم التثبيت

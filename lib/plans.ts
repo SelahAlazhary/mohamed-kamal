@@ -1,4 +1,5 @@
-import type { SitePlan, CoursePrice, CoursePriceKind, TermNo } from "./types";
+import type { SitePlan, CoursePrice, CoursePriceKind, TermNo, Unit, PlanDiscount } from "./types";
+import { pickKey, parsePick } from "./picks";
 
 /**
  * سعر الخطة بعد الخصم — مصدر واحد للحساب يستخدمه الموقع والبوابة واللوحة.
@@ -120,7 +121,16 @@ export function planWaLink(plan: { whatsapp?: string } | null | undefined, fallb
   return `https://wa.me/${num}?text=${encodeURIComponent(text)}`;
 }
 
-export function planPrice(plan: SitePlan, now = Date.now()): PricedPlan {
+/*
+  والمعاملُ سعرٌ وخصمٌ لا خطّةٌ كاملة.
+  الدالّةُ لا تقرأ من الخطّة إلّا هذين، واشتراطُ `SitePlan` كاملةً يمنع
+  استعمالَها على خيار سعرٍ (`CoursePrice`) وهو الشيءُ نفسُه في الحساب —
+  فيُنسخ الحسابُ في موضعٍ ثانٍ ويفترق الرقمان.
+*/
+export function planPrice(
+  plan: { price?: number; discount?: PlanDiscount },
+  now = Date.now()
+): PricedPlan {
   const original = Math.max(0, plan.price ?? 0);
   const d = plan.discount;
   const notExpired = !d?.until || new Date(d.until).getTime() > now;
@@ -213,18 +223,72 @@ export function coursePricePlans(subject: {
     }));
 }
 
+/**
+ * خططٌ ضمنيّةٌ من أسعار الموادّ.
+ * ------------------------------------------------------------------
+ * حين يبيع الأستاذُ الموادَّ مفرَّقةً، كلُّ خيارِ سعرٍ في مادّةٍ خطّةٌ نطاقُها
+ * «مختارة» ومفتاحُها تلك المادّةُ وحدَها. فلا تُنشَأ خططٌ محفوظةٌ لكلّ
+ * مادّةٍ في القاعدة — والمنهجُ عشراتُ الموادّ، فتُغرَق شاشةُ الخطط بما لا
+ * يُقرأ.
+ *
+ * والمعرّفُ `UP:` ليُميَّز عن `CP:` (سعرِ كورس) وعن خطّةٍ محفوظة، فيُحلّ
+ * عند التفعيل من مصدره لا من `db.plans`.
+ */
+export function unitPricePlans(subject: {
+  id: string; name: string; term?: TermNo; units?: Unit[];
+}): SitePlan[] {
+  const out: SitePlan[] = [];
+  (subject.units ?? []).forEach((u) => {
+    (u.prices ?? [])
+      .filter((p) => (p.label ?? "").trim() && (p.price ?? 0) >= 0)
+      .forEach((p, i) => {
+        out.push({
+          id: `UP:${subject.id}:${u.id}:${p.id}`,
+          name: `${u.title} — ${p.label.trim()}`,
+          kind: p.kind === "term" ? "term"
+            : p.kind === "once" ? "lifetime"
+              : p.kind === "custom" ? "custom" : "month",
+          scope: "picked",
+          picks: [pickKey(subject.id, u.id)],
+          termNo: subject.term,
+          price: Math.max(0, p.price ?? 0),
+          durationDays: p.durationDays ?? KIND_DAYS[p.kind] ?? null,
+          endsAt: null,
+          badge: p.badge,
+          highlight: p.highlight,
+          desc: p.desc,
+          discount: p.discount,
+          visible: true,
+          order: 100 + i,
+          createdAt: "",
+        });
+      });
+  });
+  return out;
+}
+
 /** خطة بمعرّفها — من الخطط المحفوظة أو من خيارات أسعار الكورسات. */
 export function resolvePlan(
   id: string,
   plans: SitePlan[],
-  subjects: { id: string; name: string; term?: TermNo; prices?: CoursePrice[] }[]
+  subjects: { id: string; name: string; term?: TermNo; prices?: CoursePrice[]; units?: Unit[] }[]
 ): SitePlan | undefined {
   const direct = plans.find((p) => p.id === id);
   if (direct) return direct;
-  const m = id.match(/^CP:([^:]+):/);
-  if (!m) return undefined;
-  const subject = subjects.find((s) => s.id === m[1]);
-  return subject ? coursePricePlans(subject).find((p) => p.id === id) : undefined;
+
+  /* `CP:` سعرُ كورس · `UP:` سعرُ مادّة — كلاهما خطّةٌ ضمنيّةٌ لا تُحفظ في
+     القاعدة، فتُبنى من مصدرها عند الحاجة. */
+  const cp = id.match(/^CP:([^:]+):/);
+  if (cp) {
+    const subject = subjects.find((s) => s.id === cp[1]);
+    return subject ? coursePricePlans(subject).find((p) => p.id === id) : undefined;
+  }
+  const up = id.match(/^UP:([^:]+):/);
+  if (up) {
+    const subject = subjects.find((s) => s.id === up[1]);
+    return subject ? unitPricePlans(subject).find((p) => p.id === id) : undefined;
+  }
+  return undefined;
 }
 
 /**
@@ -236,11 +300,11 @@ export function resolvePlan(
  * مصدر واحد يستخدمه صندوق الشراء وصفحة الدفع، فلا تفترق القائمتان.
  */
 export function plansFor(
-  subject: { id: string; name: string; term?: TermNo; prices?: CoursePrice[] } | undefined,
+  subject: { id: string; name: string; term?: TermNo; prices?: CoursePrice[]; units?: Unit[] } | undefined,
   plans: SitePlan[],
   student: StudentProfile | null | undefined
 ): SitePlan[] {
-  const own = subject ? coursePricePlans(subject) : [];
+  const own = subject ? [...coursePricePlans(subject), ...unitPricePlans(subject)] : [];
   const site = plans
     .filter((p) => {
       /* الخطة المخفيّة مخفيّة عن الطالب أيضاً — لا عن الموقع وحده.
@@ -252,6 +316,14 @@ export function plansFor(
          قصرُها على «كل المواد» والفصول كان يُفرغ الصفحة تماماً في منصّة
          خططُها كلُّها مرتبطة بكورسات. */
       if (!subject) return true;
+      /*
+        والخطّةُ المختارةُ تظهر لكلّ كورسٍ تمسّه — كورساً كاملاً كان أو
+        مادّةً منه. فمن فتح كورساً تشمله خطّةُ حزمةٍ رآها فيه، ولا يُطالَب
+        بأن يبحث عنها في كورسٍ آخر من الحزمة نفسِها.
+      */
+      if (p.scope === "picked") {
+        return (p.picks ?? []).some((k) => parsePick(k).subjectId === subject.id);
+      }
       return (
         p.scope === "all" ||
         (p.scope === "term" && p.termNo === (subject.term ?? 1)) ||

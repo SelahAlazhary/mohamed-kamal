@@ -1,4 +1,5 @@
 import type { PublicUser, User, Subscription, SitePlan, Live, TermNo } from "./types";
+import { pickKey, parsePick } from "./picks";
 
 type U = Pick<User | PublicUser, "subscriptions" | "enrolled">;
 
@@ -41,6 +42,51 @@ export function subjectActive(
 ): boolean {
   if (!subject) return false;
   return courseActive(u, subject.id, now, subject.term);
+}
+
+
+/**
+ * صلاحيةُ مادّةٍ بعينها.
+ * ------------------------------------------------------------------
+ * تُفتح بأحد ثلاثة: صلاحيةٌ على الكورس كلِّه (فهي جزءٌ منه)، أو اشتراكٌ
+ * مفتاحُه مفتاحُ هذه المادّة، أو درسٌ مجانيٌّ فيها — وذاك يُفحص عند الدرس
+ * لا هنا.
+ *
+ * **والكورسُ يفتح موادَّه، والمادّةُ لا تفتح كورسَها.** الاتّجاهُ واحد،
+ * وعكسُه يجعل شراءَ مادّةٍ واحدةٍ يفتح المنهجَ كلَّه.
+ */
+export function unitActive(
+  u: U | null | undefined,
+  subjectId: string,
+  unitId: string,
+  now = Date.now(),
+  subjectTerm?: TermNo
+): boolean {
+  if (courseActive(u, subjectId, now, subjectTerm)) return true;
+  return activeSubs(u, now).some((s) => s.subjectId === pickKey(subjectId, unitId));
+}
+
+/** اشتراكُ مادّةٍ بعينها إن وُجد — للعرض («اشتراك المادّة» ومدّتُه). */
+export function unitSubscription(
+  u: U | null | undefined,
+  subjectId: string,
+  unitId: string,
+  now = Date.now()
+): Subscription | null {
+  return activeSubs(u, now).find((s) => s.subjectId === pickKey(subjectId, unitId)) ?? null;
+}
+
+/**
+ * هل يملك الطالبُ شيئاً من هذا الكورس — كورساً كان أو مادّةً منه؟
+ * تُستعمل في بطاقة الكورس: من اشترى مادّةً منه ليس «غيرَ مالك» تماماً،
+ * فلا يُساق إلى بوّابة الدفع وكأنّه لم يشترِ شيئاً.
+ */
+export function ownsAnyUnit(
+  u: U | null | undefined,
+  subjectId: string,
+  now = Date.now()
+): boolean {
+  return activeSubs(u, now).some((s) => parsePick(s.subjectId).subjectId === subjectId);
 }
 
 /** صلاحية درس = صلاحية الكورس أو درس تجريبي مجاني. */
@@ -107,9 +153,21 @@ export function planExpiry(plan: SitePlan, termEnd?: string, from: Date = new Da
 
 /** نطاق الخطة كـ subjectId للاشتراك. */
 export function planSubjectId(plan: SitePlan): string {
-  if (plan.scope === "all") return "*";
-  if (plan.scope === "term") return plan.termNo ? `T${plan.termNo}` : "";
-  return plan.subjectId ?? "";
+  return planTargets(plan)[0] ?? "";
+}
+
+/**
+ * كلُّ ما تفتحه الخطّة — مفتاحاً مفتاحاً.
+ * ------------------------------------------------------------------
+ * كانت الخطّةُ تفتح مفتاحاً واحداً، فكفى `planSubjectId` نصّاً واحداً.
+ * وخطّةُ «المختارة» تفتح جملةً منها، فلا يكفي. وهذه هي المرجعُ الآن،
+ * و`planSubjectId` تُبقي أوّلَها لمن يريد وصفاً مختصراً — كشارةِ الكود.
+ */
+export function planTargets(plan: SitePlan): string[] {
+  if (plan.scope === "all") return ["*"];
+  if (plan.scope === "term") return plan.termNo ? [`T${plan.termNo}`] : [];
+  if (plan.scope === "picked") return (plan.picks ?? []).filter(Boolean);
+  return plan.subjectId ? [plan.subjectId] : [];
 }
 
 /** اسم الفصل الدراسي للعرض. */

@@ -26,7 +26,9 @@ import { PageHeader, Card } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
 import { CaptureGuard } from "@/components/student/capture-guard";
 import { UnitView, useDone } from "@/components/student/unit-view";
-import { subjectActive, subscriptionFor, daysLeft } from "@/lib/access";
+import { subjectActive, subscriptionFor, daysLeft, unitActive, ownsAnyUnit } from "@/lib/access";
+import { IconLock, IconCart } from "@/components/brand/icons";
+import { planPrice } from "@/lib/plans";
 import { allLessons, courseUnits } from "@/lib/course-units";
 
 export default function CoursePage({ params }: { params: Promise<{ id: string }> }) {
@@ -46,13 +48,20 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
 
   if (!subject) return <NotFound msg="الكورس غير موجود." />;
 
-  if (!owned) {
+  /*
+    من لا يملك الكورسَ يُردّ — إلّا أن يبيع الكورسُ موادَّه مفرَّقة.
+    عندئذٍ تُفتح له الموادُّ ليرى ما فيها ويشتري ما يحتاج، وكلُّ مادّةٍ
+    مقفلةٌ حتّى تُشترى. وردُّه هنا يجعل البيعَ المفرَّقَ لا معنى له: لا
+    يرى ما يشتري.
+  */
+  const perUnit = (subject.entryMode ?? "gateway") === "materials";
+  if (!owned && !perUnit && !ownsAnyUnit(me, id)) {
     return (
       <Card className="mx-auto max-w-md text-center">
         <EmptyLock className="mx-auto mb-2 text-primary" width={176} />
         <h2 className="font-display text-xl font-extrabold">هذا الكورس غير مُفعّل</h2>
         <p className="mt-2 text-sm text-muted-foreground">{fem ? "فعّلي" : "فعّل"} الكورس بكود التفعيل لمشاهدة الدروس.</p>
-        <Link href="/student/subjects" className="mt-5 inline-flex rounded-full btn-glow px-6 py-2.5 text-sm font-bold text-white">{fem ? "اذهبي للتفعيل" : "اذهب للتفعيل"}</Link>
+        <Link href={`/student/pay?subject=${subject.id}`} className="mt-5 inline-flex rounded-full btn-glow px-6 py-2.5 text-sm font-bold text-white">خيارات الاشتراك</Link>
       </Card>
     );
   }
@@ -107,6 +116,17 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
           const doneHere = inUnit.filter((l) => done.has(l.id)).length;
           const pct = inUnit.length ? Math.round((doneHere / inUnit.length) * 100) : 0;
           const freeCount = inUnit.filter((l) => l.isFree).length;
+          /*
+            المادّةُ مفتوحةٌ باشتراك الكورس أو باشتراكها هي.
+            و«المقفلة» تُعرض ولا تُخفى: الطالبُ يرى ما في المنهج ويعرف ما
+            يشتري — وإخفاؤها يجعله يشتري ما لا يعرف.
+          */
+          const mine = unitActive(me, id, u.id, Date.now(), subject.term);
+          const priced = (u.prices ?? []).filter((p) => (p.label ?? "").trim());
+          const cheapest = priced.length
+            ? priced.reduce((a, b) => (planPrice({ price: a.price, discount: a.discount }).price
+                <= planPrice({ price: b.price, discount: b.discount }).price ? a : b))
+            : null;
 
           return (
             <motion.div
@@ -115,7 +135,19 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             >
-              <Link href={`/student/course/${id}/${encodeURIComponent(u.id)}`} className="block h-full">
+              {/*
+                المقفلةُ التي لا درسَ مجّانيَّ فيها تذهب إلى شرائها مباشرةً:
+                فتحُها على مسارٍ كلُّه أقفالٌ ضغطةٌ ضائعة. وما فيه درسٌ
+                مجّانيٌّ يُفتح ليُجرَّب قبل الشراء.
+              */}
+              <Link
+                href={
+                  mine || freeCount > 0
+                    ? `/student/course/${id}/${encodeURIComponent(u.id)}`
+                    : `/student/pay?subject=${id}&unit=${encodeURIComponent(u.id)}`
+                }
+                className="block h-full"
+              >
                 <Card className="group flex h-full flex-col !p-4 transition hover:border-primary/40">
                   <div className="flex items-start gap-3">
                     {/*
@@ -146,7 +178,26 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
                     )}
                   </div>
 
-                  {/* شريطُ التقدّم — يقيس المادّةَ وحدَها لا الكورسَ كلَّه */}
+                  {/*
+                    المقفلةُ تعرض سعرَها لا تقدّمَها: التقدّمُ صفرٌ دائماً في
+                    مادّةٍ لم تُشترَ، وشريطٌ فارغٌ لا يقول شيئاً. والسعرُ يقول
+                    ما يلزم لفتحها.
+                  */}
+                  {!mine ? (
+                    <div className="mt-auto flex items-center gap-2 pt-4">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-[11px] font-bold text-muted-foreground">
+                        <IconLock className="size-3" /> مقفلة
+                      </span>
+                      {cheapest ? (
+                        <span className="ms-auto inline-flex items-center gap-1.5 rounded-full btn-glow px-3 py-1.5 text-[11px] font-bold text-white">
+                          <IconCart className="size-3" />
+                          {planPrice({ price: cheapest.price, discount: cheapest.discount }).price.toLocaleString("ar-EG")} ج.م
+                        </span>
+                      ) : (
+                        <span className="ms-auto text-[10px] text-muted-foreground">تُفتح باشتراك الكورس</span>
+                      )}
+                    </div>
+                  ) : (
                   <div className="mt-auto pt-4">
                     <div className="mb-1 flex items-center justify-between text-[11px] font-bold">
                       <span className="text-muted-foreground">التقدّم</span>
@@ -159,6 +210,7 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
                       />
                     </div>
                   </div>
+                  )}
                 </Card>
               </Link>
             </motion.div>

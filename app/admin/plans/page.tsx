@@ -12,6 +12,9 @@ import { Button } from "@/components/ui/primitives";
 import { TRACKS, STAGES, EDU_SYSTEMS, SCIENCE_BRANCHES, TRACK_STAGE, BRANCH_TRACK, AZHAR } from "@/lib/data";
 import { useContent } from "@/components/content/content-provider";
 import { planPrice, audienceLabel, planForStudent, audienceBlindSpots } from "@/lib/plans";
+import { picksLabel, isUnitKey, parsePick } from "@/lib/picks";
+import { courseUnits } from "@/lib/course-units";
+import { PicksEditor } from "@/components/admin/picks-editor";
 import { TERMS } from "@/lib/signup-rules";
 import type { SitePlan, PlanKind, PlanScope, PlanDiscount } from "@/lib/types";
 import { mediaSrc } from "@/lib/media";
@@ -26,7 +29,7 @@ const KIND_LABEL: Record<PlanKind, string> = {
 };
 
 type Form = {
-  name: string; kind: PlanKind; scope: PlanScope; subjectId: string;
+  name: string; kind: PlanKind; scope: PlanScope; subjectId: string; picks: string[];
   price: number; durationDays: number; endsAt: string; badge: string;
   highlight: boolean; desc: string; perks: string; visible: boolean; order: number;
   color: string; cta: string; termNo: 1 | 2; whatsapp: string; track: string;
@@ -38,7 +41,7 @@ type Form = {
 };
 
 const EMPTY: Form = {
-  name: "", kind: "term", scope: "all", subjectId: "", price: 0, durationDays: 0,
+  name: "", kind: "term", scope: "all", subjectId: "", picks: [], price: 0, durationDays: 0,
   endsAt: "", badge: "", highlight: false, desc: "", perks: "", visible: true, order: 0,
   color: "", cta: "", termNo: 1, whatsapp: "", track: "",
   image: "", imageSize: 56, imageCut: false,
@@ -81,7 +84,7 @@ export default function PlansPage() {
   const startEdit = (p: SitePlan) => {
     setEditing(p.id);
     setF({
-      name: p.name, kind: p.kind, scope: p.scope, subjectId: p.subjectId ?? "",
+      name: p.name, kind: p.kind, scope: p.scope, subjectId: p.subjectId ?? "", picks: p.picks ?? [],
       price: p.price, durationDays: p.durationDays ?? 0, endsAt: (p.endsAt ?? "").slice(0, 10),
       badge: p.badge ?? "", highlight: Boolean(p.highlight), desc: p.desc ?? "",
       perks: (p.perks ?? []).join("\n"), visible: p.visible, order: p.order ?? 0,
@@ -100,15 +103,48 @@ export default function PlansPage() {
     setOpen(true);
   };
 
+  /*
+    مصدرُ السعر واحد.
+    كان الأستاذُ يختار كورساً ثمّ يكتب له سعراً في الخطّة — فيصير للكورس
+    سعران: المكتوبُ في بطاقته والمكتوبُ في خطّته، ولا يُعرف أيُّهما يُحصَّل
+    ولا أيُّهما يُعدَّل إن تغيّر. وهو ما لا يُحتمل في المال.
+
+    فحيث كان للخطّة كورسٌ بعينه أو مادّةٌ بعينها، تُعرض أسعارُه المسجّلةُ
+    ويُختار منها — لا يُكتب رقمٌ ثانٍ. وتعديلُ السعر موضعُه الكورس، فيتبعه
+    كلُّ ما يُباع به.
+  */
+  const priceSource = (() => {
+    if (f.scope === "subject" && f.subjectId) {
+      const s = subjects.find((x) => x.id === f.subjectId);
+      if (!s) return null;
+      const list = (s.prices ?? []).filter((p) => (p.label ?? "").trim());
+      if (list.length) return { where: s.name, list: list.map((p) => ({ label: p.label, price: p.price })) };
+      if ((s.price ?? 0) > 0) return { where: s.name, list: [{ label: "السعر الأساسي", price: s.price }] };
+      return { where: s.name, list: [] };
+    }
+    if (f.scope === "picked" && f.picks.length === 1 && isUnitKey(f.picks[0])) {
+      const { subjectId, unitId } = parsePick(f.picks[0]);
+      const s = subjects.find((x) => x.id === subjectId);
+      const u = s ? courseUnits(s).find((x) => x.id === unitId) : undefined;
+      if (!s || !u) return null;
+      const list = (u.prices ?? []).filter((p) => (p.label ?? "").trim());
+      return { where: `${s.name} — ${u.title}`, list: list.map((p) => ({ label: p.label, price: p.price })) };
+    }
+    return null;
+  })();
+
   const commit = () => {
     if (!f.name.trim()) return;
     if (f.scope === "subject" && !f.subjectId) return;
+    /* خطّةٌ مختارةٌ بلا اختيارٍ تفتح لا شيء — فلا تُحفظ صامتة. */
+    if (f.scope === "picked" && f.picks.length === 0) return;
     const base: SitePlan = {
       id: editing ?? `PLAN-${Date.now()}`,
       name: f.name.trim(),
       kind: f.kind,
       scope: f.scope,
       subjectId: f.scope === "subject" ? f.subjectId : undefined,
+      picks: f.scope === "picked" ? f.picks : undefined,
       termNo: f.scope === "term" ? f.termNo : undefined,
       price: Number(f.price) || 0,
       /* الدائم بلا مدّة ولا تاريخ — وجودُهما يوهم بانتهاءٍ لا يقع. */
@@ -216,6 +252,7 @@ export default function PlansPage() {
                 <option value="term2">الفصل الدراسي الثاني كلّه</option>
                 <option value="all">الفصلان معاً — كل المواد</option>
                 <option value="subject">كورس محدّد</option>
+                <option value="picked">موادّ مختارة — تؤشّر على ما تفتحه</option>
               </select>
               {/*
                 أين تظهر هذه الخطة؟ سؤالٌ لا يجيب عنه اسمُ النطاق وحده،
@@ -226,9 +263,13 @@ export default function PlansPage() {
                   ? "تفتح كل الكورسات في الفصلين معاً."
                   : f.scope === "term"
                     ? `تفتح كورسات ${f.termNo === 2 ? "الفصل الثاني" : "الفصل الأول"} كلَّها — وتظهر داخلها وحدها.`
-                    : f.subjectId
-                      ? `تظهر داخل «${subjects.find((x) => x.id === f.subjectId)?.name ?? "الكورس المحدّد"}» وحده — لا في كورس آخر.`
-                      : "اختر الكورس أوّلاً — بلا كورس لن تظهر لأحد."}
+                    : f.scope === "picked"
+                      ? f.picks.length
+                        ? `تفتح ${picksLabel(f.picks, subjects)} — وتظهر داخل كل كورسٍ تمسّه.`
+                        : "أشّر على ما تفتحه في الشجرة أدناه — بلا اختيارٍ لن تُحفظ."
+                      : f.subjectId
+                        ? `تظهر داخل «${subjects.find((x) => x.id === f.subjectId)?.name ?? "الكورس المحدّد"}» وحده — لا في كورس آخر.`
+                        : "اختر الكورس أوّلاً — بلا كورس لن تظهر لأحد."}
               </span>
             </label>
             {false && (
@@ -239,17 +280,60 @@ export default function PlansPage() {
                 </select>
               </label>
             )}
+            {f.scope === "picked" && (
+              <div className="sm:col-span-2">
+                <span className="lbl">الصلاحيات — أشّر على ما تفتحه</span>
+                <PicksEditor subjects={subjects} value={f.picks} onChange={(picks) => set({ picks })} />
+              </div>
+            )}
             {f.scope === "subject" && (
               <label><span className="lbl">الكورس</span>
-                <select className="inp" value={f.subjectId} onChange={(e) => set({ subjectId: e.target.value })}>
+                <select
+                  className="inp"
+                  value={f.subjectId}
+                  onChange={(e) => {
+                    /* السعرُ يتبع الكورسَ فور اختياره — فلا يبقى رقمٌ من
+                       كورسٍ سابق يُحفظ سهواً. */
+                    const s = subjects.find((x) => x.id === e.target.value);
+                    const first = (s?.prices ?? []).find((p) => (p.label ?? "").trim())?.price ?? s?.price ?? 0;
+                    set({ subjectId: e.target.value, price: Number(first) || 0 });
+                  }}
+                >
                   <option value="">— اختر الكورس —</option>
                   {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               </label>
             )}
-            <label><span className="lbl">السعر (ج.م)</span>
-              <input type="number" className="inp" value={f.price} onChange={(e) => set({ price: Number(e.target.value) })} />
-            </label>
+            {priceSource && priceSource.list.length > 0 ? (
+              <label>
+                <span className="lbl">السعر (ج.م) — من المسجَّل في «{priceSource.where}»</span>
+                <select
+                  className="inp"
+                  value={String(f.price)}
+                  onChange={(e) => set({ price: Number(e.target.value) || 0 })}
+                >
+                  {priceSource.list.map((p, i) => (
+                    <option key={`${p.label}-${i}`} value={String(p.price)}>
+                      {p.label} — {(p.price ?? 0).toLocaleString("ar-EG")} ج.م
+                    </option>
+                  ))}
+                </select>
+                <span className="mt-1 block text-[10px] leading-relaxed text-muted-foreground">
+                  السعرُ مأخوذٌ من الكورس نفسِه — سعران لكورسٍ واحدٍ لا يُعرف أيُّهما يُحصَّل.
+                  ولتغييره: افتح الكورس وعدّل خيارات سعره، فيتبعه كلُّ ما يُباع به.
+                </span>
+              </label>
+            ) : (
+              <label>
+                <span className="lbl">السعر (ج.م)</span>
+                <input type="number" className="inp" value={f.price} onChange={(e) => set({ price: Number(e.target.value) })} />
+                {priceSource && (
+                  <span className="mt-1 block text-[10px] leading-relaxed text-amber-600 dark:text-amber-400">
+                    لا سعرَ مسجَّلٌ في «{priceSource.where}» بعد — اكتبه هنا، والأولى تسجيلُه في الكورس ليكون مصدراً واحداً.
+                  </span>
+                )}
+              </label>
+            )}
             {f.kind === "term" ? (
               <label><span className="lbl">تاريخ انتهاء الترم (فارغ = تاريخ الترم العام)</span>
                 <input type="date" dir="ltr" className="inp text-right" value={f.endsAt} onChange={(e) => set({ endsAt: e.target.value })} />
@@ -608,6 +692,7 @@ export default function PlansPage() {
                     <p className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
                       {p.scope === "subject" ? <BookOpen className="size-3.5" /> : <Layers className="size-3.5" />}
                       {p.scope === "all" ? "كل المواد"
+                        : p.scope === "picked" ? picksLabel(p.picks, subjects)
                         : p.scope === "term" ? `كل مواد ${p.termNo === 2 ? "الفصل الثاني" : "الفصل الأول"}`
                           : subjects.find((s) => s.id === p.subjectId)?.name ?? "كورس محذوف"}
                     </p>

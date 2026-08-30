@@ -15,6 +15,7 @@ import {
 import type { PublicDB, SiteContent, Theme, Layout, Preset } from "@/lib/types";
 import { defaultContent } from "@/lib/defaults";
 import { brandVars } from "@/lib/brand-theme";
+import { setPref } from "@/lib/consent";
 
 /** كلُّ ما قد تكتبه الهوية — يُمسح ما لم يُكتب فلا يبقى أثرُ ثيمٍ سابق. */
 const BRAND_KEYS = [
@@ -191,7 +192,7 @@ export function ContentProvider({
     setLayoutOverride((prev) => {
       const current = prev ?? content.theme.layout;
       const next: Layout = current === "dark" ? "light" : "dark";
-      try { localStorage.setItem("emz_view_layout", next); } catch { /* تجاهل */ }
+      try { setPref("emz_view_layout", next); } catch { /* تجاهل */ }
       return next;
     });
   }, [content.theme.layout]);

@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   ArrowRight, Plus, Trash2, PlayCircle, Gift, FileText, Upload, ImageIcon,
-  ListChecks, ChevronDown, Check, Link2, X, Loader2, Video, Palette,
+  ListChecks, ChevronDown, Check, Link2, X, Loader2, Video, Palette, Wallet,
 } from "lucide-react";
 import { Collapse } from "@/components/dashboard/collapse";
 import { courseUnits, LEGACY_UNIT_ID } from "@/lib/course-units";
@@ -15,7 +15,7 @@ import { useContent } from "@/components/content/content-provider";
 import { CourseArt, COVER_PATTERNS } from "@/components/brand/course-art";
 import { CoverTextEditor } from "@/components/admin/cover-text-editor";
 import { CoverStickersEditor } from "@/components/admin/cover-stickers-editor";
-import { CoursePricesEditor } from "@/components/admin/course-prices-editor";
+import { CoursePricesEditor, PricesEditor } from "@/components/admin/course-prices-editor";
 import type { Lesson, Material, Subject, Quiz, QuizQuestion, ImageFit, CoverPattern, CoverText, CoverSticker, Unit } from "@/lib/types";
 import { mediaSrc } from "@/lib/media";
 import { Fold } from "@/components/dashboard/fold";
@@ -412,6 +412,46 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
       </Fold>
 
       {/* أسعار الكورس */}
+      {/*
+        ما يحدث حين يضغط طالبٌ لا يملك الكورس.
+        كان واحداً لا خيارَ فيه: يُساق إلى بوّابة الدفع فوراً. وهو يصلح
+        لكورسٍ يُباع كتلةً واحدة، ولا يصلح لمنهجٍ طويلٍ يريد الطالبُ منه
+        باباً أو بابين — فيُساق إلى دفع المنهج كلِّه أو ينصرف.
+      */}
+      <Card className="mb-6">
+        <h3 className="font-display font-extrabold">عند الضغط على الكورس</h3>
+        <p className="mb-4 text-xs text-muted-foreground">
+          ماذا يرى طالبٌ لا يملك هذا الكورس حين يضغط عليه؟
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {([
+            { id: "gateway", title: "بوّابة الدفع مباشرة", hint: "الكورسُ يُباع كتلةً واحدة — يُساق إلى خطط شرائه فوراً." },
+            { id: "materials", title: "موادّ الكورس", hint: "تُفتح له الموادُّ وفي كلٍّ سعرُها وزرُّ شرائها — يشتري ما يحتاج ويترك ما لا يحتاج." },
+          ] as const).map((m) => {
+            const on = (subject.entryMode ?? "gateway") === m.id;
+            return (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => save({ subjects: subjects.map((s) => (s.id === id ? { ...subject, entryMode: m.id } : s)) })}
+                className={`rounded-2xl border p-3 text-right transition ${
+                  on ? "border-primary bg-primary/5 ring-2 ring-primary/25" : "border-border hover:border-primary/40"
+                }`}
+              >
+                <span className="block text-sm font-bold">{m.title}</span>
+                <span className="mt-0.5 block text-[11px] leading-relaxed text-muted-foreground">{m.hint}</span>
+              </button>
+            );
+          })}
+        </div>
+        {(subject.entryMode ?? "gateway") === "materials" && (
+          <p className="mt-3 rounded-2xl bg-amber-500/10 px-3 py-2 text-[11px] font-bold leading-relaxed text-amber-700 dark:text-amber-400">
+            في هذا الوضع تُباع كلُّ مادّةٍ وحدَها — فأضِف سعراً لكلّ مادّةٍ من لوحها بالأسفل.
+            والمادّةُ بلا سعرٍ لا يظهر لها زرُّ شراء، ولا تُفتح إلّا باشتراك الكورس كلِّه أو بخطّةٍ تشملها.
+          </p>
+        )}
+      </Card>
+
       <Card className="mb-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -538,6 +578,32 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
                 </>
               }
             >
+              {/*
+                سعرُ المادّة — موضعُه المادّةُ نفسُها لا شاشةٌ أخرى.
+                ولا يُعرض إلّا حين يبيع الكورسُ موادَّه مفرَّقة: حقلُ سعرٍ لا
+                أثرَ له يُغري بملئه ثمّ لا يُحصَّل منه شيء.
+              */}
+              {(subject.entryMode ?? "gateway") === "materials" && (
+                <div className="mb-4 rounded-2xl border border-border/70 p-3">
+                  <p className="mb-2 flex items-center gap-2 text-xs font-bold">
+                    <Wallet className="size-3.5 text-primary" /> سعر هذه المادّة وحدَها
+                  </p>
+                  <PricesEditor
+                    value={unit.prices ?? []}
+                    fallbackPrice={0}
+                    onChange={(next) =>
+                      save({
+                        subjects: subjects.map((s) =>
+                          s.id === id
+                            ? { ...subject, units: courseUnits(subject).map((u) => (u.id === unit.id ? { ...u, prices: next } : u)) }
+                            : s
+                        ),
+                      })
+                    }
+                  />
+                </div>
+              )}
+
               {(unit.lessons ?? []).length === 0 ? (
                 <p className="py-4 text-center text-xs text-muted-foreground">وحدةٌ فارغة — اختَرها في نموذج الإضافة بالأعلى.</p>
               ) : (

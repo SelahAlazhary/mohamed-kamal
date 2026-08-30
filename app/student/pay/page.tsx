@@ -23,7 +23,9 @@ import { useContent } from "@/components/content/content-provider";
 import { PayGate } from "@/components/student/pay-gate";
 import { cleanPrefix, gatewayOn } from "@/lib/payments";
 import { plansFor } from "@/lib/plans";
-import { subjectActive } from "@/lib/access";
+import { courseUnits } from "@/lib/course-units";
+import { pickKey } from "@/lib/picks";
+import { subjectActive , unitActive} from "@/lib/access";
 import { useMaintGate } from "@/components/brand/maint-gate";
 
 export default function PayPage() {
@@ -45,9 +47,24 @@ function PayInner() {
   const { db, content, session, loading, refresh } = useContent();
 
   const subjectId = params.get("subject") ?? "";
+  /*
+    وقد تُفتح على مادّةٍ بعينها لا على الكورس كلِّه.
+    حين يبيع الأستاذُ الموادَّ مفرَّقة، يأتي الطالبُ من بطاقة المادّة —
+    فتُضيَّق الخططُ المعروضةُ إلى ما يفتحها هي، ولا يُعرض عليه شراءُ
+    المنهج كلِّه وهو يطلب باباً منه. وتبقى خططُ الكورس معروضةً بعدها
+    لمن أراد التوسّع، فالبيعُ لا يُغلَق دونه.
+  */
+  const unitId = params.get("unit") ?? "";
   const me = db?.users?.find((u) => u.id === session?.uid);
   const subject = db?.subjects?.find((s) => s.id === subjectId);
-  const plans = plansFor(subject, db?.plans ?? [], me);
+  const unit = unitId && subject ? courseUnits(subject).find((u) => u.id === unitId) : undefined;
+  const allPlans = plansFor(subject, db?.plans ?? [], me);
+  const plans = unit
+    ? [
+        ...allPlans.filter((p) => p.scope === "picked" && (p.picks ?? []).includes(pickKey(subjectId, unit.id))),
+        ...allPlans.filter((p) => !(p.scope === "picked" && (p.picks ?? []).includes(pickKey(subjectId, unit.id)))),
+      ]
+    : allPlans;
   const fem = me?.gender === "female";
   const y = (v: string) => `${v}${fem ? "ي" : ""}`;
   const codePrefix = cleanPrefix(content.codePrefix);
@@ -76,19 +93,27 @@ function PayInner() {
     عرضُ شاشة الشراء على من يملك الكورس دعوةٌ لأن يدفع مرّتين — والصوابُ
     أن يُقال له إنّه مشترك ويُفتح له بابُ الدرس.
   */
-  if (subject && subjectActive(me, subject)) {
+  /*
+    والمِلكيّةُ تُقاس بما طُلب: من فتح الصفحةَ على مادّةٍ يُقال له «تملكها»
+    إن ملكها هي — ولو لم يملك الكورسَ كلَّه. وقياسُها بالكورس وحدَه كان
+    يعرض عليه شراءَ ما اشتراه بالأمس.
+  */
+  const already = subject && (unit ? unitActive(me, subject.id, unit.id, Date.now(), subject.term) : subjectActive(me, subject));
+  if (subject && already) {
     return (
       <Card className="flex flex-col items-center gap-3 py-16 text-center">
         <IconCheckCircle className="size-14 text-emerald-500" />
-        <p className="font-display text-xl font-extrabold">أنت مشترك في «{subject.name}»</p>
+        <p className="font-display text-xl font-extrabold">
+          {unit ? `«${unit.title}» مفتوحةٌ لك` : `أنت مشترك في «${subject.name}»`}
+        </p>
         <p className="max-w-sm text-sm text-muted-foreground">
           اشتراكك ساري — لا حاجة للدفع مرّة أخرى.
         </p>
         <Link
-          href={`/student/course/${subject.id}`}
+          href={unit ? `/student/course/${subject.id}/${encodeURIComponent(unit.id)}` : `/student/course/${subject.id}`}
           className="btn-glow mt-2 rounded-2xl px-6 py-2.5 text-sm font-bold text-white"
         >
-          ادخل الكورس
+          {unit ? "ادخل المادّة" : "ادخل الكورس"}
         </Link>
       </Card>
     );
@@ -128,8 +153,8 @@ function PayInner() {
   return (
     <>
       <PageHeader
-        title={`الاشتراك في «${subject.name}»`}
-        subtitle={`${subject.teacher} · ${subject.grade}`}
+        title={unit ? `شراء «${unit.title}»` : `الاشتراك في «${subject.name}»`}
+        subtitle={unit ? `${subject.name} · ${(unit.lessons ?? []).length.toLocaleString("ar-EG")} درساً` : `${subject.teacher} · ${subject.grade}`}
       />
 
       <Link

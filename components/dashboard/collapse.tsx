@@ -27,6 +27,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { setPref } from "@/lib/consent";
 
 export function Collapse({
   title,
@@ -75,7 +76,7 @@ export function Collapse({
     setClip(true);
     if (storageKey) {
       try {
-        localStorage.setItem(`mk.collapse.${storageKey}`, next ? "1" : "0");
+        setPref(`mk.collapse.${storageKey}`, next ? "1" : "0");
       } catch {
         /* التخزينُ زينةٌ لا شرط */
       }
