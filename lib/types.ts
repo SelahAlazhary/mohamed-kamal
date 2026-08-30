@@ -1,6 +1,7 @@
 import type { Maintenance } from "./maintenance";
 /** أنواع البيانات المشتركة بين الموقع ولوحات التحكّم وطبقة التخزين. */
 
+import type { ArtTint } from "./art-tint";
 export type Layout = "dark" | "light";
 /** بريسيتات المِداد — حبر غامق + تذهيب. الأسماء القديمة مقبولة للتوافق. */
 export type Preset =
@@ -312,6 +313,17 @@ export type SiteContent = {
    * مستقلّةٌ عن ألوان الهوية: قد يريدها الأستاذ لوحاً أغمقَ أو أفتحَ من
    * أساسيّه دون أن يمسّ الهويةَ كلَّها.
    */
+  /**
+   * تلوينُ الصور المتحرّكة (lib/art-tint.ts).
+   *
+   * و`mode` اتّحادٌ مغلقٌ لا `string`: `artFilter` تتفرّع عليه تفرّعاً
+   * شاملاً، فوضعٌ لا تعرفه يسقط من التفريع ويخرج بلا مرشّح. وكتابتُه
+   * `string` كانت تُخفي ذلك حتّى وقتِ التشغيل.
+   *
+   * والاستيرادُ من `art-tint` لا يعقد حلقة: هي وحداتٌ صرفةٌ لا تستورد
+   * هذا الملفّ.
+   */
+  artTint?: ArtTint;
   designColors?: { panel?: string; panel2?: string; panelText?: string; tile?: string; edge?: string };
   shadowStyle?: string;
   ambient?: string;

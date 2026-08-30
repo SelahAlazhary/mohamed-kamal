@@ -4198,11 +4198,21 @@ body {
 .svp-hadd     { --sv-body: hsl(var(--primary)); --sv-paper: hsl(0 0% 100%);      --sv-accent: hsl(var(--gold)); }
 
 /*
-  اللوحاتُ التي جسمُها فاتحٌ تحتاج أرضاً داكنةً وإلّا اختفت.
-  «الليليّ» جسمُه ورقٌ — على ورقٍ لا يُرى منه شيء. فأرضُه كحليّةٌ دائماً،
-  ولا يُترك ذلك للتشطيب: تشطيبٌ «مسطّح» بلا أرضٍ يُخرجه فارغاً.
+  أرضُ اللوحة طبقةٌ مستقلّةٌ عن أرض التشطيب.
+  ------------------------------------------------------------
+  «الليليّ» و«الصدفيّ» جسمُهما فاتحٌ فلا يُريان بلا أرضٍ داكنةٍ تحتهما،
+  ولا يُترك ذلك للتشطيب: تشطيبٌ «مسطّح» بلا أرضٍ يُخرجهما فارغين.
+
+  **و`--sv-base` تُكتب على عنصر اللوحة نفسِه لا على `.sv-art`.** والفرقُ
+  جوهريّ: المتغيّراتُ تُورَّث، فأقربُ سلفٍ يكتبها يغلب. وصنفُ اللوحة يجلس
+  على `<body>`، فلو كُتبت الأرضُ بمُحدِّدٍ ينزل إلى `.sv-art` لغلبت لوحةُ
+  الجسمِ كلَّ عيّنةٍ متداخلةٍ في لوحة الإدارة — فتُرى المئةُ كلُّها بأرض
+  واحدة، وهو ما وقع فعلاً ورُئي في المتصفّح.
 */
-.svp-layli { --sv-ground: hsl(var(--primary)); }
+.svp-asil, .svp-maqlub, .svp-muhabbar, .svp-dhahabi,
+.svp-waraqi, .svp-shafaqi, .svp-hadd, .svp-raqim { --sv-base: transparent; }
+.svp-layli { --sv-base: hsl(var(--primary)); }
+.svp-sadaf { --sv-base: hsl(var(--primary) / 0.92); }
 
 /* ---------- التشطيبات ---------- */
 /*
@@ -4226,7 +4236,10 @@ body {
   position: absolute;
   inset: -8%;
   border-radius: 999px;
-  background: var(--sv-ground, transparent);
+  /* طبقتان: لونُ اللوحة تحت، وتلوينُ التشطيب فوقه. والتدرّجُ الصلبُ
+     حيلةٌ لجعل اللونِ الثاني طبقةَ صورةٍ تعلو لونَ الخلفية. */
+  background-color: var(--sv-base, transparent);
+  background-image: linear-gradient(var(--sv-ground, transparent), var(--sv-ground, transparent));
   box-shadow: 0 0 0 var(--sv-ring-w, 0) var(--sv-ring, transparent);
   filter: blur(var(--sv-blur, 0));
   z-index: 0;
@@ -4254,7 +4267,7 @@ body {
   التشطيبات كلِّها، وتُكتب **بعدها** لتغلبها بالترتيب لا بوزنٍ مصطنع.
   والهالةُ والحدُّ يبقيان فوقها فلا يُفقد التشطيبُ أثرَه.
 */
-.svp-layli .sv-art        { --sv-ground: hsl(var(--primary)); }
+.svp-layli.svf-shadow > .sv-art,
 .svp-layli.svf-shadow .sv-art { --sv-fx: drop-shadow(7px 9px 0 hsl(0 0% 0% / 0.28)); }
 
 /*
@@ -4265,4 +4278,64 @@ body {
 .sv-art.sv-wide::before {
   inset: -6% -4%;
   border-radius: 1.6rem;
+}
+
+/* ============================================================
+   تلوينُ الصور المتحرّكة
+   ------------------------------------------------------------
+   المرشّحُ يُحسب على الخادم ويُكتب متغيّراً واحداً، وكلُّ صورةٍ متحرّكة
+   تقرؤه. فتغييرُ اللون يبدّلها كلَّها دفعةً، ولا يُنتج ملفّاً واحداً
+   جديداً.
+
+   ولا يُكتب مرشّحٌ محايد: كلُّ مرشّحٍ يُنشئ طبقةَ تركيبٍ في المتصفّح ولو
+   لم يفعل شيئاً، فالفارغُ خيرٌ من `none`.
+   ============================================================ */
+.anim-art { filter: var(--art-filter, none); }
+
+/* ============================================================
+   لوحتان جديدتان وخمسُ تشطيباتٍ متحرّكة — تُتمّ المئة
+   ============================================================ */
+
+/* «الرقيم» أسطحُه ذهبٌ مصمت — كصفحةٍ مذهّبة، والجسمُ كحليٌّ يحدّها. */
+.svp-raqim { --sv-body: hsl(var(--primary)); --sv-paper: hsl(var(--gold)); --sv-accent: hsl(var(--primary)); }
+/* و«الصدفيّ» جسمُه ورقٌ — فأرضُه ذهبيّةٌ دائماً وإلّا اختفى على الورق. */
+.svp-sadaf { --sv-body: hsl(var(--card)); --sv-paper: hsl(var(--gold) / 0.42); --sv-accent: hsl(var(--primary)); }
+
+/*
+  التشطيباتُ المتحرّكةُ تُحرّك الغلافَ لا الـ`svg`.
+  ------------------------------------------------------------
+  داخلَ الرسم حركاتُ SMIL تكتب `transform` على مجموعاتٍ بعينها؛ ولو
+  كُتبت حركةُ التشطيب على العنصر نفسِه لتنازعتا الخاصّيّةَ وغلبت
+  إحداهما — فتقف الشُّرّابةُ عن التأرجح لأنّ اللوحةَ «تطفو».
+
+  والغلافُ `sv-art` سلفٌ لها، فحركتُه تُضاف إلى حركتها ولا تُزيحها:
+  الرسمُ يطفو والشُّرّابةُ تتأرجح فيه معاً.
+*/
+@keyframes sv-float   { 0%,100% { transform: translateY(0); }      50% { transform: translateY(-7%); } }
+@keyframes sv-breathe { 0%,100% { transform: scale(1); }           50% { transform: scale(1.07); } }
+@keyframes sv-tilt    { 0%,100% { transform: rotate(-3.5deg); }    50% { transform: rotate(3.5deg); } }
+@keyframes sv-spin    { from    { transform: rotate(0); }          to  { transform: rotate(360deg); } }
+@keyframes sv-beat    { 0%,100% { transform: scale(0.9); opacity: 0.34; } 50% { transform: scale(1.14); opacity: 0.1; } }
+
+.svf-float .sv-art   { animation: sv-float 3.6s ease-in-out infinite; }
+.svf-breathe .sv-art { animation: sv-breathe 4.2s ease-in-out infinite; }
+.svf-tilt .sv-art    { animation: sv-tilt 4.8s ease-in-out infinite; }
+.svf-spin .sv-art    { animation: sv-spin 26s linear infinite; }
+
+/* «ينبض» يحرّك الأرضَ لا الرسم — نبضةٌ تحته لا اهتزازٌ فيه. */
+.svf-beat .sv-art         { --sv-ground: hsl(var(--gold) / 0.4); }
+.svf-beat .sv-art::before { animation: sv-beat 2.6s ease-in-out infinite; }
+
+/*
+  ومن طلب تقليلَ الحركة يُعفى منها.
+  وهذه ليست مجاملة: الحركةُ الدائمةُ في الخلفية تُدوّخ من عنده حساسيّةٌ
+  دهليزيّة، والنظامُ يُعلن ذلك عنه فيُسمَع. وحركاتُ SMIL داخل الرسم تبقى
+  — هي قصيرةٌ محدودةٌ تصف الشيء، لا دورانٌ لا ينتهي.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .svf-float .sv-art,
+  .svf-breathe .sv-art,
+  .svf-tilt .sv-art,
+  .svf-spin .sv-art,
+  .svf-beat .sv-art::before { animation: none; }
 }

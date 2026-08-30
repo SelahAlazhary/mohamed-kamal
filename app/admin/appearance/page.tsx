@@ -31,6 +31,8 @@ import { VECTOR_LIBS, findVectorLib, vectorLibClass, type VectorLib } from "@/li
 import { ShariVector, SHARI_VECTOR } from "@/components/brand/shari-vector";
 import { AMBIENTS, AMBIENT_SPEEDS, findAmbient, DEFAULT_AMBIENT } from "@/lib/ambient-motion";
 import { SHADOW_STYLES, findShadow, DEFAULT_SHADOW } from "@/lib/shadow-styles";
+import { TINT_MODES, artFilter } from "@/lib/art-tint";
+import { SHARI_ANIM } from "@/components/brand/shari-art";
 import { LibGlyph } from "@/components/brand/lib-icon";
 import {
   SECTION_STYLES, findSectionStyle, DEFAULT_SECTION_STYLE, SX_SECTIONS,
@@ -1681,6 +1683,104 @@ export default function AppearancePage() {
             </div>
           </Fold>
 
+          <Fold className="mb-5" title="ألوان الصور المتحرّكة" storageKey="appearance.artTint">
+            <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
+              الصورُ المتحرّكة نقطيّةٌ بألوانٍ مخبوزةٍ في إطاراتها — لا تُبدَّل ألوانُها كما
+              تُبدَّل في الرسم المتّجه. فتُلوَّن بمرشّحٍ محسوب: تُسوَّى رماديّةً أوّلاً ثمّ
+              تُصبغ باللون المطلوب، فتخرج أحاديّةَ اللون محتفظةً بتفاصيلها وحركتها.
+            </p>
+
+            {/* المعاينةُ بالصور نفسِها وبالمرشّح نفسِه — لا رسمٌ يحاكيه */}
+            <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl bg-muted/40 p-3">
+              {SHARI_ANIM.slice(0, 5).map((a) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  key={a.id}
+                  src={`/art/${a.id}.webp`}
+                  alt={a.name}
+                  className="size-12 object-contain"
+                  style={{
+                    filter:
+                      artFilter(content.artTint, {
+                        primary: content.theme.customPrimary ?? undefined,
+                        gold: content.theme.customGold ?? undefined,
+                      }) || undefined,
+                  }}
+                />
+              ))}
+            </div>
+
+            <div className="mb-3 flex flex-wrap gap-2">
+              {TINT_MODES.map((m) => {
+                const on = (content.artTint?.mode ?? "original") === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    disabled={busy !== null}
+                    title={m.hint}
+                    onClick={async () => {
+                      setBusy(`tint-${m.id}`);
+                      await saveContent({ artTint: { ...(content.artTint ?? {}), mode: m.id } });
+                      setBusy(null);
+                    }}
+                    className={`rounded-2xl border px-3.5 py-2 text-xs font-bold transition disabled:opacity-60 ${
+                      on ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    {busy === `tint-${m.id}` ? <Loader2 className="inline size-3.5 animate-spin" /> : null} {m.name}
+                  </button>
+                );
+              })}
+            </div>
+
+            {content.artTint?.mode === "custom" && (
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <span className="w-24 shrink-0 text-xs font-semibold text-muted-foreground">اللون</span>
+                {SHELL_SWATCH.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    aria-label={c}
+                    onClick={() => void saveContent({ artTint: { ...(content.artTint ?? {}), mode: "custom", color: c } })}
+                    className={`size-7 rounded-lg border transition ${
+                      (content.artTint?.color ?? "").toLowerCase() === c ? "border-primary ring-2 ring-primary/40" : "border-border"
+                    }`}
+                    style={{ background: c }}
+                  />
+                ))}
+                <label
+                  className="grid size-7 cursor-pointer place-items-center rounded-lg border border-dashed border-border"
+                  style={{ background: content.artTint?.color || "transparent" }}
+                >
+                  <input
+                    type="color"
+                    className="size-0 opacity-0"
+                    value={content.artTint?.color || "#2c456a"}
+                    onChange={(e) => void saveContent({ artTint: { ...(content.artTint ?? {}), mode: "custom", color: e.target.value } })}
+                  />
+                </label>
+              </div>
+            )}
+
+            {!["original", "soft"].includes(content.artTint?.mode ?? "original") && (
+              <label className="flex items-center gap-3">
+                <span className="w-24 shrink-0 text-[11px] font-semibold text-muted-foreground">
+                  الشدّة {(content.artTint?.strength ?? 100).toLocaleString("ar-EG")}٪
+                </span>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={content.artTint?.strength ?? 100}
+                  onChange={(e) => void saveContent({ artTint: { ...(content.artTint ?? {}), strength: Number(e.target.value) } })}
+                  className="h-1.5 flex-1 accent-primary"
+                />
+              </label>
+            )}
+          </Fold>
+
           <Fold className="mb-5" title="ظلال العناصر" storageKey="appearance.ظلال العناصر">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               الظلُّ معلومةُ ارتفاعٍ لا زخرفة: يقول للعين أيُّ لوحٍ أقربُ إليها. وكلُّ ظلٍّ هنا
@@ -1797,14 +1897,15 @@ export default function AppearancePage() {
 
           <Fold className="mb-4" title="مكتبة رسوم الموقع" storageKey="appearance.مكتبة رسوم الموقع">
             <p className="text-[11px] leading-relaxed text-muted-foreground">
-              المكتبةُ المختارة تسري على رسوم المنصّة كلِّها — ترويساتُ الأقسام والحالاتُ
-              الفارغةُ والبطاقاتُ معاً. و<b>ليست أربعين طقماً مرسوماً</b>: أربعون طقماً بيدٍ
-              واحدةٍ يعني مئتين وأربعين لوحة، ولا تُرسم مئتان وأربعون بجودةٍ واحدة — تخرج
-              منها خمسٌ حسنةٌ وبقيّةٌ حشو. بل هندسةٌ واحدةٌ محكمةٌ وأربعون معالجةً لها:
-              <b> ثماني لوحاتِ لونٍ</b> (أيُّ الألوان الثلاثة يكون جسماً وأيُّها سطحاً
+              المكتبةُ المختارة تسري على رسوم المنصّة كلِّها — الساكنةُ والمتحرّكةُ
+              والحالاتُ الفارغةُ معاً. و<b>ليست مئةَ طقمٍ مرسوم</b>: مئةُ طقمٍ بيدٍ واحدةٍ
+              يعني ألفاً وثمانمئة لوحة، ولا تُرسم بجودةٍ واحدة — تخرج منها خمسٌ حسنةٌ
+              وبقيّةٌ حشو. بل هندسةٌ واحدةٌ محكمةٌ ومئةُ معالجةٍ لها:
+              <b> عشرُ لوحاتِ لونٍ</b> (أيُّ الألوان الثلاثة يكون جسماً وأيُّها سطحاً
               وأيُّها زخرفة — وتبديلُ الأدوار وحدَه يقلب الرسمَ رأساً على عقب) مضروبةً في
-              <b> خمسِ تشطيبات</b> (مسطّح · على قرص · بهالة · بظلّ · بحدّ). وهكذا تُبنى
-              مكتباتُ الرسم أصلاً.
+              <b> عشرِ تشطيبات</b>: خمسٍ للسطح (مسطّح · على قرص · بهالة · بظلّ · بحدّ)
+              وخمسٍ تُحرّك الرسمَ كلَّه (يطفو · يتنفّس · يتمايل · يدور · ينبض) فوق حركته
+              الداخليّة. ومن طلب تقليلَ الحركة في نظامه أُعفي منها.
             </p>
 
             <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

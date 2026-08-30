@@ -5,6 +5,7 @@ import localFont from "next/font/local";
 import { ContentProvider } from "@/components/content/content-provider";
 import { glowCss } from "@/lib/glow";
 import { brandCss } from "@/lib/brand-theme";
+import { artFilter } from "@/lib/art-tint";
 import { AzhariBackdrop } from "@/components/brand/azhari-backdrop";
 import { ToTop } from "@/components/brand/to-top";
 import { findIconFrame, iconFrameClass, iconFrameVars } from "@/lib/icon-frames";
@@ -158,6 +159,16 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     ومض الثيمُ الافتراضيُّ لحظةً ثمّ انقلب — وهو أظهرُ ما يكون على أوّل
     زيارة، وهي التي تُبنى عليها الانطباعات.
   */
+  /*
+    تلوينُ الصور المتحرّكة — يُحقن متغيّراً واحداً تقرؤه كلُّ صورة.
+    والحقنُ على الخادم لا في المتصفّح: لو كُتب بعد الترطيب ظهرت الصورةُ
+    بألوانها الأصلية لحظةً ثمّ انقلبت، وهو أظهرُ ما يكون في صورةٍ متحرّكة.
+  */
+  const tint = artFilter(db.content?.artTint, {
+    primary: theme.customPrimary ?? undefined,
+    gold: theme.customGold ?? undefined,
+  });
+
   const brand = theme.preset === "custom"
     ? brandCss({
         primary: theme.customPrimary ?? undefined,
@@ -190,6 +201,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           يُكتب شيءٌ إن لم تكن قاعدةٌ مفعّلة.
         */}
         {brand && <style dangerouslySetInnerHTML={{ __html: brand }} />}
+        {tint && <style dangerouslySetInnerHTML={{ __html: `:root{--art-filter:${tint}}` }} />}
         {glow && <style dangerouslySetInnerHTML={{ __html: glow }} />}
       </head>
       <body

@@ -111,7 +111,8 @@ export function ShariAnim({
       /* لا `loading="lazy"` هنا: هي في الترويسة، وتأخيرُها يُظهر فجوةً
          ثمّ تقفز الحركةُ فجأةً — وهو أسوأُ من تحميلها مع القسم. */
       decoding="async"
-      className={`select-none object-contain ${round ? "rounded-full" : ""}`}
+      /* `anim-art` هو ما يقرأ مرشّحَ التلوين — صنفٌ واحدٌ لكلّ الصور. */
+      className={`anim-art select-none object-contain ${round ? "rounded-full" : ""}`}
       style={{ width: size, height: size }}
     />
   );
