@@ -155,18 +155,30 @@ export function StatTile({
               </svg>
             )}
 
-            {/* لوحُ الصورة — أبيضُ بظلٍّ غائر، والصورةُ تملؤه */}
+            {/*
+              الصورةُ بلا لوحٍ ولا حدّ.
+              كان تحتها مربّعٌ أبيضُ بظلّ — وهو يصلح لرمزٍ خطّيٍّ يحتاج
+              سطحاً يُقرأ عليه. أمّا الصورةُ الملوّنةُ فتحمل شكلَها
+              ولونَها، فالمربّعُ يقصّها ويقطعها عمّا حولها ويُظهرها
+              ملصقاً على البطاقة لا جزءاً منها.
+
+              وبدلَه هالةٌ خافتةٌ من لون البطاقة نفسِها: تُجلس الصورةَ في
+              مكانها بلا حدٍّ يفصلها — الخلفيةُ تُلائم اللون كما طُلب.
+            */}
             <span
-              className="ic-frame tile-badge grid place-items-center overflow-hidden rounded-[1.15rem] bg-white"
-              style={{
-                /* اللوحُ يتّسع للصورة المتحرّكة: صورةٌ بتفاصيلَ في ٧٠ بكسل
-                   تُرى رمزاً لا صورة. */
-                width: "5.6rem",
-                height: "5.6rem",
-                boxShadow: "0 2px 5px -2px rgb(0 0 0 / 0.22), 0 10px 22px -10px rgb(0 0 0 / 0.45)",
-              }}
+              className="tile-badge relative grid shrink-0 place-items-center"
+              style={{ width: "5.8rem", height: "5.8rem" }}
             >
-              {icon}
+              <span
+                aria-hidden="true"
+                className="absolute inset-0 rounded-full blur-md"
+                style={{
+                  background: ink
+                    ? "radial-gradient(circle, hsl(0 0% 100% / 0.16) 0%, transparent 70%)"
+                    : "radial-gradient(circle, hsl(var(--gold) / 0.3) 0%, transparent 70%)",
+                }}
+              />
+              <span className="relative">{icon}</span>
             </span>
           </span>
         )}
@@ -179,8 +191,15 @@ export function StatTile({
                 ink ? "text-[hsl(var(--primary-foreground))]" : "text-foreground"
               }`}
             >
-              <span className="text-[2.4rem] font-bold tracking-tight">{pct.toLocaleString("ar-EG")}</span>
-              <span className="font-kufi ms-1 text-base font-bold opacity-70">٪</span>
+              {/*
+                الرقمُ بأرقامٍ جدوليّة: أرقامُ العرض متفاوتةُ العرض،
+                فيرقص العدّادُ يميناً ويساراً كلّما تغيّر رقمُه.
+                والجدوليّةُ تُساوي عروضَها فيثبت مكانُه.
+              */}
+              <span className="text-[2.6rem] font-bold [font-variant-numeric:tabular-nums] tracking-tight">
+                {pct.toLocaleString("ar-EG")}
+              </span>
+              <span className="font-kufi ms-1 align-super text-lg font-bold opacity-60">٪</span>
             </p>
           ) : (
             <p
@@ -188,7 +207,7 @@ export function StatTile({
                 ink ? "text-[hsl(var(--primary-foreground))]" : "text-foreground"
               }`}
             >
-              <span className="text-[2.4rem] font-bold tracking-tight">{value}</span>
+              <span className="text-[2.6rem] font-bold [font-variant-numeric:tabular-nums] tracking-tight">{value}</span>
               {unit && (
                 <span
                   className={`font-kufi text-sm font-bold ${
