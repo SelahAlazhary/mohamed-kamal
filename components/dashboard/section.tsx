@@ -70,39 +70,58 @@ export function Section({
       */
       data-section={typeof title === "string" ? title : undefined}
       hidden={hidden}
-      className={`glass scroll-mt-24 overflow-hidden rounded-3xl shadow-bento ${hidden ? "hidden" : ""} ${className}`}
+      className={`glass scroll-mt-28 overflow-hidden rounded-[1.5rem] border border-border/70 shadow-[0_1px_2px_rgba(16,24,40,.04),0_10px_28px_-14px_rgba(16,24,40,.18)] ${hidden ? "hidden" : ""} ${className}`}
     >
+      {/*
+        الترويسةُ تُقرأ في سطرين: ما هذا القسم، وماذا يفعل.
+        وخيطٌ ذهبيٌّ رفيعٌ على حافّتها العليا — من الهوية، وهو ما يجعل
+        البطاقةَ «لوحاً» لا مستطيلاً رمادياً. ويصير أحمرَ حين ينتظر عملاً،
+        فتُعرف الحالُ من طرف العين قبل قراءة حرف.
+      */}
       <header
-        className={`flex flex-wrap items-center gap-3 border-b px-4 py-3 sm:px-5 ${
-          alert ? "border-rose-500/30 bg-rose-500/[0.07]" : "border-border bg-muted/40"
+        className={`relative flex flex-wrap items-center gap-3.5 border-b px-5 py-4 ${
+          alert
+            ? "border-rose-500/25 bg-gradient-to-l from-rose-500/[0.09] to-transparent"
+            : "border-border bg-gradient-to-l from-[hsl(var(--gold)/0.10)] to-transparent"
         }`}
       >
+        <span
+          aria-hidden="true"
+          className={`absolute inset-x-0 top-0 h-[3px] ${
+            alert ? "bg-rose-500/70" : "bg-[hsl(var(--gold))]"
+          }`}
+        />
+
         {icon && (
           <span
-            className={`grid size-8 shrink-0 place-items-center rounded-xl ${
-              alert ? "bg-rose-500/15 text-rose-600 dark:text-rose-400" : "bg-primary/12 text-primary"
+            className={`grid size-10 shrink-0 place-items-center rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,.5)] ${
+              alert
+                ? "bg-rose-500/15 text-rose-600 dark:text-rose-400"
+                : "bg-[hsl(var(--gold)/0.22)] text-primary"
             }`}
           >
             {icon}
           </span>
         )}
+
         <div className="min-w-0 flex-1">
-          <h3 className="font-kufi flex items-center gap-2 text-sm font-bold leading-tight">
+          <h3 className="font-display flex items-center gap-2 text-[0.95rem] font-extrabold leading-tight">
             {title}
             {count !== undefined && count > 0 && (
-              <span className="rounded-full bg-primary/12 px-2 py-0.5 text-[10px] font-extrabold text-primary">
+              <span className="rounded-full bg-primary/12 px-2 py-0.5 text-[10px] font-extrabold text-primary [font-variant-numeric:tabular-nums]">
                 {count.toLocaleString("ar-EG")}
               </span>
             )}
           </h3>
           {subtitle && (
-            <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">{subtitle}</p>
+            <p className="mt-1 text-[11.5px] leading-relaxed text-muted-foreground">{subtitle}</p>
           )}
         </div>
+
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
       </header>
 
-      <div className="p-4 sm:p-5">{children}</div>
+      <div className="p-5 sm:p-6">{children}</div>
     </section>
   );
 }

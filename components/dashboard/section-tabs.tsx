@@ -100,35 +100,43 @@ export function SectionTabs({ children }: { children: ReactNode }) {
 
   return (
     <SectionTabsCtx.Provider value={ctx}>
-      {children}
+      {/*
+        الشريطُ في الواجهة لا عائماً في الأسفل.
+        العائمُ يُغطّي آخرَ الشاشة ويُنازع أزرارَ الحفظ مكانَها، ويُقرأ
+        شريطَ أدواتٍ لا فهرسَ أقسام. وموضعُه الطبيعيُّ أعلى المحتوى:
+        يُقرأ أوّلَ ما تُفتح الشاشةُ فيُعرف ما فيها قبل النزول.
 
+        و`sticky` لا `fixed`: يبقى في مجرى الصفحة فلا يُغطّي شيئاً، ويلصق
+        بأعلاها عند التمرير فيبقى في المتناول. و`top` بقدر ترويسة اللوحة
+        الملتصقة، وإلّا اختفى تحتها.
+      */}
       {tabbed && (
         <nav
           aria-label="أقسام الصفحة"
-          className="pointer-events-none fixed inset-x-0 bottom-4 z-[70] flex justify-center px-4 lg:pr-[18.5rem]"
+          className="sticky top-[4.5rem] z-[60] -mx-4 mb-4 px-4 sm:-mx-6 sm:px-6"
         >
-          <div className="pointer-events-auto flex max-w-full items-center gap-1 overflow-x-auto rounded-full border border-border bg-white/95 p-1.5 shadow-[0_2px_6px_rgba(16,24,40,.08),0_16px_40px_-16px_rgba(16,24,40,.35)] backdrop-blur-xl dark:bg-card/95">
-            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/12 text-primary">
+          <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-[1.25rem] border border-border/70 bg-white/95 p-1.5 shadow-[0_1px_2px_rgba(16,24,40,.05),0_8px_24px_-12px_rgba(16,24,40,.2)] backdrop-blur-xl dark:bg-card/95">
+            <span className="grid size-9 shrink-0 place-items-center rounded-2xl bg-[hsl(var(--gold)/0.22)] text-primary">
               <LayoutList className="size-4" />
             </span>
             {items.map((i, n) => (
               <button
                 key={i.id}
                 type="button"
-                onClick={() => {
-                  setActive(i.id);
-                  /* القفزُ إلى أعلى الشاشة: القسمُ الجديد يبدأ من أوّله
-                     لا من موضع التمرير الذي تركه سابقُه. */
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
+                onClick={() => setActive(i.id)}
                 aria-current={active === i.id ? "true" : undefined}
-                className={`font-kufi flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] font-bold transition ${
+                className={`font-kufi flex shrink-0 items-center gap-2 whitespace-nowrap rounded-2xl px-3.5 py-2 text-[11.5px] font-bold transition ${
                   active === i.id
-                    ? "btn-glow text-white"
+                    ? "btn-glow text-white shadow-[0_4px_12px_-4px_hsl(var(--primary)/.5)]"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
-                <span className={`text-[9px] ${active === i.id ? "opacity-80" : "opacity-60"}`}>
+                {/* الرقمُ يقول «الثالثُ من ستّة» — موضعٌ لا زخرفة */}
+                <span
+                  className={`grid size-4 place-items-center rounded-full text-[9px] font-extrabold [font-variant-numeric:tabular-nums] ${
+                    active === i.id ? "bg-white/25" : "bg-muted-foreground/15"
+                  }`}
+                >
                   {(n + 1).toLocaleString("ar-EG")}
                 </span>
                 {i.title}
@@ -137,6 +145,8 @@ export function SectionTabs({ children }: { children: ReactNode }) {
           </div>
         </nav>
       )}
+
+      {children}
     </SectionTabsCtx.Provider>
   );
 }

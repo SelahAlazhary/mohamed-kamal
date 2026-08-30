@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   ArrowRight, Plus, Trash2, PlayCircle, Gift, FileText, Upload, ImageIcon,
-  ListChecks, ChevronDown, Check, Link2, X, Loader2, Video, Palette, Wallet,
+  ListChecks, ChevronDown, Check, Link2, X, Loader2, Video, Palette, Wallet, Layers,
 } from "lucide-react";
 import { Collapse } from "@/components/dashboard/collapse";
 import { courseUnits, isSplit, LEGACY_UNIT_ID } from "@/lib/course-units";
@@ -245,7 +245,7 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
       */}
       <p className="font-kufi mb-2 mt-2 text-[11px] font-bold text-muted-foreground">تصميم البطاقة</p>
       {/* غلاف الكورس */}
-      <Section className="mb-6" title={<><ImageIcon className="size-5 text-primary" /> غلاف الكورس</>}>
+      <Section className="mb-6" title="غلاف الكورس" subtitle="الصورةُ التي تُرى على بطاقة الكورس" icon={<ImageIcon className="size-4" />}>
         <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
           مقاس البطاقة ثابت ولا يتمدّد. عند التكبير ١٠٠٪ تظهر صورتك <b>كاملة</b>؛ ولو أردت ملء الإطار
           كبّرها وحرّكها بنفسك — ما يخرج عن الإطار يُقصّ بإرادتك أنت لا تلقائياً.
@@ -393,7 +393,7 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
       </Section>
 
       {/* نصّ على الغلاف */}
-      <Section className="mb-6" title={<><ImageIcon className="size-5 text-primary" /> نصّ على الغلاف</>}>
+      <Section className="mb-6" title="نصّ الغلاف" subtitle="كلمةٌ تُكتب فوق الصورة وتُحرَّك بالسحب" icon={<Palette className="size-4" />}>
         <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
           اكتب نصّاً يظهر فوق لوحة الغلاف، ثم اسحبه بالماوس إلى مكانه. الموضع يُحفظ بالنسبة
           المئوية فيبقى في مكانه على بطاقة الطالب الصغيرة وعلى المعاينة الكبيرة سواء.
@@ -402,7 +402,7 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
       </Section>
 
       {/* صور على الغلاف */}
-      <Section className="mb-6" title={<><ImageIcon className="size-5 text-primary" /> صور على الغلاف</>}>
+      <Section className="mb-6" title="ملصقات الغلاف" subtitle="صورٌ صغيرةٌ تُلصق فوق الغلاف" icon={<ImageIcon className="size-4" />}>
         <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
           ارفع صورة — تُفتح أداة القصّ وإزالة الخلفية أولاً — ثم اسحبها بالماوس إلى مكانها
           واضبط حجمها ودورانها وشفافيتها. الصور تُرسم تحت نصّ الغلاف ليبقى النصّ فوقها.
@@ -417,11 +417,12 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
         لكورسٍ يُباع كتلةً واحدة، ولا يصلح لمنهجٍ طويلٍ يريد الطالبُ منه
         باباً أو بابين — فيُساق إلى دفع المنهج كلِّه أو ينصرف.
       */}
-      <Card className="mb-6">
-        <h3 className="font-display font-extrabold">عند الضغط على الكورس</h3>
-        <p className="mb-4 text-xs text-muted-foreground">
-          ماذا يرى طالبٌ لا يملك هذا الكورس حين يضغط عليه؟
-        </p>
+      <Section
+        className="mb-6"
+        title="عند الضغط على الكورس"
+        subtitle="ماذا يرى طالبٌ لا يملكه — بوّابةَ الدفع أم موادَّ يشتري منها"
+        icon={<Wallet className="size-4" />}
+      >
         <div className="grid gap-3 sm:grid-cols-2">
           {([
             { id: "gateway", title: "بوّابة الدفع مباشرة", hint: "الكورسُ يُباع كتلةً واحدة — يُساق إلى خطط شرائه فوراً." },
@@ -462,7 +463,7 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
             والمادّةُ التي لا تفتحها خطّةٌ تبقى مقفلةً بلا زرِّ شراء.
           </p>
         )}
-      </Card>
+      </Section>
 
       {/*
         الأسعارُ ليست هنا — ولا يُترك مكانُها فارغاً بلا بيان.
@@ -471,7 +472,12 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
         بوّابة الدفع. وهذا السطرُ يدلّ عليه، وإلّا بحث الأستاذُ عن الحقل
         الذي كان هنا وظنّ أنّه عُطّل.
       */}
-      <Card className="mb-6">
+      <Section
+        className="mb-6"
+        title="السعر ومدّة التفعيل"
+        subtitle="مصدرُهما بوّابةُ الدفع — سعرٌ واحدٌ في موضعٍ واحد"
+        icon={<Wallet className="size-4" />}
+      >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <h3 className="font-display font-extrabold">السعر ومدّة التفعيل</h3>
@@ -488,11 +494,10 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
             <Wallet className="size-4" /> افتح بوّابة الدفع
           </Link>
         </div>
-      </Card>
+      </Section>
 
-      <p className="font-kufi mb-2 mt-6 text-[11px] font-bold text-muted-foreground">الدروس والموادّ</p>
       {/* إضافة درس */}
-      <Section className="mb-6" title="إضافة درس">
+      <Section className="mb-6" title="إضافة درس" subtitle="عنوانُ الدرس ورابطُه والمادّةُ التي يقع فيها" icon={<Plus className="size-4" />}>
         <div className="grid gap-3 sm:grid-cols-6">
           <label className="sm:col-span-2"><span className="mb-1 block text-xs font-semibold text-muted-foreground">عنوان الدرس</span>
             <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="inp" placeholder="مثال: مقدّمة في علوم القرآن" />
@@ -544,16 +549,14 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
       </Section>
 
       {/* ---------- الموادّ ودروسُها ---------- */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h3 className="font-display text-lg font-extrabold">موادّ الكورس</h3>
-          <p className="text-xs text-muted-foreground">
-            المسار: <b>الكورس ← مادّة ← دروس</b>. قسّم المنهج أبواباً — الطهارة ثمّ الصلاة —
-            فيقرأ الطالبُ منهجاً لا قائمةَ فيديوهات.
-          </p>
-        </div>
-        <Button className="px-4 py-2 text-xs" onClick={addUnit}>+ إضافة مادّة</Button>
-      </div>
+      <Section
+        className="mb-6"
+        title="موادّ الكورس ودروسُها"
+        subtitle="المسار: الكورس ← مادّة ← دروس. قسّم المنهجَ أبواباً فيقرأ الطالبُ منهجاً لا قائمةَ فيديوهات."
+        icon={<Layers className="size-4" />}
+        count={units.length}
+        actions={<Button className="px-4 py-2 text-xs" onClick={addUnit}>+ إضافة مادّة</Button>}
+      >
 
       {videos.length === 0 && units.length === 1 ? (
         <p className="rounded-3xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">لا توجد دروس بعد. أضِف أول درس بالأعلى.</p>
@@ -635,9 +638,16 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
         </div>
       )}
 
+      </Section>
+
       {/* مواد وملفات الكورس */}
-      <div className="mt-8">
-        <h3 className="mb-3 flex items-center gap-2 font-display text-lg font-extrabold"><FileText className="size-5 text-primary" /> المواد والملفات (PDF…)</h3>
+      <Section
+        className="mb-6"
+        title="ملفّات الكورس"
+        subtitle="مذكّراتٌ وملازمُ PDF يفتحها الطالبُ مع الدروس"
+        icon={<FileText className="size-4" />}
+      >
+      <div>
         <Card className="mb-4">
           <div className="flex flex-wrap items-end gap-3">
             <label className="min-w-40 flex-1"><span className="mb-1 block text-xs font-semibold text-muted-foreground">عنوان الملف</span>
@@ -679,6 +689,7 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
           </div>
         )}
       </div>
+      </Section>
 
       <style>{`.inp{width:100%;border-radius:0.9rem;border:1px solid hsl(var(--border));background:hsl(var(--card)/0.6);padding:0.55rem 0.8rem;font-size:0.85rem;outline:none;color:inherit;font-family:inherit}.inp:focus{border-color:hsl(var(--primary)/0.6)}.lbl{margin-bottom:0.35rem;display:block;font-size:0.7rem;font-weight:600;color:hsl(var(--muted-foreground))}`}</style>
     </>
