@@ -20,7 +20,20 @@ export function AuthShell({ title, subtitle, children, footer }: { title: string
             <Link href="/" className="inline-flex">
               <BrandLockup brand={content.brand} subtitle={content.platformSubtitle} logo={content.teacher.logo} size={44} className="[&_span:last-child_span:last-child]:text-white/80" />
             </Link>
-            <h2 className="mt-10 font-display text-3xl font-extrabold leading-snug">{content.teacher.headline}</h2>
+            {/*
+              العنوانُ يُركَّب كما يُركَّب في الرئيسية.
+              كان يعرض `headline` مجرَّدةً — وهي حرفُ الوصل «في» وحدَه، لأنّ
+              الاسمَ والمادّةَ حقلان مستقلّان تجمعهما الرئيسيّةُ حولَه. فكان
+              اللوحُ يقول «في» ولا شيءَ غيرها.
+
+              ومصدرُ الثلاثة واحدٌ هنا وهناك، فلا يفترق ما يراه الزائرُ في
+              الصفحة عمّا يراه في شاشة الدخول.
+            */}
+            <h2 className="mt-10 font-display text-3xl font-extrabold leading-snug">
+              {content.teacher.name}
+              {content.teacher.headline ? ` ${content.teacher.headline} ` : " "}
+              {content.teacher.subject}
+            </h2>
             <p className="mt-3 max-w-sm text-white/85">{content.teacher.tagline}</p>
           </div>
           <ul className="relative mt-10 space-y-3 text-sm">
