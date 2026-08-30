@@ -27,6 +27,84 @@ export const adminNav: NavItem[] = [
   { href: "/admin/team", label: "المشرفون", icon: "Shield" },
 ];
 
+/**
+ * تجميعُ قائمة الإدارة.
+ * ------------------------------------------------------------------
+ * اثنان وعشرون رابطاً في عمودٍ واحدٍ مسطّح: من أراد «أكواد التفعيل» مسح
+ * الاثنين والعشرين حتّى يبلغها، ومن دخل «قواعد البيانات» لم يعرف أنّها
+ * أخت «النسخ الاحتياطي». والطولُ وحدَه يُخفي: أواخرُ القائمة تحت حافّة
+ * الشاشة لا تُرى إلّا بتمرير.
+ *
+ * والتجميعُ **بالعمل لا بالنوع**: من فتح «الطلاب» غالباً يريد خطّةً أو
+ * كوداً أو دفعة، لا مادّةً ولا مظهراً. فكلُّ مجموعةٍ سؤالٌ واحدٌ يجيب عنه
+ * الأدمن في جلسةٍ واحدة.
+ *
+ * و«نظرة عامة» تبقى خارج المجموعات: هي المقصدُ الأوّل بعد الدخول، ووضعُها
+ * داخل مجموعةٍ تُطوى يجعل أوّلَ ما يُراد أبعدَ ما يُنال.
+ *
+ * والترتيبُ هنا مصدرُ الحقيقة للتجميع فقط — **الصلاحياتُ تُصفّى قبله**،
+ * فما لا يملكه المشرفُ لا يصل هذه الدالّة أصلاً، ومجموعةٌ خلت من روابطها
+ * كلِّها تسقط ولا تُعرض عنواناً فارغاً.
+ */
+export type NavGroup = { id: string; label: string; icon: string; items: NavItem[] };
+
+const GROUPS: { id: string; label: string; icon: string; hrefs: string[] }[] = [
+  {
+    id: "study",
+    label: "المحتوى الدراسي",
+    icon: "BookOpen",
+    hrefs: ["/admin/grades", "/admin/subjects", "/admin/exams", "/admin/live", "/admin/youtube"],
+  },
+  {
+    id: "people",
+    label: "الطلاب والاشتراكات",
+    icon: "Users",
+    hrefs: ["/admin/students", "/admin/plans", "/admin/payments", "/admin/codes"],
+  },
+  {
+    id: "look",
+    label: "المظهر والموقع",
+    icon: "Palette",
+    hrefs: ["/admin/appearance", "/admin/customize", "/admin/testimonials"],
+  },
+  {
+    id: "talk",
+    label: "التواصل والدعم",
+    icon: "Bell",
+    hrefs: ["/admin/notifications", "/admin/support", "/admin/support/chat"],
+  },
+  {
+    id: "system",
+    label: "النظام والبيانات",
+    icon: "Shield",
+    hrefs: [
+      "/admin/analytics",
+      "/admin/security",
+      "/admin/backup",
+      "/admin/databases",
+      "/admin/maintenance",
+      "/admin/team",
+    ],
+  },
+];
+
+/** يقسم قائمةً مُصفّاةً بالصلاحيات إلى وحيدٍ ومجموعات. */
+export function groupNav(items: NavItem[]): { solo: NavItem[]; groups: NavGroup[] } {
+  const by = new Map(items.map((i) => [i.href, i]));
+  const taken = new Set<string>();
+
+  const groups: NavGroup[] = [];
+  for (const g of GROUPS) {
+    const got = g.hrefs.map((h) => by.get(h)).filter((x): x is NavItem => Boolean(x));
+    got.forEach((i) => taken.add(i.href));
+    if (got.length) groups.push({ id: g.id, label: g.label, icon: g.icon, items: got });
+  }
+
+  /* ما لم يُذكر في مجموعةٍ يبقى وحيداً بترتيبه الأصلي — فرابطٌ جديدٌ
+     يُضاف غداً يظهر فوراً ولا يختفي لأنّه نُسي هنا. */
+  return { solo: items.filter((i) => !taken.has(i.href)), groups };
+}
+
 export const studentNav: NavItem[] = [
   { href: "/student", label: "الرئيسية", icon: "Home" },
   { href: "/student/subjects", label: "موادي", icon: "BookOpen" },

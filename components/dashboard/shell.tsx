@@ -7,7 +7,7 @@
  * • شريط تنقّل سفلي (Bottom nav) للموبايل في وضع الطالب.
  */
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -25,7 +25,10 @@ import { BrandLockup } from "@/components/brand/logo";
 import { GoldRule } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
 import { navBadges } from "@/lib/admin-insights";
-import type { NavItem } from "@/lib/dashboard-data";
+import { groupNav, type NavItem } from "@/lib/dashboard-data";
+
+/** مفتاحُ حفظ المجموعات المفتوحة — يبقى بين الزيارات فلا يُعاد الطيُّ كلّ مرّة. */
+const NAV_OPEN_KEY = "mk.adminNav.open";
 
 type BrandIcon = ComponentType<IconProps>;
 
@@ -83,42 +86,184 @@ export function DashboardShell({
   const isActive = (href: string) =>
     href === `/${role}` ? pathname === href : pathname.startsWith(href);
 
+  /*
+    القائمةُ مجموعاتٌ تُطوى في وضع الأدمن.
+    اثنان وعشرون رابطاً مسطّحاً كانت تُمسح كلُّها لبلوغ واحد، وأواخرُها
+    تحت حافّة الشاشة لا تُرى إلّا بتمرير. والطالبُ سبعةٌ فيبقى مسطّحاً —
+    التجميعُ في السبعة كلفةٌ بلا عائد.
+  */
+  const { solo, groups } = useMemo(
+    () => (role === "admin" ? groupNav(nav) : { solo: nav, groups: [] }),
+    [nav, role],
+  );
+
+  const activeGroup = groups.find((g) => g.items.some((i) => isActive(i.href)))?.id;
+
+  /*
+    `null` تعني «لم يُقرأ المحفوظ بعد».
+    وقراءةُ التخزين في مُهيّئ الحالة تُخرج على الخادم غيرَ ما تُخرج في
+    المتصفّح فتشتكي React من اختلاف الترطيب. فالأولُ يُرسم بالمجموعة
+    النشطة وحدَها — وهي تُحسب من المسار فتتّفق الجهتان — ثمّ يحلّ المحفوظُ
+    محلّها بعد التركيب.
+  */
+  const [openIds, setOpenIds] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    let saved: string[] | null = null;
+    try {
+      const raw = localStorage.getItem(NAV_OPEN_KEY);
+      if (raw) saved = JSON.parse(raw) as string[];
+    } catch {
+      /* تخزينٌ محجوبٌ أو قيمةٌ تالفة — يُمضى بالافتراضيّ */
+    }
+    setOpenIds(saved ?? (activeGroup ? [activeGroup] : []));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /* من انتقل إلى قسمٍ في مجموعةٍ مطويّة تُفتح له: وإلّا وقف في صفحةٍ لا
+     يرى موضعَها في القائمة. */
+  useEffect(() => {
+    if (!activeGroup) return;
+    setOpenIds((prev) =>
+      prev === null || prev.includes(activeGroup) ? prev : [...prev, activeGroup],
+    );
+  }, [activeGroup]);
+
+  const shown = openIds ?? (activeGroup ? [activeGroup] : []);
+  const toggleGroup = (id: string) => {
+    const next = shown.includes(id) ? shown.filter((x) => x !== id) : [...shown, id];
+    try {
+      localStorage.setItem(NAV_OPEN_KEY, JSON.stringify(next));
+    } catch {
+      /* التخزينُ زينةٌ لا شرط — الطيُّ يعمل بدونه في هذه الجلسة */
+    }
+    setOpenIds(next);
+  };
+
+  const NavLink = ({
+    item,
+    onClick,
+    nested,
+  }: {
+    item: NavItem;
+    onClick?: () => void;
+    nested?: boolean;
+  }) => {
+    const slot = SLOTS[item.icon] ?? "grid";
+    const active = isActive(item.href);
+    return (
+      <Link
+        href={item.href}
+        onClick={onClick}
+        className={`relative flex items-center gap-3 rounded-2xl py-2.5 text-sm font-semibold transition ${
+          nested ? "ps-3.5 pe-7" : "px-3.5"
+        } ${active ? "text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
+      >
+        {active && (
+          <motion.span
+            layoutId={`side-${role}`}
+            /* sn-mark: مقبض تُعيد أنماط التصميم تشكيله (شريط · لوح ·
+               حزّ · توهّج · خطّ · نقطة · إطار) بلا تفريع في الشيفرة. */
+            className="sn-mark absolute inset-0 rounded-2xl bg-[hsl(var(--gold)/0.16)] ring-1 ring-[hsl(var(--gold)/0.3)]"
+            transition={{ type: "spring", stiffness: 380, damping: 32 }}
+          />
+        )}
+        <span className="sn-icon relative z-10 shrink-0">
+          <LibIcon slot={slot} className="size-5" />
+        </span>
+        <span className="sn-keep relative z-10">{item.label}</span>
+        {/* الشارة تقول «هنا عملٌ ينتظر» — فلا تُوضع إلا حيث ينتظر عمل */}
+        {badges[item.href] ? (
+          <span className="sn-keep relative z-10 mr-auto grid min-w-5 place-items-center rounded-full bg-rose-500 px-1.5 text-[10px] font-extrabold text-white">
+            {badges[item.href].toLocaleString("ar-EG")}
+          </span>
+        ) : null}
+      </Link>
+    );
+  };
+
   const NavLinks = ({ onClick }: { onClick?: () => void }) => (
     <nav className="flex flex-col gap-1">
-      {nav.map((item) => {
-        const slot = SLOTS[item.icon] ?? "grid";
-        const active = isActive(item.href);
+      {solo.map((item) => (
+        <NavLink key={item.href} item={item} onClick={onClick} />
+      ))}
+
+      {groups.map((g) => {
+        const isOpen = shown.includes(g.id);
+        /*
+          عدّادُ المجموعة مجموعُ عدّادات بناتها.
+          والطيُّ يُخفي الروابط، فلو أُخفيت شارتُها معها لصار الطيُّ يكتم
+          ما ينتظر عملاً — وهو نقضُ الغرض من الشارة. فتصعد إلى العنوان
+          حين يُطوى، وتعود إلى موضعها حين يُفتح فلا تُعدّ مرّتين.
+        */
+        const count = g.items.reduce((n, i) => n + (badges[i.href] ?? 0), 0);
         return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onClick}
-            className={`relative flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold transition ${
-              active
-                ? "text-primary"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            }`}
-          >
-            {active && (
-              <motion.span
-                layoutId={`side-${role}`}
-                /* sn-mark: مقبض تُعيد أنماط التصميم تشكيله (شريط · لوح ·
-                   حزّ · توهّج · خطّ · نقطة · إطار) بلا تفريع في الشيفرة. */
-                className="sn-mark absolute inset-0 rounded-2xl bg-[hsl(var(--gold)/0.16)] ring-1 ring-[hsl(var(--gold)/0.3)]"
-                transition={{ type: "spring", stiffness: 380, damping: 32 }}
-              />
-            )}
-            <span className="sn-icon relative z-10 shrink-0">
-              <LibIcon slot={slot} className="size-5" />
-            </span>
-            <span className="sn-keep relative z-10">{item.label}</span>
-            {/* الشارة تقول «هنا عملٌ ينتظر» — فلا تُوضع إلا حيث ينتظر عمل */}
-            {badges[item.href] ? (
-              <span className="sn-keep relative z-10 mr-auto grid min-w-5 place-items-center rounded-full bg-rose-500 px-1.5 text-[10px] font-extrabold text-white">
-                {badges[item.href].toLocaleString("ar-EG")}
+          <div key={g.id}>
+            <button
+              type="button"
+              onClick={() => toggleGroup(g.id)}
+              aria-expanded={isOpen}
+              className={`flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-bold transition ${
+                isOpen
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              <span className="sn-icon shrink-0">
+                <LibIcon slot={SLOTS[g.icon] ?? "grid"} className="size-5" />
               </span>
-            ) : null}
-          </Link>
+              <span className="sn-keep">{g.label}</span>
+              {!isOpen && count > 0 && (
+                <span className="sn-keep grid min-w-5 place-items-center rounded-full bg-rose-500 px-1.5 text-[10px] font-extrabold text-white">
+                  {count.toLocaleString("ar-EG")}
+                </span>
+              )}
+              <span
+                className={`sn-keep ms-auto text-[hsl(var(--gold))] transition-transform ${
+                  isOpen ? "rotate-180" : ""
+                }`}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="size-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </span>
+            </button>
+
+            <AnimatePresence initial={false}>
+              {isOpen && (
+                <motion.div
+                  key="body"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                  /* القصُّ لازم: الارتفاعُ يتحرّك والمحتوى ثابتُ الطول،
+                     فبدونه تفيض الروابطُ خارج الصندوق أثناء الطيّ. */
+                  className="overflow-hidden"
+                >
+                  {/*
+                    خطٌّ ذهبيٌّ على يمين البنات يربطها بعنوانها.
+                    والإزاحةُ وحدَها لا تكفي في قائمةٍ طويلة: العينُ تفقد
+                    أيَّ عنوانٍ تتبع بعد الرابط الثالث.
+                  */}
+                  <div className="me-4 flex flex-col gap-1 border-e border-[hsl(var(--gold)/0.35)] ps-1 pt-1">
+                    {g.items.map((item) => (
+                      <NavLink key={item.href} item={item} onClick={onClick} nested />
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         );
       })}
     </nav>
