@@ -324,6 +324,8 @@ export type SiteContent = {
    * هذا الملفّ.
    */
   artTint?: ArtTint;
+  /** عمقُ الرسوم (lib/art-depth.ts) — بَثقٌ وإضاءةٌ تجعلها مجسَّمة. */
+  artDepth?: string;
   designColors?: { panel?: string; panel2?: string; panelText?: string; tile?: string; edge?: string };
   shadowStyle?: string;
   ambient?: string;

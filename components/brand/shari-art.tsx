@@ -110,6 +110,32 @@ export function ShariAnim({
 }) {
   const pad = Math.round(size * 0.17);
 
+  /*
+    طبقةُ الإضاءة — تُقنَّع بالرسم نفسِه.
+    البَثقُ وحدَه يجعل للشكل جانباً، ولا يجعل له سطحاً مضيئاً — فيبقى
+    مسطّحاً وإن سمُك. وهذه طبقةٌ فوقه بتدرّجٍ من فاتحٍ أعلى إلى غامقٍ
+    أسفل، مقنَّعةٌ بملفّ الرسم نفسِه فتقع على منحنياته لا على مربّعٍ حوله.
+
+    و`mix-blend-mode: overlay` يُبقي اللونَ الأصليّ ويزيده ضياءً أو
+    إظلاماً — بخلاف الشفافية التي تُبيّضه وتُبهته.
+  */
+  const lit = (
+    <span
+      aria-hidden="true"
+      className="art-lit pointer-events-none absolute inset-0"
+      style={{
+        WebkitMaskImage: `url(/art/${id}.svg)`,
+        maskImage: `url(/art/${id}.svg)`,
+        WebkitMaskSize: "contain",
+        maskSize: "contain",
+        WebkitMaskRepeat: "no-repeat",
+        maskRepeat: "no-repeat",
+        WebkitMaskPosition: "center",
+        maskPosition: "center",
+      }}
+    />
+  );
+
   const img = (
     // eslint-disable-next-line @next/next/no-img-element
     <img
@@ -127,15 +153,23 @@ export function ShariAnim({
     />
   );
 
+  /* الحاويةُ نسبيّةٌ ليقع القناعُ على الصورة تماماً */
+  const stack = (
+    <span className="relative inline-grid" style={{ width: size, height: size }}>
+      {img}
+      {lit}
+    </span>
+  );
+
   if (!framed) {
-    if (!round) return <span className={className}>{img}</span>;
+    if (!round) return <span className={className}>{stack}</span>;
     /* حلقةٌ ذهبيّةٌ رفيعة تُنهي القرصَ فلا يذوب في سطحٍ فاتحٍ تحته */
     return (
       <span
         className={`relative inline-grid place-items-center rounded-full ring-1 ring-[hsl(var(--gold)/0.55)] ${className}`}
         style={{ width: size, height: size }}
       >
-        {img}
+        {stack}
       </span>
     );
   }
@@ -152,7 +186,7 @@ export function ShariAnim({
       className={`ic-frame ${round ? "ic-frame-round" : ""} grid place-items-center ${className}`}
       style={{ width: size + pad * 2, height: size + pad * 2 }}
     >
-      {img}
+      {stack}
     </span>
   );
 }

@@ -6,6 +6,7 @@ import { ContentProvider } from "@/components/content/content-provider";
 import { glowCss } from "@/lib/glow";
 import { brandCss } from "@/lib/brand-theme";
 import { artFilter } from "@/lib/art-tint";
+import { depthFilter, depthLit } from "@/lib/art-depth";
 import { AzhariBackdrop } from "@/components/brand/azhari-backdrop";
 import { ToTop } from "@/components/brand/to-top";
 import { findIconFrame, iconFrameClass, iconFrameVars } from "@/lib/icon-frames";
@@ -168,6 +169,17 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     primary: theme.customPrimary ?? undefined,
     gold: theme.customGold ?? undefined,
   });
+  /*
+    والعمقُ يُوصل بالتلوين في سلسلةٍ واحدة لا في متغيّرٍ ثانٍ.
+    خاصيّةُ `filter` لا تقبل متغيّرَين أحدُهما فارغ: `filter: var(--a) var(--b)`
+    تسقط كلُّها إن خلا أحدُهما. والوصلُ هنا يجعلها قيمةً واحدةً صحيحةً
+    دائماً، أو لا شيءَ فلا تُكتب أصلاً.
+
+    والترتيبُ مقصود: اللونُ أوّلاً على البكسل، ثمّ البَثقُ على الناتج —
+    وعكسُه يُلوّن الجانبَ المبثوقَ مع الجسم فيختفي الجانب.
+  */
+  const depth = depthFilter(db.content?.artDepth);
+  const artFx = [tint, depth].filter(Boolean).join(" ");
 
   const brand = theme.preset === "custom"
     ? brandCss({
@@ -201,7 +213,11 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           يُكتب شيءٌ إن لم تكن قاعدةٌ مفعّلة.
         */}
         {brand && <style dangerouslySetInnerHTML={{ __html: brand }} />}
-        {tint && <style dangerouslySetInnerHTML={{ __html: `:root{--art-filter:${tint}}` }} />}
+        {artFx && <style dangerouslySetInnerHTML={{ __html: `:root{--art-filter:${artFx}}` }} />}
+        {/* شدّةُ الإضاءة — أقوى في المجسَّمة منها في البارزة */}
+        {depthLit(db.content?.artDepth) && (
+          <style dangerouslySetInnerHTML={{ __html: `:root{--art-lit:${db.content?.artDepth === "deep" ? "0.55" : "0.34"}}` }} />
+        )}
         {glow && <style dangerouslySetInnerHTML={{ __html: glow }} />}
       </head>
       <body

@@ -32,6 +32,7 @@ import { ShariVector, SHARI_VECTOR } from "@/components/brand/shari-vector";
 import { AMBIENTS, AMBIENT_SPEEDS, findAmbient, DEFAULT_AMBIENT } from "@/lib/ambient-motion";
 import { SHADOW_STYLES, findShadow, DEFAULT_SHADOW } from "@/lib/shadow-styles";
 import { TINT_MODES, artFilter } from "@/lib/art-tint";
+import { ART_DEPTHS, depthFilter, depthLit } from "@/lib/art-depth";
 import { SHARI_ANIM } from "@/components/brand/shari-art";
 import { LibGlyph } from "@/components/brand/lib-icon";
 import {
@@ -1683,11 +1684,73 @@ export default function AppearancePage() {
             </div>
           </Fold>
 
-          <Fold className="mb-5" title="ألوان الصور المتحرّكة" storageKey="appearance.artTint">
+          <Fold className="mb-5" title="عمق الرسوم (ثلاثية الأبعاد)" storageKey="appearance.artDepth">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
-              الصورُ المتحرّكة نقطيّةٌ بألوانٍ مخبوزةٍ في إطاراتها — لا تُبدَّل ألوانُها كما
-              تُبدَّل في الرسم المتّجه. فتُلوَّن بمرشّحٍ محسوب: تُسوَّى رماديّةً أوّلاً ثمّ
-              تُصبغ باللون المطلوب، فتخرج أحاديّةَ اللون محتفظةً بتفاصيلها وحركتها.
+              الرسومُ مسطّحةٌ بطبعها. والبُعدُ الثالثُ لا يلزم منه إعادةُ رسمها: ظلالٌ صلبةٌ
+              متراكبةٌ تتبع حدودَ الرسم نفسِه فتصنع له جانباً مبثوقاً، وطبقةُ إضاءةٍ
+              مقنَّعةٌ بالشكل تُضيء أعلاه وتُظلم أسفلَه — فيصير جسماً لا صورة.
+            </p>
+
+            {/* المعاينةُ بالمرشّح نفسِه الذي سيُطبَّق — لا رسمٌ يحاكيه */}
+            <div className="mb-4 grid grid-cols-4 gap-3 rounded-2xl bg-muted/40 p-3">
+              {ART_DEPTHS.map((d) => {
+                const on = (content.artDepth ?? "flat") === d.id;
+                return (
+                  <button
+                    key={d.id}
+                    type="button"
+                    disabled={busy !== null}
+                    onClick={async () => { setBusy(`dep-${d.id}`); await saveContent({ artDepth: d.id }); setBusy(null); }}
+                    className={`flex flex-col items-center gap-2 rounded-2xl border p-3 transition ${
+                      on ? "border-primary bg-primary/5 ring-2 ring-primary/30" : "border-border hover:border-primary/40"
+                    }`}
+                  >
+                    <span className="relative grid size-14 place-items-center">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src="/art/capStarsAnim.svg"
+                        alt={d.name}
+                        className="size-14 object-contain"
+                        style={{
+                          filter: [
+                            artFilter(content.artTint, {
+                              primary: content.theme.customPrimary ?? undefined,
+                              gold: content.theme.customGold ?? undefined,
+                            }),
+                            depthFilter(d.id),
+                          ].filter(Boolean).join(" ") || undefined,
+                        }}
+                      />
+                      {depthLit(d.id) && (
+                        <span
+                          aria-hidden="true"
+                          className="art-lit pointer-events-none absolute inset-0"
+                          style={{
+                            opacity: d.id === "deep" ? 0.55 : 0.34,
+                            WebkitMaskImage: "url(/art/capStarsAnim.svg)",
+                            maskImage: "url(/art/capStarsAnim.svg)",
+                            WebkitMaskSize: "contain", maskSize: "contain",
+                            WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat",
+                            WebkitMaskPosition: "center", maskPosition: "center",
+                          }}
+                        />
+                      )}
+                    </span>
+                    <span className="text-center">
+                      <span className="block text-[11px] font-bold">{d.name}</span>
+                      <span className="block text-[10px] leading-tight text-muted-foreground">{d.hint}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </Fold>
+
+          <Fold className="mb-5" title="ألوان الرسوم" storageKey="appearance.artTint">
+            <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
+              تُلوَّن الرسومُ بمرشّحٍ محسوب: تُسوَّى رماديّةً أوّلاً ثمّ تُصبغ باللون
+              المطلوب، فتخرج أحاديّةَ اللون محتفظةً بتفاصيلها. والمرشّحُ يُحسب في
+              المتصفّح فيتبدّل اللونُ بضغطةٍ بلا إعادة تصدير.
             </p>
 
             {/* المعاينةُ بالصور نفسِها وبالمرشّح نفسِه — لا رسمٌ يحاكيه */}
