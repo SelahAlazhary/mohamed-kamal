@@ -86,7 +86,13 @@ export function StatTile({
         style={{ background: "radial-gradient(circle, hsl(var(--gold-light)) 0%, transparent 70%)" }}
       />
 
-      <div className="tile-head relative flex items-start justify-between gap-2">
+      {/*
+        الشارةُ في الجانب الأيسر.
+        الصفُّ في العربية يبدأ من اليمين، فأوّلُ عنصرٍ فيه يقع يميناً.
+        وعكسُ اتّجاه الصفّ يُنزل الشارةَ يساراً ويرفع الشارةَ النصّية
+        يميناً — بلا هوامشَ تلقائيّةٍ تنكسر إذا غاب أحدُهما.
+      */}
+      <div className="tile-head relative flex flex-row-reverse items-start justify-between gap-2">
         {icon && (
           <span
             /*
@@ -95,7 +101,7 @@ export function StatTile({
               على الأبيض ١٫٥١:١ فلا يُظهر شكلاً، والكحليُّ ٩٫٢٩:١. فلو
               وُضع الذهبُ هنا لبدت الشارةُ فارغةً لا رمزَ فيها.
             */
-            className="ic-frame tile-badge grid size-10 place-items-center rounded-2xl bg-white text-[hsl(var(--primary))]"
+            className="ic-frame tile-badge grid size-12 place-items-center rounded-2xl bg-white text-[hsl(var(--primary))]"
             style={{ boxShadow: "0 2px 4px -1px rgb(0 0 0 / 0.28), 0 8px 18px -8px rgb(0 0 0 / 0.55)" }}
           >
             {icon}
