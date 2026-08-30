@@ -7,6 +7,7 @@ import { PageHeader, Card } from "@/components/dashboard/ui";
 import { Button } from "@/components/ui/primitives";
 import { useContent } from "@/components/content/content-provider";
 import { TRACKS } from "@/lib/data";
+import { Fold } from "@/components/dashboard/fold";
 
 export default function NotificationsPage() {
   const { db, save, refresh } = useContent();
@@ -60,8 +61,7 @@ export default function NotificationsPage() {
     <>
       <PageHeader title="الإشعارات" subtitle="أرسل إشعارات لكل الطلاب أو لصف/شعبة محدّدة" />
 
-      <Card className="mb-6">
-        <h3 className="mb-4 font-display font-extrabold">إشعار جديد</h3>
+      <Fold className="mb-6" title="إشعار جديد" storageKey="notifications.1" defaultOpen>
         <div className="grid gap-3">
           <label><span className="mb-1 block text-xs font-semibold text-muted-foreground">العنوان</span>
             <input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} className="inp" placeholder="مثال: موعد بث مباشر" /></label>
@@ -94,7 +94,7 @@ export default function NotificationsPage() {
         <p className="mt-3 text-[11px] text-muted-foreground">
           الإشعار يظهر داخل بوابة الطالب، ويصل أيضاً كإشعار على شاشة الجهاز لكل طالب فعّل الإشعارات من تطبيقه.
         </p>
-      </Card>
+      </Fold>
 
       {notifications.length === 0 ? (
         <p className="rounded-3xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">لا توجد إشعارات بعد.</p>

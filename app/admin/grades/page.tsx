@@ -9,6 +9,7 @@ import { useContent } from "@/components/content/content-provider";
 import { TERMS } from "@/lib/signup-rules";
 import type { GradeRow, TermRow } from "@/lib/types";
 import { STAGES } from "@/lib/data";
+import { Fold } from "@/components/dashboard/fold";
 
 const SWATCHES = ["#12b981", "#2b8bf6", "#7c3aed", "#e11d48", "#f59e0b", "#0ea5e9"];
 
@@ -91,8 +92,7 @@ export default function GradesPage() {
  */
 function TermsCard() {
   return (
-    <Card>
-      <h3 className="font-display font-extrabold">الفصلان الدراسيان</h3>
+    <Fold title="الفصلان الدراسيان" storageKey="grades.1" defaultOpen>
       <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
         ثابتان في المنصّة ولا يُضافان ولا يُحذفان. يظهران للطالب عند التسجيل،
         وتُقسَّم بهما الكورسات من شاشة الكورس نفسه.
@@ -114,6 +114,6 @@ function TermsCard() {
           </div>
         ))}
       </div>
-    </Card>
+    </Fold>
   );
 }
