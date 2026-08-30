@@ -31,6 +31,7 @@ export function Section({
   count,
   actions,
   tone,
+  group,
   children,
   className = "",
 }: {
@@ -44,6 +45,8 @@ export function Section({
   actions?: ReactNode;
   /** `alert` يصبغ الترويسةَ حين ينتظر القسمُ عملاً. */
   tone?: "alert" | "calm";
+  /** مجموعةُ القسم — تُبنى منها طبقةٌ فوق الشريط حين تكثر الأقسام. */
+  group?: string;
   children: ReactNode;
   className?: string;
 }) {
@@ -55,7 +58,7 @@ export function Section({
   */
   const uid = useId();
   const label = typeof title === "string" ? title : "قسم";
-  const { hidden } = useSectionTab(uid, label);
+  const { hidden } = useSectionTab(uid, label, group);
   /*
     ويُخفى بـ`hidden` لا بالإزالة من الشجرة: الإزالةُ تُفقد ما كُتب في
     حقوله وترجعه فارغاً عند العودة إليه — وهو أسوأُ ما يقع في نموذجٍ طويل.

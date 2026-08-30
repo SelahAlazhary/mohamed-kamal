@@ -121,7 +121,7 @@ export default function CustomizePage() {
       {/* ---------- الهوية والنصوص ---------- */}
       {tab === "identity" && (
         <div className="grid gap-5 lg:grid-cols-2">
-          <Section title="هوية المنصّة">
+          <Section title="هوية المنصّة" group="الهوية">
             <div className="grid gap-3">
               <Field label="اسم المنصّة"><input className="inp" value={form.brand} onChange={(e) => set({ brand: e.target.value })} /></Field>
               <Field label="وصف المنصّة"><input className="inp" value={form.platformSubtitle} onChange={(e) => set({ platformSubtitle: e.target.value })} /></Field>
@@ -141,7 +141,7 @@ export default function CustomizePage() {
               <p className="mt-3 text-xs text-muted-foreground">الخطط نفسها (الأسماء والأنواع والأسعار) تُدار من صفحة «الخطط».</p>
             </div>
           </Section>
-          <Section title="نصوص الواجهة الرئيسية">
+          <Section title="نصوص الواجهة الرئيسية" group="الهوية">
             <div className="grid gap-3">
               <Field label="شارة الحالة (أعلى الهيرو)"><input className="inp" value={form.hero.statusPill} onChange={(e) => set({ hero: { statusPill: e.target.value } })} /></Field>
               <Field label="العنوان الرئيسي"><input className="inp" value={form.teacher.headline} onChange={(e) => setTeacher({ headline: e.target.value })} /></Field>
@@ -160,14 +160,14 @@ export default function CustomizePage() {
       {/* ---------- الألوان ---------- */}
       {tab === "theme" && (
         <div className="grid gap-5 lg:grid-cols-2">
-          <Section title="نمط التخطيط">
+          <Section title="نمط التخطيط" group="الهوية">
             <div className="grid grid-cols-2 gap-3">
               <button onClick={() => layout !== "dark" && toggleLayout()} className={`flex flex-col items-center gap-2 rounded-2xl border p-5 text-sm font-bold transition ${layout === "dark" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}><Moon className="size-6" /> داكن (زجاجي)</button>
               <button onClick={() => layout !== "light" && toggleLayout()} className={`flex flex-col items-center gap-2 rounded-2xl border p-5 text-sm font-bold transition ${layout === "light" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}><Sun className="size-6" /> فاتح (راقٍ)</button>
             </div>
             <p className="mt-4 text-xs text-muted-foreground">التغيير يُطبَّق ويُحفظ فوراً.</p>
           </Section>
-          <Section title="الهوية اللونية">
+          <Section title="الهوية اللونية" group="الهوية">
             <div className="grid grid-cols-2 gap-3">
               {PRESETS.map((p) => (
                 <button key={p.id} onClick={() => setPreset(p.id)} className={`flex items-center gap-2 rounded-2xl border px-3 py-3 text-sm font-bold transition ${preset === p.id ? "border-primary bg-primary/10" : "border-border hover:border-primary/40"}`}>
@@ -237,7 +237,7 @@ export default function CustomizePage() {
             التوقيعُ أثرُ يدٍ لا حرفٌ مطبوع — فيه ميلٌ وذيلٌ وحركةُ قلم.
             والمعاينةُ بالمكوّن نفسِه الذي في الرأس، لا رسمٌ يحاكيه.
           */}
-          <Section className="lg:col-span-2" title="اسم الأستاذ في الرأس — توقيعاً">
+          <Section className="lg:col-span-2" title="اسم الأستاذ في الرأس — توقيعاً" group="الهوية">
             <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
               يُكتب بخطّ الرقعة، وهو خطُّ المكاتبة والتوقيع في العربية تاريخياً — فيبدو الاسمُ
               أثرَ يدٍ لا عنواناً مطبوعاً. والذيلُ يُرسم عند فتح الصفحة كما يُرسم التوقيعُ بيد.
@@ -347,7 +347,7 @@ export default function CustomizePage() {
             </div>
           </Section>
 
-          <Section className="lg:col-span-2" title="أيقونة التطبيق">
+          <Section className="lg:col-span-2" title="أيقونة التطبيق" group="الهوية">
             <p className="mb-4 text-xs text-muted-foreground">
               ما يظهر على شاشة هاتف الطالب بعد تثبيت المنصّة، وفي تبويب المتصفّح.
             </p>
@@ -441,7 +441,7 @@ export default function CustomizePage() {
               فتظهر شاشةُ «غير مُتحقَّق منه» لكلّ من يربط ويُفرض سقفُ مئة مستخدم.
             */}
           </Section>
-          <Section className="lg:col-span-2" title="صلاحيات ربط جوجل">
+          <Section className="lg:col-span-2" title="صلاحيات ربط جوجل" group="تقنيّ">
             <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
               رفعُ الملفات وحدَه لا يحتاج مراجعةً من جوجل — يربطه أيُّ بريدٍ مباشرةً بلا تحذير.
               أمّا Google Meet فصلاحيتُه «حسّاسة»: طلبُها يجعل كلَّ من يربط يرى شاشة «تطبيق غير
@@ -464,7 +464,7 @@ export default function CustomizePage() {
             </label>
           </Section>
 
-          <Section className="lg:col-span-2" title="مكان استضافة الملفات المرفوعة">
+          <Section className="lg:col-span-2" title="مكان استضافة الملفات المرفوعة" group="تقنيّ">
             <p className="mb-4 text-xs text-muted-foreground">
               عند اختيار Google Drive تُرفع الصور والفيديوهات في الخلفية إلى مجلّد باسم المنصّة داخل حساب جوجل المربوط،
               ويُحفظ في المنصّة رابط العرض فقط — فلا تستهلك مساحة الخادم.
@@ -500,7 +500,7 @@ export default function CustomizePage() {
           </Section>
         
           {/* ---------- خلفية الصفحة الرئيسية ---------- */}
-          <Section className="lg:col-span-2" title="خلفية الصفحة الرئيسية">
+          <Section className="lg:col-span-2" title="خلفية الصفحة الرئيسية" group="صورة الأستاذ">
             <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
               صورة تُرسم خلف كل أقسام الصفحة. اجعلها ثابتة لتبقى في مكانها وتمرّ العناصر فوقها،
               واضبط شدّتها وضبابها حتى تبقى النصوص مقروءة.
@@ -604,7 +604,7 @@ export default function CustomizePage() {
       {/* ---------- إطار الصورة ---------- */}
       {tab === "frame" && (
         <>
-        <Section className="mb-5" title="خطّ القاعدة أسفل الإطار">
+        <Section className="mb-5" title="خطّ القاعدة أسفل الإطار" group="صورة الأستاذ">
           <p className="mb-3 text-xs text-muted-foreground">
             كان يُرسم تحت كل إطار مهما كان شكلُه، فيبدو خطّاً معلَّقاً أسفل الأشكال التي
             لا تحتاج تثبيتاً بصرياً. صار مطفأً افتراضياً.
@@ -620,7 +620,7 @@ export default function CustomizePage() {
           </button>
         </Section>
 
-        <Section className="mb-5" title="ضبط الصورة داخل الإطار">
+        <Section className="mb-5" title="ضبط الصورة داخل الإطار" group="صورة الأستاذ">
           <p className="mb-5 text-xs text-muted-foreground">الصورة تظهر كاملة بلا قصّ افتراضياً — حرّكها وكبّرها حتى تستقرّ، والمعاينة تتغيّر فوراً ثم اضغط حفظ.</p>
           <div className="grid gap-6 md:grid-cols-[minmax(0,260px)_1fr]">
             <div className="mx-auto w-full max-w-[240px]">
@@ -674,7 +674,7 @@ export default function CustomizePage() {
         </Section>
 
         {/* ---------- اختيار الإطار: لونه وحجمه وشكله ---------- */}
-        <Section className="mb-5" title="لون الإطار وحجمه">
+        <Section className="mb-5" title="لون الإطار وحجمه" group="صورة الأستاذ">
           <p className="mb-4 text-xs text-muted-foreground">
             اللون يسري على حدّ الإطار وخيطه الداخلي، والحجم يكبّره داخل عموده بلا تغيير نسبة أبعاده.
           </p>
@@ -730,7 +730,7 @@ export default function CustomizePage() {
           </div>
         </Section>
 
-        <Section title="اختر تصميم إطار الصورة">
+        <Section title="اختر تصميم إطار الصورة" group="صورة الأستاذ">
           <p className="mb-5 text-xs text-muted-foreground">
             {FRAME_SHAPES.length.toLocaleString("ar-EG")} تصميماً — التغيير يُطبَّق ويُحفظ فوراً.
             هذا هو المكان الوحيد لاختيار الإطار.
@@ -781,7 +781,7 @@ export default function CustomizePage() {
 
       {tab === "links" && (
         <div className="grid gap-5 lg:grid-cols-2">
-          <Section title="روابط التواصل">
+          <Section title="روابط التواصل" group="التواصل والأزرار">
             <div className="grid gap-3">
               <Field label="رقم واتساب (دولي بدون +)"><input dir="ltr" className="inp text-right" value={form.whatsapp} onChange={(e) => set({ whatsapp: e.target.value })} /></Field>
               <Field label="رابط فيسبوك"><input dir="ltr" className="inp text-right" value={form.social.facebook} onChange={(e) => setSocial({ facebook: e.target.value })} /></Field>
@@ -797,7 +797,7 @@ export default function CustomizePage() {
               </div>
             </div>
           </Section>
-          <Section title="أزرار الصفحة الرئيسية">
+          <Section title="أزرار الصفحة الرئيسية" group="التواصل والأزرار">
             <div className="grid gap-3">
               <Field label="نص زر التسجيل"><input className="inp" value={form.cta?.registerLabel ?? "سجّل الآن"} onChange={(e) => setCta({ registerLabel: e.target.value })} /></Field>
               <Field label="رابط زر التسجيل"><input dir="ltr" className="inp text-right" value={form.cta?.registerUrl ?? "/register"} onChange={(e) => setCta({ registerUrl: e.target.value })} placeholder="/register أو رابط خارجي" /></Field>
@@ -823,7 +823,7 @@ export default function CustomizePage() {
               تحت الحقوق لا جملةٌ تخلطهما.
             */}
           </Section>
-          <Section className="lg:col-span-2" title="الشركة المطوّرة (أسفل الفوتر)">
+          <Section className="lg:col-span-2" title="الشركة المطوّرة (أسفل الفوتر)" group="التواصل والأزرار">
             <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
               يظهر سطرٌ تحت حقوق النشر: «تطوير — الاسم». من ترك الاسم فارغاً لم يظهر السطر،
               ومن ترك الرابط فارغاً ظهر الاسمُ نصّاً لا وصلةً معطوبة.

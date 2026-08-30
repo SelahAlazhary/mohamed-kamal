@@ -646,7 +646,7 @@ export default function AppearancePage() {
 
       {tab === "design" && (
         <>
-          <Section className="mb-5" title="ألوان الهيئة">
+          <Section className="mb-5" title="ألوان الهيئة" group="الألوان">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               لوحُ الترحيب والبطاقات في بوابة الطالب يأخذان لونَهما من الهوية. ومن أرادهما
               أغمقَ أو أفتحَ لا يريد أن يُغيّر الهويةَ كلَّها من أجلهما — فلهما لونُهما هنا.
@@ -1638,7 +1638,7 @@ export default function AppearancePage() {
             </p>
           </Card>
 
-          <Section className="mb-5" title="ألوان الإطار">
+          <Section className="mb-5" title="ألوان الإطار" group="الألوان">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               الشكلُ هيئةٌ واللونُ هوية — واللونُ المتروك يرث لون الثيم.
             </p>
@@ -1684,7 +1684,7 @@ export default function AppearancePage() {
             </div>
           </Section>
 
-          <Section className="mb-5" title="عمق الرسوم (ثلاثية الأبعاد)">
+          <Section className="mb-5" title="عمق الرسوم (ثلاثية الأبعاد)" group="الرسوم">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               الرسومُ مسطّحةٌ بطبعها. والبُعدُ الثالثُ لا يلزم منه إعادةُ رسمها: ظلالٌ صلبةٌ
               متراكبةٌ تتبع حدودَ الرسم نفسِه فتصنع له جانباً مبثوقاً، وطبقةُ إضاءةٍ
@@ -1746,7 +1746,7 @@ export default function AppearancePage() {
             </div>
           </Section>
 
-          <Section className="mb-5" title="ألوان الرسوم">
+          <Section className="mb-5" title="ألوان الرسوم" group="الرسوم">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               تُلوَّن الرسومُ بمرشّحٍ محسوب: تُسوَّى رماديّةً أوّلاً ثمّ تُصبغ باللون
               المطلوب، فتخرج أحاديّةَ اللون محتفظةً بتفاصيلها. والمرشّحُ يُحسب في
@@ -1844,7 +1844,7 @@ export default function AppearancePage() {
             )}
           </Section>
 
-          <Section className="mb-5" title="ظلال العناصر">
+          <Section className="mb-5" title="ظلال العناصر" group="الحركة والظلال">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               الظلُّ معلومةُ ارتفاعٍ لا زخرفة: يقول للعين أيُّ لوحٍ أقربُ إليها. وكلُّ ظلٍّ هنا
               طبقتان — قريبةٌ ترسم الحافّة وبعيدةٌ تعطي الارتفاع — ولونُه من لون النصّ لا أسودُ
@@ -1874,7 +1874,7 @@ export default function AppearancePage() {
             </p>
           </Section>
 
-          <Section className="mb-5" title="الحركة الدائمة">
+          <Section className="mb-5" title="الحركة الدائمة" group="الحركة والظلال">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               حركاتُ الدخول تقع مرّةً حين يظهر العنصر ثمّ تسكن الصفحةُ أبداً. وهذه لا تتوقّف ما
               دامت الصفحةُ مفتوحة. والتأخيرُ يُشتقّ من ترتيب اللوح فيتموّج المشهدُ ولا يخفق
@@ -1925,7 +1925,7 @@ export default function AppearancePage() {
             </div>
           </Section>
 
-          <Section className="mb-5" title="العمق الثلاثي">
+          <Section className="mb-5" title="العمق الثلاثي" group="الحركة والظلال">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               كلُّ لوحٍ يميل نحو المؤشّر بحسب موضعه هو — والتفاوتُ بين الألواح هو ما تقرؤه
               العينُ مجسّماً، لا شدّةُ الميل. وعلى الهاتف يُقاد بميل الجهاز نفسِه. ومن ضبط
@@ -1958,7 +1958,7 @@ export default function AppearancePage() {
             </div>
           </Section>
 
-          <Section className="mb-4" title="مكتبة رسوم الموقع">
+          <Section className="mb-4" title="مكتبة رسوم الموقع" group="الرسوم">
             <p className="text-[11px] leading-relaxed text-muted-foreground">
               المكتبةُ المختارة تسري على رسوم المنصّة كلِّها — الساكنةُ والمتحرّكةُ
               والحالاتُ الفارغةُ معاً. و<b>ليست مئةَ طقمٍ مرسوم</b>: مئةُ طقمٍ بيدٍ واحدةٍ
@@ -2024,7 +2024,7 @@ export default function AppearancePage() {
             </Card>
           </Section>
 
-          <Section className="mb-4" title="مكتبة الأيقونات">
+          <Section className="mb-4" title="مكتبة الأيقونات" group="الأيقونات">
             <p className="text-[11px] leading-relaxed text-muted-foreground">
               المكتبةُ المختارة تسري على كلّ رمزٍ في المنصّة — القائمة الجانبية وشريط الهاتف
               ورأس اللوحة معاً. وثلاثُ هندساتٍ لا عشر: خطّيّةٌ ومصمتةٌ وكوفيّة، والمكتباتُ
@@ -2122,7 +2122,7 @@ export default function AppearancePage() {
             })}
           </div>
 
-          <Section className="mb-4 mt-8" title="٢٠ غلافاً">
+          <Section className="mb-4 mt-8" title="٢٠ غلافاً" group="الأيقونات">
             <p className="text-[11px] leading-relaxed text-muted-foreground">
               الإطارُ يحكم اللوحَ تحت الأيقونة، والغلافُ يحكم ما حوله: حلقةٌ تحيطه، أو هالةٌ
               تتسرّب من خلفه، أو نقشٌ يملؤه، أو شارةٌ على حافّته. ومحوران لا يتداخلان فيُركَّب
@@ -2162,7 +2162,7 @@ export default function AppearancePage() {
             </div>
           </Section>
 
-          <Section className="mb-4" title="٤٠ حركة">
+          <Section className="mb-4" title="٤٠ حركة" group="الأيقونات">
             <p className="text-[11px] leading-relaxed text-muted-foreground">
               تُختار واحدةٌ فتسري على أيقونات المنصّة كلِّها — لأنّ الحركة لغةٌ لا زينة، وصفحةٌ كلُّ
               أيقونةٍ فيها تتحرّك حركةً مختلفة تقول ضجيجاً لا معنى. و«عند المرور» تنتظر اليد فتردّ

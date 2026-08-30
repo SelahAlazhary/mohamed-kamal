@@ -31,10 +31,10 @@ import {
 } from "react";
 import { LayoutList } from "lucide-react";
 
-type Entry = { id: string; title: string };
+type Entry = { id: string; title: string; group?: string };
 
 type Ctx = {
-  register: (id: string, title: string) => void;
+  register: (id: string, title: string, group?: string) => void;
   unregister: (id: string) => void;
   active: string | null;
   /** يُبوَّب فعلاً؟ — دون ثلاثة أقسامٍ تُعرض كلُّها. */
@@ -43,7 +43,7 @@ type Ctx = {
 
 const SectionTabsCtx = createContext<Ctx | null>(null);
 
-export function useSectionTab(id: string, title: string) {
+export function useSectionTab(id: string, title: string, group?: string) {
   const ctx = useContext(SectionTabsCtx);
   const reg = ctx?.register;
   const unreg = ctx?.unregister;
@@ -58,9 +58,9 @@ export function useSectionTab(id: string, title: string) {
   */
   useEffect(() => {
     if (!reg || !unreg) return;
-    reg(id, title);
+    reg(id, title, group);
     return () => unreg(id);
-  }, [reg, unreg, id, title]);
+  }, [reg, unreg, id, title, group]);
 
   if (!ctx) return { hidden: false };
   return { hidden: ctx.tabbed && ctx.active !== id };
@@ -70,17 +70,17 @@ export function SectionTabs({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<Entry[]>([]);
   const [active, setActive] = useState<string | null>(null);
 
-  const register = useCallback((id: string, title: string) => {
+  const register = useCallback((id: string, title: string, group?: string) => {
     setItems((prev) => {
       const at = prev.findIndex((x) => x.id === id);
       /* المسجَّلُ يبقى في موضعه ولو تغيّر عنوانُه — وإلّا قفز إلى الآخر */
       if (at >= 0) {
-        if (prev[at].title === title) return prev;
+        if (prev[at].title === title && prev[at].group === group) return prev;
         const copy = [...prev];
-        copy[at] = { id, title };
+        copy[at] = { id, title, group };
         return copy;
       }
-      return [...prev, { id, title }];
+      return [...prev, { id, title, group }];
     });
   }, []);
 
@@ -90,11 +90,37 @@ export function SectionTabs({ children }: { children: ReactNode }) {
 
   const tabbed = items.length >= 3;
 
+  /*
+    مجموعاتٌ فوق الأقسام — لِما زاد على ثمانية.
+    شاشةُ التخصيص سبعةَ عشرَ قسماً؛ وشريطٌ فيه سبعَ عشرةَ شارةً يُمرَّر
+    عرضاً ليس تبسيطاً، بل هو القائمةُ الطويلةُ نفسُها في ثوبٍ آخر.
+    فتُجمع في خمسٍ أو ستّ، ويُعرض من الثانية إلا ما كان في المفتوحة —
+    فيبقى المرئيُّ في كلّ لحظةٍ قدرَ ما تُمسكه العين.
+
+    ولا مجموعاتٍ إن لم تُعلَن، ولا إن كانت واحدةً: طبقةٌ لا تُقسّم شيئاً
+    زحامٌ لا ترتيب.
+  */
+  const groups = useMemo(() => {
+    const out: string[] = [];
+    items.forEach((i) => { if (i.group && !out.includes(i.group)) out.push(i.group); });
+    return out;
+  }, [items]);
+  const grouped = tabbed && groups.length >= 2 && items.every((i) => i.group);
+
+  const [group, setGroup] = useState<string | null>(null);
+  useEffect(() => {
+    if (!grouped) { setGroup(null); return; }
+    setGroup((cur) => (cur && groups.includes(cur) ? cur : groups[0] ?? null));
+  }, [grouped, groups]);
+
+  /* ما يُعرض في صفّ الأقسام: أقسامُ المجموعة المفتوحة، أو الكلُّ بلا مجموعات */
+  const shown = grouped ? items.filter((i) => i.group === group) : items;
+
   /* الافتراضُ أوّلُ قسم — ويُصحَّح إن حُذف القسمُ المعروض. */
   useEffect(() => {
     if (!tabbed) { setActive(null); return; }
-    setActive((cur) => (cur && items.some((x) => x.id === cur) ? cur : items[0]?.id ?? null));
-  }, [items, tabbed]);
+    setActive((cur) => (cur && shown.some((x) => x.id === cur) ? cur : shown[0]?.id ?? null));
+  }, [shown, tabbed]);
 
   const ctx = useMemo<Ctx>(() => ({ register, unregister, active, tabbed }), [register, unregister, active, tabbed]);
 
@@ -113,13 +139,31 @@ export function SectionTabs({ children }: { children: ReactNode }) {
       {tabbed && (
         <nav
           aria-label="أقسام الصفحة"
-          className="sticky top-[4.5rem] z-[60] -mx-4 mb-4 px-4 sm:-mx-6 sm:px-6"
+          className="sticky top-[4.5rem] z-[60] -mx-4 mb-4 space-y-2 px-4 sm:-mx-6 sm:px-6"
         >
+          {grouped && (
+            <div className="flex max-w-full items-center gap-1.5 overflow-x-auto">
+              {groups.map((g) => (
+                <button
+                  key={g}
+                  type="button"
+                  onClick={() => setGroup(g)}
+                  className={`font-kufi shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[11px] font-extrabold transition ${
+                    group === g
+                      ? "bg-[hsl(var(--primary))] text-white"
+                      : "border border-border bg-card/80 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {g}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-[1.25rem] border border-border/70 bg-white/95 p-1.5 shadow-[0_1px_2px_rgba(16,24,40,.05),0_8px_24px_-12px_rgba(16,24,40,.2)] backdrop-blur-xl dark:bg-card/95">
             <span className="grid size-9 shrink-0 place-items-center rounded-2xl bg-[hsl(var(--gold)/0.22)] text-primary">
               <LayoutList className="size-4" />
             </span>
-            {items.map((i, n) => (
+            {shown.map((i, n) => (
               <button
                 key={i.id}
                 type="button"
