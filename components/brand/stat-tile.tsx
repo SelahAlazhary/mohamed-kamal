@@ -62,6 +62,14 @@ export function StatTile({
   const ink = tone === "ink";
   const uid = useUid("tile");
   const pct = Math.max(0, Math.min(100, ring ?? 0));
+  /*
+    الحلقةُ تقرأ الحدَّ من أيّهما وُجد.
+    كانت تُرسم للنسبة وحدَها، والاشتراكُ يعطي `bar` لا `ring` — فبطاقةٌ
+    من الثلاث تبقى بلا حلقةٍ وتشذّ عن أختيها. والمقصودُ حدٌّ يُقرأ حيثما
+    كان، لا خاصيّةٌ بعينها.
+  */
+  const shown = Math.max(0, Math.min(100, ring ?? bar ?? 0));
+  const has = ring !== undefined || bar !== undefined;
   /* نصفُ القطر يتّسع ليحيط بلوح الصورة لا ليجاوره. */
   const r = 29;
   const circ = 2 * Math.PI * r;
@@ -118,21 +126,15 @@ export function StatTile({
       */}
       <div className="tile-head relative flex flex-row-reverse items-center gap-4">
         {icon && (
-          <span className="relative grid shrink-0 place-items-center" style={{ width: "5.75rem", height: "5.75rem" }}>
+          <span className="relative grid shrink-0 place-items-center" style={{ width: "6.6rem", height: "6.6rem" }}>
             {/*
               حلقةُ التقدّم تحيط بالصورة لا تجاورها.
               كانتا شيئين متجاورين يقتسمان العرض؛ وإحاطتُها بها تجعل
               الرقمَ والصورةَ شيئاً واحداً يُقرأ دفعةً، وتُفرغ العرضَ
               للنصّ.
             */}
-            {ring !== undefined && (
+            {icon && (
               <svg viewBox="0 0 64 64" className="absolute inset-0 size-full -rotate-90" fill="none" aria-hidden="true">
-                <defs>
-                  <linearGradient id={`${uid}-g`} x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="hsl(var(--gold))" />
-                    <stop offset="100%" stopColor="hsl(var(--primary))" />
-                  </linearGradient>
-                </defs>
                 <circle
                   cx="32"
                   cy="32"
@@ -140,19 +142,50 @@ export function StatTile({
                   stroke={ink ? "hsl(0 0% 100% / 0.16)" : "hsl(var(--gold) / 0.28)"}
                   strokeWidth="4"
                 />
+                {has && (
                 <motion.circle
                   cx="32"
                   cy="32"
                   r={r}
-                  stroke={`url(#${uid}-g)`}
+                  /*
+                    القوسُ لونٌ واحد.
+                    كان تدرّجاً من الذهب إلى الأساسيّ، واللوحُ نفسُه
+                    أساسيّ — فينتهي القوسُ بلون ما تحته ويختفي نصفُه،
+                    فيُقرأ خطّاً رماديّاً مقطوعاً لا حدّاً. ولونٌ واحدٌ
+                    يقابل لونَ اللوح يُرى في طوله كلِّه.
+                  */
+                  stroke={ink ? "hsl(var(--gold))" : "hsl(var(--primary))"}
                   strokeWidth="4"
                   strokeLinecap="round"
                   strokeDasharray={circ}
                   initial={{ strokeDashoffset: circ }}
-                  animate={{ strokeDashoffset: circ - (pct / 100) * circ }}
+                  animate={{ strokeDashoffset: circ - (shown / 100) * circ }}
                   transition={{ duration: 1.1, ease: "easeOut", delay: 0.25 + index * 0.08 }}
                 />
+                )}
               </svg>
+            )}
+
+            {/*
+              الحدُّ مكتوباً على الحلقة نفسِها.
+              القوسُ يُري المقدارَ ولا يُري رقمَه — فيُقرأ «قريبٌ من
+              النصف» ولا يُقرأ «٤٧». وشارةٌ صغيرةٌ تجلس على أسفل الحلقة
+              تُنهي القوسَ برقمِه، فيجتمع البصريُّ والعدديُّ في موضعٍ واحد.
+
+              وموضعُها أسفلَ الوسط لأنّ القوسَ يبدأ من الأعلى (الدورانُ
+              ‎-90°‎) فيبقى الأسفلُ أهدأَ ما في الحلقة.
+            */}
+            {has && (
+              <span
+                className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/4 rounded-full px-2 py-[0.15rem] text-[0.68rem] font-bold leading-none [font-variant-numeric:tabular-nums] shadow-sm"
+                style={{
+                  background: "hsl(var(--gold))",
+                  color: "hsl(var(--primary))",
+                  boxShadow: ink ? "0 0 0 2px hsl(var(--primary))" : "0 0 0 2px hsl(var(--card))",
+                }}
+              >
+                {shown.toLocaleString("ar-EG", { maximumFractionDigits: 0 })}٪
+              </span>
             )}
 
             {/*
@@ -167,7 +200,7 @@ export function StatTile({
             */}
             <span
               className="tile-badge relative grid shrink-0 place-items-center"
-              style={{ width: "5.8rem", height: "5.8rem" }}
+              style={{ width: "4.9rem", height: "4.9rem" }}
             >
               <span
                 aria-hidden="true"
@@ -210,7 +243,7 @@ export function StatTile({
               <span className="text-[2.6rem] font-bold [font-variant-numeric:tabular-nums] tracking-tight">{value}</span>
               {unit && (
                 <span
-                  className={`font-kufi text-sm font-bold ${
+                  className={`font-kufi text-base font-bold ${
                     ink ? "text-[hsl(var(--primary-foreground)/0.7)]" : "text-muted-foreground"
                   }`}
                 >
@@ -221,25 +254,19 @@ export function StatTile({
           )}
 
           <p
-            className={`tile-text font-kufi mt-2 text-[0.82rem] font-bold leading-snug ${
+            className={`tile-text font-kufi mt-2 text-[1.02rem] font-bold leading-snug ${
               ink ? "text-[hsl(var(--primary-foreground)/0.8)]" : "text-muted-foreground"
             }`}
           >
             {label}
           </p>
 
-          {/* شريط النسبة — تحت النصّ لا تحت البطاقة، فيقيس ما فوقه */}
-          {bar !== undefined && (
-            <div className={`relative mt-3 h-1.5 overflow-hidden rounded-full ${ink ? "bg-white/15" : "bg-[hsl(var(--gold)/0.25)]"}`}>
-              <motion.span
-                className="block h-full rounded-full"
-                style={{ background: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--gold)))" }}
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.max(0, Math.min(100, bar))}%` }}
-                transition={{ duration: 0.9, ease: "easeOut", delay: 0.3 + index * 0.08 }}
-              />
-            </div>
-          )}
+          {/*
+            شريطُ النسبة أُسقِط.
+            صار يقول ما تقوله الحلقةُ وشارتُها: النسبةُ نفسُها مرسومةً
+            مرّتين ومكتوبةً مرّة — وتكرارُ الرقم في بطاقةٍ واحدة يُشتّت
+            العين ولا يزيدها علماً. والحلقةُ أوقعُ لأنّها عند الصورة.
+          */}
         </div>
       </div>
 

@@ -31,6 +31,7 @@ import { EdgeArtLayer } from "@/components/brand/edge-art";
 import { subjectActive, activeSubs, daysLeft } from "@/lib/access";
 import { MotionMark } from "@/components/brand/motion-mark";
 import { ShariAnim } from "@/components/brand/shari-art";
+import { ShariVector } from "@/components/brand/shari-vector";
 
 const ar = (n: number) => n.toLocaleString("ar-EG");
 
@@ -203,7 +204,7 @@ export default function StudentHome() {
               />
             )}
             {me?.grade && L.header !== "compact" && (
-              <p className="student-header-extra font-kufi mt-1.5 text-xs font-semibold text-white/80">{me.grade}</p>
+              <p className="student-header-extra font-kufi mt-2 text-base font-semibold text-white/85">{me.grade}</p>
             )}
           </div>
 
@@ -330,7 +331,7 @@ export default function StudentHome() {
 
       {courses.length === 0 && (
         <Card className="flex flex-col items-center gap-3 py-12 text-center">
-          <ShariAnim id="capOpenBookAnim" size={150} framed={false} />
+          <ShariVector id="quranWrite" size={168} />
           <p className="font-display text-lg font-bold">لم {y("تفعّل")} أي كورس بعد</p>
           <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
             {y("تصفّح")} الكورسات المتاحة {y("واشتر")} ما يناسبك، ثم {y("فعّل")}ه بكود التفعيل.

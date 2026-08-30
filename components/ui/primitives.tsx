@@ -4,6 +4,7 @@ import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { RuleOrnament } from "@/components/brand/pattern";
 import { ShariAnim, type ShariAnimId } from "@/components/brand/shari-art";
+import { ShariVector, type ShariVectorId } from "@/components/brand/shari-vector";
 
 /* ---------------- الزر ---------------- */
 type Variant = "glow" | "outline" | "ghost";
@@ -73,6 +74,7 @@ export function Pill({ children, className = "" }: { children: ReactNode; classN
 export function SectionHeading({
   eyebrow,
   anim,
+  vector,
   title,
   desc,
   center = true,
@@ -80,6 +82,13 @@ export function SectionHeading({
   eyebrow?: string;
   /** علامةٌ متحرّكة تتصدّر القسم. */
   anim?: ShariAnimId;
+  /**
+   * رسمٌ متجهٌ يتصدّر القسم — يُقدَّم على `anim` حين يجتمعان.
+   * والفرقُ بينهما ليس في الشكل: `anim` صورةٌ نقطيّةٌ بحجمٍ واحدٍ تُنقل
+   * من الخادم، و`vector` مساراتٌ تُرسم بألوان الهوية — فتتبع اللوحةَ
+   * المختارة وتكبر بلا تحبّب ولا تزن شيئاً.
+   */
+  vector?: ShariVectorId;
   title: ReactNode;
   desc?: string;
   center?: boolean;
@@ -98,11 +107,15 @@ export function SectionHeading({
         الكلمةَ وتكسر سطرَها على الشاشات الضيّقة، وفوقه تتصدّر القسمَ
         وتبقى العينُ تنزل إلى العنوان طبيعياً.
       */}
-      {anim && (
+      {vector ? (
+        <span className={`mb-3 flex ${center ? "justify-center" : ""}`}>
+          <ShariVector id={vector} size={128} />
+        </span>
+      ) : anim ? (
         <span className={`mb-3 flex ${center ? "justify-center" : ""}`}>
           <ShariAnim id={anim} size={112} />
         </span>
-      )}
+      ) : null}
       {eyebrow && (
         <span className={`mb-4 flex items-center gap-3 text-xs font-bold tracking-[0.18em] text-primary ${center ? "justify-center" : ""}`}>
           {center && <RuleOrnament width={64} className="hidden text-primary sm:block" />}
