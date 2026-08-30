@@ -129,9 +129,16 @@ export function ShariAnim({
     );
   }
 
+  /*
+    والاستدارةُ مع الإطار لا بدلاً منه.
+    كان `round` يُلغي الإطارَ ويضع حلقةً عاريةً — فتفقد الصورةُ تعبئةَ
+    الإطار وحدَّه وغلافَه، وهي من اختيار اللوحة. والصنفُ `ic-frame-round`
+    يُبقي ذلك كلَّه ويقصّ الحافّةَ دائرةً، فتستدير الصورةُ ولا تشذّ عن
+    نظام الإطار.
+  */
   return (
     <span
-      className={`ic-frame grid place-items-center ${className}`}
+      className={`ic-frame ${round ? "ic-frame-round" : ""} grid place-items-center ${className}`}
       style={{ width: size + pad * 2, height: size + pad * 2 }}
     >
       {img}
