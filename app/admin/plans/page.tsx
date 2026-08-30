@@ -103,36 +103,6 @@ export default function PlansPage() {
     setOpen(true);
   };
 
-  /*
-    مصدرُ السعر واحد.
-    كان الأستاذُ يختار كورساً ثمّ يكتب له سعراً في الخطّة — فيصير للكورس
-    سعران: المكتوبُ في بطاقته والمكتوبُ في خطّته، ولا يُعرف أيُّهما يُحصَّل
-    ولا أيُّهما يُعدَّل إن تغيّر. وهو ما لا يُحتمل في المال.
-
-    فحيث كان للخطّة كورسٌ بعينه أو مادّةٌ بعينها، تُعرض أسعارُه المسجّلةُ
-    ويُختار منها — لا يُكتب رقمٌ ثانٍ. وتعديلُ السعر موضعُه الكورس، فيتبعه
-    كلُّ ما يُباع به.
-  */
-  const priceSource = (() => {
-    if (f.scope === "subject" && f.subjectId) {
-      const s = subjects.find((x) => x.id === f.subjectId);
-      if (!s) return null;
-      const list = (s.prices ?? []).filter((p) => (p.label ?? "").trim());
-      if (list.length) return { where: s.name, list: list.map((p) => ({ label: p.label, price: p.price })) };
-      if ((s.price ?? 0) > 0) return { where: s.name, list: [{ label: "السعر الأساسي", price: s.price }] };
-      return { where: s.name, list: [] };
-    }
-    if (f.scope === "picked" && f.picks.length === 1 && isUnitKey(f.picks[0])) {
-      const { subjectId, unitId } = parsePick(f.picks[0]);
-      const s = subjects.find((x) => x.id === subjectId);
-      const u = s ? courseUnits(s).find((x) => x.id === unitId) : undefined;
-      if (!s || !u) return null;
-      const list = (u.prices ?? []).filter((p) => (p.label ?? "").trim());
-      return { where: `${s.name} — ${u.title}`, list: list.map((p) => ({ label: p.label, price: p.price })) };
-    }
-    return null;
-  })();
-
   const commit = () => {
     if (!f.name.trim()) return;
     if (f.scope === "subject" && !f.subjectId) return;
@@ -288,52 +258,26 @@ export default function PlansPage() {
             )}
             {f.scope === "subject" && (
               <label><span className="lbl">الكورس</span>
-                <select
-                  className="inp"
-                  value={f.subjectId}
-                  onChange={(e) => {
-                    /* السعرُ يتبع الكورسَ فور اختياره — فلا يبقى رقمٌ من
-                       كورسٍ سابق يُحفظ سهواً. */
-                    const s = subjects.find((x) => x.id === e.target.value);
-                    const first = (s?.prices ?? []).find((p) => (p.label ?? "").trim())?.price ?? s?.price ?? 0;
-                    set({ subjectId: e.target.value, price: Number(first) || 0 });
-                  }}
-                >
+                <select className="inp" value={f.subjectId} onChange={(e) => set({ subjectId: e.target.value })}>
                   <option value="">— اختر الكورس —</option>
                   {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               </label>
             )}
-            {priceSource && priceSource.list.length > 0 ? (
-              <label>
-                <span className="lbl">السعر (ج.م) — من المسجَّل في «{priceSource.where}»</span>
-                <select
-                  className="inp"
-                  value={String(f.price)}
-                  onChange={(e) => set({ price: Number(e.target.value) || 0 })}
-                >
-                  {priceSource.list.map((p, i) => (
-                    <option key={`${p.label}-${i}`} value={String(p.price)}>
-                      {p.label} — {(p.price ?? 0).toLocaleString("ar-EG")} ج.م
-                    </option>
-                  ))}
-                </select>
-                <span className="mt-1 block text-[10px] leading-relaxed text-muted-foreground">
-                  السعرُ مأخوذٌ من الكورس نفسِه — سعران لكورسٍ واحدٍ لا يُعرف أيُّهما يُحصَّل.
-                  ولتغييره: افتح الكورس وعدّل خيارات سعره، فيتبعه كلُّ ما يُباع به.
-                </span>
-              </label>
-            ) : (
-              <label>
-                <span className="lbl">السعر (ج.م)</span>
-                <input type="number" className="inp" value={f.price} onChange={(e) => set({ price: Number(e.target.value) })} />
-                {priceSource && (
-                  <span className="mt-1 block text-[10px] leading-relaxed text-amber-600 dark:text-amber-400">
-                    لا سعرَ مسجَّلٌ في «{priceSource.where}» بعد — اكتبه هنا، والأولى تسجيلُه في الكورس ليكون مصدراً واحداً.
-                  </span>
-                )}
-              </label>
-            )}
+                        {/*
+              السعرُ يُكتب هنا وحدَه.
+              كان يُكتب في الكورس وفي المادّة وهنا، فيصير للشيء الواحد
+              سعران لا يُعرف أيُّهما يُحصَّل ولا أيُّهما يُعدَّل — وهو ما لا
+              يُحتمل في المال. فصارت بوّابةُ الدفع مصدرَه الوحيد، ومعه
+              مدّةُ التفعيل أسفلَه.
+            */}
+            <label>
+              <span className="lbl">السعر (ج.م)</span>
+              <input type="number" className="inp" value={f.price} onChange={(e) => set({ price: Number(e.target.value) })} />
+              <span className="mt-1 block text-[10px] leading-relaxed text-muted-foreground">
+                هذا هو سعرُ ما تفتحه هذه الخطّة — كورساً كان أو موادَّ مختارة.
+              </span>
+            </label>
             {f.kind === "term" ? (
               <label><span className="lbl">تاريخ انتهاء الترم (فارغ = تاريخ الترم العام)</span>
                 <input type="date" dir="ltr" className="inp text-right" value={f.endsAt} onChange={(e) => set({ endsAt: e.target.value })} />

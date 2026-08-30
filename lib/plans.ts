@@ -304,7 +304,17 @@ export function plansFor(
   plans: SitePlan[],
   student: StudentProfile | null | undefined
 ): SitePlan[] {
-  const own = subject ? [...coursePricePlans(subject), ...unitPricePlans(subject)] : [];
+  /*
+    الخططُ وحدَها تُباع.
+    كانت أسعارُ الكورس وأسعارُ المادّة تُحوَّل خططاً ضمنيّةً وتُعرض مع
+    المحفوظة — أي ثلاثةُ مصادرَ للسعر الواحد. وصار المصدرُ واحداً:
+    ما يُنشئه الأستاذُ في بوّابة الدفع.
+
+    ويبقى `coursePricePlans` و`unitPricePlans` لـ`resolvePlan` وحدَه:
+    كودٌ وُلِّد قديماً من خيار سعرٍ يجب أن يظلّ قابلاً للتفعيل — والطالبُ
+    دفع ثمنَه، فلا يُبطَل عليه بتغييرٍ في اللوحة.
+  */
+  const own: SitePlan[] = [];
   const site = plans
     .filter((p) => {
       /* الخطة المخفيّة مخفيّة عن الطالب أيضاً — لا عن الموقع وحده.

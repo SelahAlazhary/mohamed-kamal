@@ -1,17 +1,17 @@
 "use client";
 
 /**
- * الوحدات — القسمُ الجامع.
+ * الموادّ — القسمُ الجامع.
  * ------------------------------------------------------------------
- * الوحداتُ تُدار من داخل كلّ كورسٍ على حدة، وذلك يكفي لمن يبني كورساً
+ * الموادُّ تُدار من داخل كلّ كورسٍ على حدة، وذلك يكفي لمن يبني كورساً
  * واحداً. أمّا من عنده أربعةٌ وخمسون كورساً فلا يرى بنيةَ المنهج أبداً:
  * لا يعرف أيُّ كورسٍ قُسِّم وأيُّه ما زال قائمةً مسطّحة، ولا أين تتراكم
  * الدروسُ بلا باب. فهذا القسمُ يعرض **الشجرةَ كلَّها في شاشةٍ واحدة**:
- * الكورس ← وحداتُه ← عددُ دروس كلِّ وحدة.
+ * الكورس ← موادُّه ← عددُ دروس كلِّ مادّة.
  *
- * والمسار: **الكورس ← وحدة ← دروس.** فالوحدةُ لا توجد إلّا داخل كورس،
+ * والمسار: **الكورس ← مادّة ← دروس.** فالمادّةُ لا توجد إلّا داخل كورس،
  * وربطُها به هو أن تُنشأ فيه — ولذلك يُختار الكورسُ أوّلاً ثمّ تُضاف
- * الوحدة، لا تُنشأ وحدةٌ سائبةٌ ثمّ يُبحث لها عن كورس.
+ * المادّة، لا تُنشأ مادّةٌ سائبةٌ ثمّ يُبحث لها عن كورس.
  *
  * والكتابةُ من هنا هي الكتابةُ من محرّر الكورس نفسِها: `units` هي
  * المصدر، و`videos` مرآةٌ تُحدَّث معها — فلا يفترق ما يُكتب هنا عمّا
@@ -60,17 +60,17 @@ export default function AdminUnits() {
   const addUnit = (course: Subject) => {
     const units = courseUnits(course);
     /*
-      أوّلُ إضافةٍ تُثبّت الوحدةَ الملفوفة وحدةً حقيقيّةً بمعرّفٍ خاصّ بها.
+      أوّلُ إضافةٍ تُثبّت المادّةَ الملفوفة مادّةً حقيقيّةً بمعرّفٍ خاصّ بها.
       ولولا ذلك لبقي معرّفُها `u-legacy` فيظنّها المُخزِّن غيرَ مقسَّمةٍ
-      ويكتبها مسطّحةً — فتضيع الوحدةُ الثانيةُ فورَ إنشائها.
+      ويكتبها مسطّحةً — فتضيع المادّةُ الثانيةُ فورَ إنشائها.
     */
     const base =
       units[0]?.id === LEGACY_UNIT_ID
-        ? [{ ...units[0], id: `u${Date.now().toString(36)}`, title: "الوحدة الأولى" }]
+        ? [{ ...units[0], id: `u${Date.now().toString(36)}`, title: "المادّة الأولى" }]
         : units;
     write(course, [
       ...base,
-      { id: `u${Date.now().toString(36)}x`, title: `الوحدة ${ar(base.length + 1)}`, lessons: [] },
+      { id: `u${Date.now().toString(36)}x`, title: `المادّة ${ar(base.length + 1)}`, lessons: [] },
     ]);
   };
 
@@ -85,7 +85,7 @@ export default function AdminUnits() {
     write(course, units);
   };
 
-  /** حذفُ وحدةٍ يُعيد دروسَها إلى ما قبلها — ولا يحذفها معها. */
+  /** حذفُ مادّةٍ يُعيد دروسَها إلى ما قبلها — ولا يحذفها معها. */
   const removeUnit = (course: Subject, uid: string) => {
     const units = courseUnits(course);
     if (units.length <= 1) return;
@@ -99,8 +99,8 @@ export default function AdminUnits() {
   return (
     <>
       <PageHeader
-        title="الوحدات"
-        subtitle={`المسار: الكورس ← وحدة ← دروس · ${ar(splitCount)} من ${ar(subjects.length)} كورساً مقسَّم · ${ar(totalUnits)} وحدة`}
+        title="الموادّ"
+        subtitle={`المسار: الكورس ← مادّة ← دروس · ${ar(splitCount)} من ${ar(subjects.length)} كورساً مقسَّم · ${ar(totalUnits)} مادّة`}
       />
 
       <Card className="mb-5">
@@ -134,8 +134,8 @@ export default function AdminUnits() {
           </div>
         </div>
         <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-          الوحدةُ بابٌ من المنهج — الطهارةُ ثمّ الصلاةُ ثمّ الزكاة — والدروسُ داخلها. وكورسٌ
-          غيرُ مقسَّمٍ يعرض دروسَه قائمةً واحدةً للطالب، وهو ما كان قبل الوحدات؛ فتقسيمُه لا
+          المادّةُ بابٌ من المنهج — الطهارةُ ثمّ الصلاةُ ثمّ الزكاة — والدروسُ داخلها. وكورسٌ
+          غيرُ مقسَّمٍ يعرض دروسَه قائمةً واحدةً للطالب، وهو ما كان قبل الموادّ؛ فتقسيمُه لا
           يحذف منه شيئاً، إنّما يوزّع دروسَه على أبوابها.
         </p>
       </Card>
@@ -153,13 +153,13 @@ export default function AdminUnits() {
               <Fold
                 key={course.id}
                 title={course.name}
-                subtitle={`${course.grade} · ${split ? `${ar(units.length)} وحدة` : "غير مقسَّم"} · ${ar(lessonCount(course))} درساً`}
+                subtitle={`${course.grade} · ${split ? `${ar(units.length)} مادّة` : "غير مقسَّم"} · ${ar(lessonCount(course))} درساً`}
                 count={units.length}
                 storageKey={`units.${course.id}`}
                 actions={
                   <>
                     <Button className="px-3 py-1.5 text-[11px]" onClick={() => addUnit(course)}>
-                      + وحدة
+                      + مادّة
                     </Button>
                     <Link
                       href={`/admin/courses/${course.id}`}
@@ -179,7 +179,7 @@ export default function AdminUnits() {
                       <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[hsl(var(--gold)/0.22)] text-xs font-bold text-primary">
                         {ar(i + 1)}
                       </span>
-                      {/* العنوانُ حقلٌ يُكتب فيه مباشرةً — التسميةُ أكثرُ ما يُفعل بالوحدة */}
+                      {/* العنوانُ حقلٌ يُكتب فيه مباشرةً — التسميةُ أكثرُ ما يُفعل بالمادّة */}
                       <input
                         value={u.title}
                         onChange={(e) => rename(course, u.id, e.target.value)}
@@ -207,7 +207,7 @@ export default function AdminUnits() {
                       <button
                         onClick={() => removeUnit(course, u.id)}
                         disabled={units.length <= 1}
-                        title="حذف الوحدة — دروسُها تنتقل إلى ما قبلها ولا تُحذف"
+                        title="حذف المادّة — دروسُها تنتقل إلى ما قبلها ولا تُحذف"
                         className="grid size-7 shrink-0 place-items-center rounded-full border border-border text-rose-500 transition hover:border-rose-500 disabled:opacity-30"
                       >
                         ✕

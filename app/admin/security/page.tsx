@@ -29,6 +29,7 @@ const KIND_LABEL: Record<string, string> = {
   bad_code: "كود تفعيل خاطئ",
   rate_limited: "تجاوز حدّ المحاولات",
   path_probe: "فحص مسارات",
+  bot_trap: "فخّ الآليّات",
   db_promote: "تبديل قاعدة البيانات",
   db_open_rules: "قاعدة مفتوحة للعالم",
   db_down: "قاعدة بيانات ساقطة",

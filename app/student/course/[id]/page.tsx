@@ -54,7 +54,13 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
     مقفلةٌ حتّى تُشترى. وردُّه هنا يجعل البيعَ المفرَّقَ لا معنى له: لا
     يرى ما يشتري.
   */
-  const perUnit = (subject.entryMode ?? "gateway") === "materials";
+  /*
+    و«الموادّ» لا تعني شيئاً في كورسٍ لم يُقسَّم.
+    الكورسُ غيرُ المقسَّم له مادّةٌ واحدةٌ ملفوفةٌ اسمُها «دروس الكورس» —
+    وفتحُها للطالب ليشتريها هو فتحُ الكورس كلِّه بثوبٍ آخر. فيُساق إلى
+    بوّابة الدفع كما لو كان الوضعُ الأوّل، ولا يُترك في شاشةٍ بلا معنى.
+  */
+  const perUnit = (subject.entryMode ?? "gateway") === "materials" && units.length > 1;
   if (!owned && !perUnit && !ownsAnyUnit(me, id)) {
     return (
       <Card className="mx-auto max-w-md text-center">

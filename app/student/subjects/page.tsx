@@ -6,7 +6,7 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   IconPlay, IconBook, IconArrowLeft, IconLock, IconCart, IconClose,
-  IconKey, IconSpinner, IconCheckCircle, IconGraduation, IconCalendar, IconCheck, IconSparkle,
+  IconKey, IconSpinner, IconCheckCircle, IconGraduation, IconCalendar, IconCheck, IconSparkle, IconListVideo,
 } from "@/components/brand/icons";
 import { RuleOrnament } from "@/components/brand/pattern";
 import { CourseArt } from "@/components/brand/course-art";
@@ -208,7 +208,18 @@ export default function MySubjects() {
                     فيها بيانات التحويل ورفعُ الإيصال، وتُغلق بضغطة خارجها
                     فيضيع ما كُتب. ومطفأةً تبقى القائمة القديمة لمسار واتساب.
                   */
-                  payOn ? (
+                  /*
+                    وكورسٌ يبيع موادَّه مفرَّقةً لا يُساق صاحبُه إلى بوّابة
+                    الدفع. كان الزرُّ يذهب إلى الدفع دائماً مهما ضُبط
+                    الكورس، فيُعرض على الطالب شراءُ المنهج كلِّه وهو مضبوطٌ
+                    على بيع الأبواب — والإعدادُ في اللوحة لا أثرَ له.
+                    فيُفتح على الموادّ ليرى ما فيها ويشتري ما يحتاج.
+                  */
+                  (c.entryMode ?? "gateway") === "materials" ? (
+                    <Link href={`/student/course/${c.id}`} className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full border border-primary/40 py-3 text-sm font-bold text-primary transition hover:bg-primary/10">
+                      <IconListVideo className="size-4" /> تصفَّح الموادّ واشترِ ما تريد
+                    </Link>
+                  ) : payOn ? (
                     <Link href={`/student/pay?subject=${c.id}`} className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-full border border-primary/40 py-3 text-sm font-bold text-primary transition hover:bg-primary/10">
                       <IconCart className="size-4" /> شراء / تفعيل
                     </Link>

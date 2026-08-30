@@ -201,6 +201,9 @@ export function UnitView({
   const doneHere = lessons.filter((l) => done.has(l.id)).length;
   const percent = lessons.length ? Math.round((doneHere / lessons.length) * 100) : 0;
 
+  /* هل تُباع هذه المادّةُ وحدَها؟ — بها يُقصد الشراءُ إلى موضعه */
+  const sellsUnit = (unit.prices ?? []).some((p) => (p.label ?? "").trim());
+
   /* ملفّاتُ المادّة تُضاف إلى ملفّات الكورس ولا تُلغيها */
   const files: Material[] = [...(unit.materials ?? []), ...(course.materials ?? [])];
 
@@ -223,8 +226,25 @@ export function UnitView({
               <div className="flex flex-col items-center gap-3">
                 <span className="grid size-14 place-items-center rounded-2xl bg-white/10 text-white"><IconLock className="size-7" /></span>
                 <p className="font-display text-lg font-extrabold text-white">هذا الكورس غير مُفعّل</p>
-                <p className="max-w-xs text-sm text-white/70">اشترك شهرياً في هذا الكورس أو خُذ الترم الكامل لمشاهدة كل الدروس.</p>
-                <Link href={`/student/pay?subject=${course.id}`} className="rounded-full btn-glow px-5 py-2 text-xs font-bold text-white">خيارات الاشتراك</Link>
+                {/*
+                  والشراءُ يقصد ما يُشاهَد.
+                  كان يُساق إلى شراء الكورس كلِّه وهو واقفٌ على درسٍ في
+                  مادّةٍ بعينها — فيُعرض عليه المنهجُ كلُّه وهو يطلب باباً
+                  منه. فإن كانت المادّةُ تُباع وحدَها، قُصد شراؤها هي.
+                */}
+                <p className="max-w-xs text-sm text-white/70">
+                  {sellsUnit
+                    ? `افتح «${unit.title}» وحدَها، أو خُذ الكورس كلَّه.`
+                    : "اشترك شهرياً في هذا الكورس أو خُذ الترم الكامل لمشاهدة كل الدروس."}
+                </p>
+                <Link
+                  href={sellsUnit
+                    ? `/student/pay?subject=${course.id}&unit=${encodeURIComponent(unit.id)}`
+                    : `/student/pay?subject=${course.id}`}
+                  className="rounded-full btn-glow px-5 py-2 text-xs font-bold text-white"
+                >
+                  {sellsUnit ? "خيارات شراء المادّة" : "خيارات الاشتراك"}
+                </Link>
               </div>
             </div>
           ) : embed?.kind === "video" ? (

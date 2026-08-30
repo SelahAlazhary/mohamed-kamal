@@ -8,14 +8,13 @@ import {
   ListChecks, ChevronDown, Check, Link2, X, Loader2, Video, Palette, Wallet,
 } from "lucide-react";
 import { Collapse } from "@/components/dashboard/collapse";
-import { courseUnits, LEGACY_UNIT_ID } from "@/lib/course-units";
+import { courseUnits, isSplit, LEGACY_UNIT_ID } from "@/lib/course-units";
 import { PageHeader, Card } from "@/components/dashboard/ui";
 import { Button } from "@/components/ui/primitives";
 import { useContent } from "@/components/content/content-provider";
 import { CourseArt, COVER_PATTERNS } from "@/components/brand/course-art";
 import { CoverTextEditor } from "@/components/admin/cover-text-editor";
 import { CoverStickersEditor } from "@/components/admin/cover-stickers-editor";
-import { CoursePricesEditor, PricesEditor } from "@/components/admin/course-prices-editor";
 import type { Lesson, Material, Subject, Quiz, QuizQuestion, ImageFit, CoverPattern, CoverText, CoverSticker, Unit } from "@/lib/types";
 import { mediaSrc } from "@/lib/media";
 import { Fold } from "@/components/dashboard/fold";
@@ -42,7 +41,7 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
   const coverRef = useRef<HTMLInputElement>(null);
   const [coverUploading, setCoverUploading] = useState(false);
   const [quizFor, setQuizFor] = useState<string | null>(null);
-  /** الوحدةُ التي يُضاف إليها الدرسُ الجديد. */
+  /** المادّةُ التي يُضاف إليها الدرسُ الجديد. */
   const [intoUnit, setIntoUnit] = useState<string>("");
   const videoRef = useRef<HTMLInputElement>(null);
   const matRef = useRef<HTMLInputElement>(null);
@@ -58,12 +57,12 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
     );
   }
   /*
-    الوحداتُ هي مصدرُ الحقيقة، و`videos` مرآةٌ لها.
+    الموادُّ هي مصدرُ الحقيقة، و`videos` مرآةٌ لها.
     ------------------------------------------------------------
     والمرآةُ مقصودة: أربعةٌ وخمسون كورساً وعشرةُ قرّاءٍ في الشيفرة يقرؤون
-    `videos`. فلو صارت الوحداتُ وحدَها هي المكتوبة لوجب تغييرُ العشرة
+    `videos`. فلو صارت الموادُّ وحدَها هي المكتوبة لوجب تغييرُ العشرة
     دفعةً واحدة، ويكفي أن يُنسى واحدٌ ليقرأ كورساً فارغاً. فالكتابةُ
-    تُحدّثهما معاً: القديمُ يقرأ ما يعرف، والجديدُ يقرأ الوحدات.
+    تُحدّثهما معاً: القديمُ يقرأ ما يعرف، والجديدُ يقرأ الموادّ.
 
     ولا تُكتب `units` حتّى يُقسّم الأستاذُ فعلاً — فكورسٌ لم يُقسَّم يبقى
     في القاعدة كما كان، ولا يتبدّل شكلُ أربعةٍ وخمسين كورساً لأنّ أحدَها
@@ -84,14 +83,14 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
     save({ subjects: subjects.map((s) => (s.id === id ? updated : s)) });
   };
 
-  /** يمرّ على دروس الوحدات كلِّها — للاختبار والتعديل الموضعيّ. */
+  /** يمرّ على دروس الموادّ كلِّها — للاختبار والتعديل الموضعيّ. */
   const mapLessons = (fn: (l: Lesson) => Lesson) =>
     persistUnits(units.map((u) => ({ ...u, lessons: (u.lessons ?? []).map(fn) })));
 
   const add = () => {
     if (!form.title.trim() || !form.url.trim()) return;
     const lesson: Lesson = { id: `L-${Date.now()}`, title: form.title.trim(), url: form.url.trim(), duration: form.duration.trim() || undefined, isFree: form.isFree };
-    /* يُضاف إلى الوحدة المختارة، أو إلى آخر وحدةٍ إن لم تُختر واحدة. */
+    /* يُضاف إلى المادّة المختارة، أو إلى آخر مادّةٍ إن لم تُختر واحدة. */
     const target = units.some((u) => u.id === intoUnit) ? intoUnit : units[units.length - 1].id;
     persistUnits(units.map((u) => (u.id === target ? { ...u, lessons: [...(u.lessons ?? []), lesson] } : u)));
     setForm({ title: "", url: "", duration: "", isFree: false });
@@ -102,21 +101,21 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
   const setQuiz = (lid: string, quiz: Quiz | undefined) =>
     mapLessons((v) => (v.id === lid ? { ...v, quiz } : v));
 
-  /* ---------- إدارةُ الوحدات ---------- */
+  /* ---------- إدارةُ الموادّ ---------- */
   const addUnit = () => {
     /*
-      أوّلُ إضافةٍ تُثبّت الوحدةَ الملفوفة وحدةً حقيقيّةً بمعرّفٍ خاصّ بها.
+      أوّلُ إضافةٍ تُثبّت المادّةَ الملفوفة مادّةً حقيقيّةً بمعرّفٍ خاصّ بها.
       ولولا ذلك لبقي معرّفُها `u-legacy` فيظنّها المُخزِّن غيرَ مقسَّمةٍ
-      ويكتبها مسطّحةً — فتضيع الوحدةُ الثانيةُ فورَ إنشائها.
+      ويكتبها مسطّحةً — فتضيع المادّةُ الثانيةُ فورَ إنشائها.
     */
     const base = units[0]?.id === LEGACY_UNIT_ID
-      ? [{ ...units[0], id: `u${Date.now().toString(36)}`, title: "الوحدة الأولى" }]
+      ? [{ ...units[0], id: `u${Date.now().toString(36)}`, title: "المادّة الأولى" }]
       : units;
-    persistUnits([...base, { id: `u${Date.now().toString(36)}x`, title: `الوحدة ${(base.length + 1).toLocaleString("ar-EG")}`, lessons: [] }]);
+    persistUnits([...base, { id: `u${Date.now().toString(36)}x`, title: `المادّة ${(base.length + 1).toLocaleString("ar-EG")}`, lessons: [] }]);
   };
   const renameUnit = (uid: string, title: string) =>
     persistUnits(units.map((u) => (u.id === uid ? { ...u, title } : u)));
-  /** حذفُ وحدةٍ يُعيد دروسَها إلى ما قبلها — ولا يحذفها معها. */
+  /** حذفُ مادّةٍ يُعيد دروسَها إلى ما قبلها — ولا يحذفها معها. */
   const removeUnit = (uid: string) => {
     if (units.length <= 1) return;
     const i = units.findIndex((u) => u.id === uid);
@@ -132,7 +131,7 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
     [arr[i], arr[j]] = [arr[j], arr[i]];
     persistUnits(arr);
   };
-  /** نقلُ درسٍ إلى وحدةٍ أخرى — يُنزع من موضعه ويُلحق بآخر المقصد. */
+  /** نقلُ درسٍ إلى مادّةٍ أخرى — يُنزع من موضعه ويُلحق بآخر المقصد. */
   const moveLessonTo = (lid: string, uid: string) => {
     const lesson = videos.find((v) => v.id === lid);
     if (!lesson) return;
@@ -215,10 +214,10 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
     if (coverRef.current) coverRef.current.value = "";
   };
   /*
-    الترتيبُ داخل الوحدة لا عبرها.
+    الترتيبُ داخل المادّة لا عبرها.
     كان السهمُ يبدّل الدرسَ بجاره في القائمة المسطّحة — وجارُه قد يكون في
-    وحدةٍ أخرى، فيقفز الدرسُ بين البابين بضغطةٍ لم تُرِد ذلك. والنقلُ بين
-    الوحدات له قائمتُه المنسدلة، وهو فعلٌ يُقصد لا يقع بالسهو.
+    مادّةٍ أخرى، فيقفز الدرسُ بين البابين بضغطةٍ لم تُرِد ذلك. والنقلُ بين
+    الموادّ له قائمتُه المنسدلة، وهو فعلٌ يُقصد لا يقع بالسهو.
   */
   const move = (uid: string, k: number, dir: -1 | 1) => {
     const u = units.find((x) => x.id === uid);
@@ -444,39 +443,54 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
             );
           })}
         </div>
-        {(subject.entryMode ?? "gateway") === "materials" && (
+        {/*
+          وضعُ «الموادّ» في كورسٍ بلا موادّ لا يفعل شيئاً.
+          الكورسُ غيرُ المقسَّم له مادّةٌ واحدةٌ ملفوفةٌ لا تُباع وحدَها، فمن
+          ضبطه على البيع المفرَّق ولم يقسّمه رأى بوّابةَ الدفع كما كان —
+          وظنّ الإعدادَ معطّلاً. فيُقال له ما ينقص.
+        */}
+        {(subject.entryMode ?? "gateway") === "materials" && !isSplit(subject) && (
+          <p className="mt-3 rounded-2xl bg-rose-500/10 px-3 py-2 text-[11px] font-bold leading-relaxed text-rose-600 dark:text-rose-400">
+            هذا الكورس لم يُقسَّم إلى موادّ بعد — فلا شيءَ يُباع مفرَّقاً، ويبقى الطالبُ
+            يُساق إلى بوّابة الدفع كما كان. أضِف موادَّ من الأسفل أوّلاً.
+          </p>
+        )}
+        {(subject.entryMode ?? "gateway") === "materials" && isSplit(subject) && (
           <p className="mt-3 rounded-2xl bg-amber-500/10 px-3 py-2 text-[11px] font-bold leading-relaxed text-amber-700 dark:text-amber-400">
-            في هذا الوضع تُباع كلُّ مادّةٍ وحدَها — فأضِف سعراً لكلّ مادّةٍ من لوحها بالأسفل.
-            والمادّةُ بلا سعرٍ لا يظهر لها زرُّ شراء، ولا تُفتح إلّا باشتراك الكورس كلِّه أو بخطّةٍ تشملها.
+            في هذا الوضع تُفتح للطالب موادُّ الكورس ليشتري ما يحتاج. وتُسعَّر كلُّ مادّةٍ
+            من <b>بوّابة الدفع</b>: أنشئ خطّةً نطاقُها «موادّ مختارة» وأشّر على المادّة.
+            والمادّةُ التي لا تفتحها خطّةٌ تبقى مقفلةً بلا زرِّ شراء.
           </p>
         )}
       </Card>
 
+      {/*
+        الأسعارُ ليست هنا — ولا يُترك مكانُها فارغاً بلا بيان.
+        كانت تُضاف في الكورس وفي المادّة وفي الخطّة معاً، فيصير للشيء
+        الواحد سعران أو ثلاثة لا يُعرف أيُّها يُحصَّل. فصار مصدرُها واحداً:
+        بوّابة الدفع. وهذا السطرُ يدلّ عليه، وإلّا بحث الأستاذُ عن الحقل
+        الذي كان هنا وظنّ أنّه عُطّل.
+      */}
       <Card className="mb-6">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h3 className="font-display font-extrabold">أسعار هذا الكورس</h3>
-            <p className="text-xs text-muted-foreground">
-              أضف أكثر من خيار — شهري · ترم كامل · حصّة · مرّة واحدة — فيختار الطالب ما يناسبه
-              من بوّابة الدفع. الخيار الأوّل هو السعر الأساسي المعروض في البطاقات.
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="font-display font-extrabold">السعر ومدّة التفعيل</h3>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              تُضبَطان من <b>بوّابة الدفع</b> لا من هنا — سعرٌ واحدٌ في موضعٍ واحد.
+              أنشئ خطّةً هناك وحدّد ما تفتحه: الكورسَ كلَّه، أو موادَّ منه تؤشّر عليها،
+              وسعرَها ومدّتها.
             </p>
           </div>
-          <label className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">السعر الأساسي</span>
-            <input type="number" value={subject.price}
-              onChange={(e) => save({ subjects: subjects.map((s) => (s.id === id ? { ...subject, price: Number(e.target.value) || 0 } : s)) })}
-              className="w-24 rounded-2xl border border-border bg-card/60 px-3 py-2 text-sm outline-none focus:border-primary/50" />
-            <span className="text-xs text-muted-foreground">ج.م</span>
-          </label>
+          <Link
+            href="/admin/plans"
+            className="btn-glow inline-flex shrink-0 items-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold text-white"
+          >
+            <Wallet className="size-4" /> افتح بوّابة الدفع
+          </Link>
         </div>
-
-        <CoursePricesEditor
-          subject={subject}
-          onChange={(patch) => save({ subjects: subjects.map((s) => (s.id === id ? { ...subject, ...patch } : s)) })}
-        />
       </Card>
 
-      <p className="font-kufi mb-2 mt-6 text-[11px] font-bold text-muted-foreground">الدروس والوحدات</p>
+      <p className="font-kufi mb-2 mt-6 text-[11px] font-bold text-muted-foreground">الدروس والموادّ</p>
       {/* إضافة درس */}
       <Fold className="mb-6" title="إضافة درس" storageKey="course.addLesson" defaultOpen>
         <div className="grid gap-3 sm:grid-cols-6">
@@ -508,11 +522,11 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
             <input value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} className="inp" placeholder="١٢:٣٠" />
           </label>
           {/*
-            الوحدةُ المقصودة — تظهر حين تكون هناك وحداتٌ يُختار بينها.
+            المادّةُ المقصودة — تظهر حين تكون هناك موادٌّ يُختار بينها.
             وواحدةٌ لا اختيارَ فيها، فإظهارُ قائمةٍ بخيارٍ واحدٍ حشو.
           */}
           {units.length > 1 && (
-            <label className="sm:col-span-5"><span className="mb-1 block text-xs font-semibold text-muted-foreground">تُضاف إلى وحدة</span>
+            <label className="sm:col-span-5"><span className="mb-1 block text-xs font-semibold text-muted-foreground">تُضاف إلى مادّة</span>
               <select value={units.some((u) => u.id === intoUnit) ? intoUnit : units[units.length - 1].id}
                 onChange={(e) => setIntoUnit(e.target.value)} className="inp">
                 {units.map((u) => <option key={u.id} value={u.id}>{u.title}</option>)}
@@ -529,16 +543,16 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
         </div>
       </Fold>
 
-      {/* ---------- الوحدات ودروسُها ---------- */}
+      {/* ---------- الموادّ ودروسُها ---------- */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="font-display text-lg font-extrabold">وحدات الكورس</h3>
+          <h3 className="font-display text-lg font-extrabold">موادّ الكورس</h3>
           <p className="text-xs text-muted-foreground">
-            المسار: <b>الكورس ← وحدة ← دروس</b>. قسّم المنهج أبواباً — الطهارة ثمّ الصلاة —
+            المسار: <b>الكورس ← مادّة ← دروس</b>. قسّم المنهج أبواباً — الطهارة ثمّ الصلاة —
             فيقرأ الطالبُ منهجاً لا قائمةَ فيديوهات.
           </p>
         </div>
-        <Button className="px-4 py-2 text-xs" onClick={addUnit}>+ إضافة وحدة</Button>
+        <Button className="px-4 py-2 text-xs" onClick={addUnit}>+ إضافة مادّة</Button>
       </div>
 
       {videos.length === 0 && units.length === 1 ? (
@@ -553,7 +567,7 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
               title={
                 /*
                   العنوانُ حقلٌ يُكتب فيه مباشرةً — لا زرَّ «إعادة تسمية»
-                  يفتح نافذة. والتسميةُ أكثرُ ما يُفعل بالوحدة، فجعلُها
+                  يفتح نافذة. والتسميةُ أكثرُ ما يُفعل بالمادّة، فجعلُها
                   ثلاثَ نقراتٍ يجعل الأستاذ يتركها بأسمائها الافتراضيّة.
                 */
                 <input
@@ -571,41 +585,15 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
                   <button onClick={() => moveUnit(ui, 1)} disabled={ui === units.length - 1} title="أسفل"
                     className="grid size-7 place-items-center rounded-full border border-border text-muted-foreground transition hover:text-primary disabled:opacity-30">▼</button>
                   <button onClick={() => removeUnit(unit.id)} disabled={units.length <= 1}
-                    title="حذف الوحدة — دروسُها تنتقل إلى ما قبلها ولا تُحذف"
+                    title="حذف المادّة — دروسُها تنتقل إلى ما قبلها ولا تُحذف"
                     className="grid size-7 place-items-center rounded-full border border-border text-rose-500 transition hover:border-rose-500 disabled:opacity-30">
                     <Trash2 className="size-3.5" />
                   </button>
                 </>
               }
             >
-              {/*
-                سعرُ المادّة — موضعُه المادّةُ نفسُها لا شاشةٌ أخرى.
-                ولا يُعرض إلّا حين يبيع الكورسُ موادَّه مفرَّقة: حقلُ سعرٍ لا
-                أثرَ له يُغري بملئه ثمّ لا يُحصَّل منه شيء.
-              */}
-              {(subject.entryMode ?? "gateway") === "materials" && (
-                <div className="mb-4 rounded-2xl border border-border/70 p-3">
-                  <p className="mb-2 flex items-center gap-2 text-xs font-bold">
-                    <Wallet className="size-3.5 text-primary" /> سعر هذه المادّة وحدَها
-                  </p>
-                  <PricesEditor
-                    value={unit.prices ?? []}
-                    fallbackPrice={0}
-                    onChange={(next) =>
-                      save({
-                        subjects: subjects.map((s) =>
-                          s.id === id
-                            ? { ...subject, units: courseUnits(subject).map((u) => (u.id === unit.id ? { ...u, prices: next } : u)) }
-                            : s
-                        ),
-                      })
-                    }
-                  />
-                </div>
-              )}
-
-              {(unit.lessons ?? []).length === 0 ? (
-                <p className="py-4 text-center text-xs text-muted-foreground">وحدةٌ فارغة — اختَرها في نموذج الإضافة بالأعلى.</p>
+                            {(unit.lessons ?? []).length === 0 ? (
+                <p className="py-4 text-center text-xs text-muted-foreground">مادّةٌ فارغة — اختَرها في نموذج الإضافة بالأعلى.</p>
               ) : (
         <div className="space-y-2">
           {(unit.lessons ?? []).map((v, i) => (
@@ -630,7 +618,7 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
                   <ChevronDown className={`size-3 transition ${quizFor === v.id ? "rotate-180" : ""}`} />
                 </button>
                 {units.length > 1 && (
-                  <select value={unit.id} onChange={(e) => moveLessonTo(v.id, e.target.value)} title="نقل إلى وحدة"
+                  <select value={unit.id} onChange={(e) => moveLessonTo(v.id, e.target.value)} title="نقل إلى مادّة"
                     className="rounded-full border border-border bg-card/60 px-2.5 py-1.5 text-xs font-bold outline-none focus:border-primary/50">
                     {units.map((u) => <option key={u.id} value={u.id}>{u.title}</option>)}
                   </select>

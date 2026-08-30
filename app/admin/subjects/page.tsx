@@ -35,6 +35,8 @@ import { Fold } from "@/components/dashboard/fold";
 import { Button } from "@/components/ui/primitives";
 import { useContent } from "@/components/content/content-provider";
 import { gradeHasTrack } from "@/lib/data";
+import { planPrice } from "@/lib/plans";
+import { parsePick } from "@/lib/picks";
 import type { Subject } from "@/lib/types";
 
 const TERMS = [
@@ -74,27 +76,47 @@ export default function SubjectsPage() {
   const { db, save, content } = useContent();
   const subjects = db?.subjects ?? [];
   const grades = db?.grades ?? [];
+  const plans = db?.plans ?? [];
   const [adding, setAdding] = useState(false);
   const [q, setQ] = useState("");
-  const [form, setForm] = useState({ name: "", price: 150, lessons: 0, grade: "كل الصفوف", track: "الكل", term: 1 as 1 | 2 });
+  const [form, setForm] = useState({ name: "", lessons: 0, grade: "كل الصفوف", track: "الكل", term: 1 as 1 | 2 });
 
   const add = async () => {
     if (!form.name.trim()) return;
     const s: Subject = {
       id: `SUB-${Date.now()}`, name: form.name.trim(), teacher: content.teacher.name,
       grade: form.grade, track: form.track, term: form.term, lessons: Number(form.lessons) || 0, students: 0,
-      price: Number(form.price) || 0, videos: [], status: "مسودّة",
+      /* السعرُ صفرٌ دائماً: مصدرُه الخطّةُ لا الكورس. ويبقى الحقلُ في
+         النوع لتوافق ما كُتب قبل النقل. */
+      price: 0, videos: [], status: "مسودّة",
     };
     await save({ subjects: [...subjects, s] });
     /* الفصلُ يبقى على ما اختير: من يضيف كورساتِ فصلٍ يضيفها متتابعةً. */
-    setForm({ name: "", price: 150, lessons: 0, grade: form.grade, track: "الكل", term: form.term });
+    setForm({ name: "", lessons: 0, grade: form.grade, track: "الكل", term: form.term });
     setAdding(false);
   };
   const remove = (id: string) => save({ subjects: subjects.filter((s) => s.id !== id) });
   const toggle = (id: string) =>
     save({ subjects: subjects.map((s) => (s.id === id ? { ...s, status: s.status === "منشورة" ? "مسودّة" : "منشورة" } : s)) });
-  const setPrice = (id: string, price: number) =>
-    save({ subjects: subjects.map((s) => (s.id === id ? { ...s, price } : s)) });
+  /*
+    السعرُ يُقرأ ولا يُكتب هنا.
+    كان حقلاً في هذا الجدول وحقلاً في الكورس وحقلاً في الخطّة — ثلاثةُ
+    أرقامٍ للشيء الواحد لا يُعرف أيُّها يُحصَّل. وصار مصدرُه واحداً: بوّابةُ
+    الدفع. وهذا العمودُ يُري ما يدفعه الطالبُ فعلاً — أرخصَ خطّةٍ تفتح
+    هذا الكورس — ويحيل إلى موضع تعديله.
+  */
+  const cheapestFor = (s: Subject) => {
+    const open = plans.filter(
+      (p) =>
+        p.visible !== false &&
+        (p.scope === "all" ||
+          (p.scope === "term" && (p.termNo ?? 1) === (s.term ?? 1)) ||
+          (p.scope === "subject" && p.subjectId === s.id) ||
+          (p.scope === "picked" && (p.picks ?? []).some((k) => parsePick(k).subjectId === s.id)))
+    );
+    if (open.length === 0) return null;
+    return open.reduce((a, b) => (planPrice(a).price <= planPrice(b).price ? a : b));
+  };
   const setTrack = (id: string, track: string) =>
     save({ subjects: subjects.map((s) => (s.id === id ? { ...s, track } : s)) });
   const setTerm = (id: string, term: 1 | 2) =>
@@ -112,7 +134,7 @@ export default function SubjectsPage() {
   };
 
   const rows = (list: Subject[]) => (
-    <DataTable head={["الكورس", "الشعبة", "الدروس", "الطلاب", "السعر / شهر", "الحالة", "إجراءات"]}>
+    <DataTable head={["الكورس", "الشعبة", "الدروس", "الطلاب", "أرخص خطّة", "الحالة", "إجراءات"]}>
       {list.map((s) => (
         <tr key={s.id} className="transition hover:bg-muted/50">
           <td className="px-4 py-3">
@@ -149,8 +171,23 @@ export default function SubjectsPage() {
           <td className="px-4 py-3 font-semibold">{s.lessons}</td>
           <td className="px-4 py-3"><span className="inline-flex items-center gap-1 text-muted-foreground"><Users className="size-3.5" /> {s.students.toLocaleString("ar-EG")}</span></td>
           <td className="px-4 py-3">
-            <input type="number" defaultValue={s.price} onBlur={(e) => setPrice(s.id, Number(e.target.value))}
-              className="w-24 rounded-lg border border-border bg-card/60 px-2 py-1 text-sm outline-none focus:border-primary/50" />
+            {(() => {
+              const p = cheapestFor(s);
+              if (!p) {
+                return (
+                  <Link href="/admin/plans" className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-rose-500/12 px-2 py-1 text-[10px] font-bold text-rose-600 transition hover:bg-rose-500/20 dark:text-rose-400">
+                    <Wallet className="size-3" /> لا خطّة تفتحه
+                  </Link>
+                );
+              }
+              const pr = planPrice(p);
+              return (
+                <Link href="/admin/plans" className="inline-flex flex-col whitespace-nowrap transition hover:text-primary" title="يُعدَّل من بوّابة الدفع">
+                  <span className="text-sm font-bold">{pr.price.toLocaleString("ar-EG")} ج.م</span>
+                  <span className="text-[10px] text-muted-foreground">{p.name}</span>
+                </Link>
+              );
+            })()}
           </td>
           <td className="px-4 py-3"><StatusBadge status={s.status} /></td>
           <td className="px-4 py-3">
@@ -248,14 +285,23 @@ export default function SubjectsPage() {
           </section>
 
           <section className="border-t border-border/70 pt-4">
-            <Step n={3} title="السعر والدروس" hint="يُبدَّلان بعد الإنشاء من الجدول متى شئت" icon={<Wallet className="size-4" />} />
+            <Step n={3} title="الدروس" hint="رقمٌ تقديريٌّ يُعدَّل وحدَه كلّما أضفتَ درساً" icon={<Wallet className="size-4" />} />
             <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="السعر الأساسي (ج.م)">
-                <input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} className={inp} />
-              </Field>
               <Field label="عدد الدروس المتوقَّع">
                 <input type="number" value={form.lessons} onChange={(e) => setForm({ ...form, lessons: Number(e.target.value) })} className={inp} />
               </Field>
+              {/*
+                ولا حقلَ سعرٍ هنا.
+                كان سعرُ الكورس يُكتب في ثلاثة مواضع — هذا النموذج، والكورس
+                نفسُه، والخطّة — فيصير للشيء الواحد ثلاثةُ أرقامٍ لا يُعرف
+                أيُّها يُحصَّل. وصار مصدرُه واحداً: بوّابةُ الدفع.
+              */}
+              <div className="rounded-2xl border border-dashed border-border p-3">
+                <p className="text-xs font-bold">السعر ومدّة التفعيل</p>
+                <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                  يُضبَطان من <b>بوّابة الدفع</b> بعد إنشاء الكورس — أنشئ خطّةً هناك وحدّد ما تفتحه.
+                </p>
+              </div>
             </div>
           </section>
 

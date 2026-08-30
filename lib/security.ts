@@ -23,6 +23,8 @@ const HIGH: SecurityKind[] = [
   "device_mismatch",
   "bad_code",
   "path_probe",
+  /* ملءُ الفخّ لا يقع من إنسانٍ أبداً — فهو دليلٌ قاطعٌ على آلةٍ تجرّب */
+  "bot_trap",
   "csrf_blocked",
   "media_denied",
 ];

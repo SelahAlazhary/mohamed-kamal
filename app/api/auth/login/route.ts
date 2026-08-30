@@ -27,7 +27,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "طلب غير صالح" }, { status: 403 });
   }
 
-  const { username, password } = await req.json();
+  const { username, password, website } = await req.json();
+
+  /*
+    فخُّ الآليّات.
+    حقلٌ في النموذج خارجَ الشاشة، لا يراه إنسانٌ ولا يبلغه بالمفتاح.
+    والآلةُ التي تملأ كلَّ حقلٍ تملؤه — فيُرفض الطلبُ هنا.
+
+    **وهو يُفحص في الخادم لا في الشاشة**، وإلّا كان زينةً: الطلبُ يُرسَل
+    من غير الشاشة أيضاً، وما لا يُفحص في الخادم لا يُفحص أصلاً.
+
+    والردُّ كردِّ البيانات الخاطئة لا رسالةٌ تقول «كُشفتَ» — فلا يتعلّم
+    الكاتبُ أنّ الحقلَ فخّ فيتخطّاه في المرّة القادمة.
+  */
+  if (typeof website === "string" && website.trim()) {
+    await recordEvent("bot_trap", "ملء حقل الفخّ في نموذج الدخول");
+    return NextResponse.json({ error: "بيانات الدخول غير صحيحة" }, { status: 401 });
+  }
 
   /**
    * سياسة المحاولات:
