@@ -1,204 +1,216 @@
 "use client";
 
 /**
- * تبويبُ الأقسام — قسمٌ واحدٌ في الشاشة.
+ * شبكةُ الأقسام — بطاقاتٌ تُفتح نوافذَ.
  * ------------------------------------------------------------------
- * ثلاثةُ مطالبَ بدت متعارضةً وهي ليست كذلك:
+ * مرّ التقسيمُ بثلاث صور، وكلُّ واحدةٍ حلّت مشكلةً وأورثت أخرى:
  *
- *   ــ **لا قوائمَ تُطوى**: الطيُّ يُخفي، ومن لا يعرف أين الحقلُ يفتح
- *     الألواحَ واحداً واحداً ليبحث فيها.
- *   ــ **أقسامٌ في بطاقات**: لكلّ مهمّةٍ بطاقتُها بعنوانها ووصفها.
- *   ــ **ولا شاشاتٍ طويلة**: والأقسامُ المفتوحةُ كلُّها تُطيل الشاشةَ أكثرَ
- *     ممّا كانت.
+ *   ١ ــ **ألواحٌ تُطوى**: تُخفي ما لا يُعرف مكانُه، فمن يبحث يفتحها
+ *        واحداً واحداً، ومن يعرف يضغط ضغطةً زائدةً في كلّ زيارة.
+ *   ٢ ــ **أقسامٌ مفتوحةٌ كلُّها**: تُري كلَّ شيءٍ وتُطيل الشاشةَ أكثرَ ممّا
+ *        كانت — أحدَ عشرَ قسماً مفتوحاً في شاشة المظهر.
+ *   ٣ ــ **شريطُ تبويبات**: يُقصّر الشاشة، ويُخفي الأسماءَ في شريطٍ يُمرَّر
+ *        عرضاً حين تكثر — سبعَ عشرةَ شارةً في التخصيص.
  *
- * والجامعُ بينها **التبويب**: البطاقاتُ كما هي، ويُعرض منها واحدةٌ فقط.
- * فلا طيَّ يُخفي، ولا تمريرَ يطول، والشاشةُ في كلّ حالٍ بقدر مهمّةٍ واحدة.
+ * **والرابعةُ تحلّ الثلاثَ معاً**: الشاشةُ تفتح على **شبكةِ بطاقات** —
+ * كلُّ قسمٍ بطاقةٌ بأيقونته واسمه وسطرٍ يقول ما يفعل. فيُرى ما في الشاشة
+ * كلُّه بنظرةٍ واحدة (لا يُخفى شيء)، في مساحةٍ لا تطول (البطاقاتُ صفوفٌ لا
+ * عمود)، وبأسماءٍ كاملةٍ لا شاراتٍ مقتضبة.
  *
- * **والتسجيلُ من البطاقة لا من الصفحة.** كلُّ `Section` تُعرّف نفسَها عند
- * التركيب، فيُبنى الشريطُ من الموجود فعلاً — وصفحةٌ تُضاف غداً تُبوَّب بلا
- * سطرٍ يُكتب لها، وقسمٌ يظهر بشرطٍ يدخل الشريطَ ويخرج منه معه.
+ * **والضغطُ يفتح نافذةً للقسم وحدَه**: مساحةٌ واسعةٌ لا يزاحمها شيء، ولا
+ * تمريرَ في صفحةٍ طويلة. والإغلاقُ يُعيد إلى الشبكة، فالانتقالُ بين قسمين
+ * ضغطتان لا بحثٌ في عمود.
  *
- * **ولا تبويبَ لقسمٍ أو قسمين**: ما يُرى كلُّه في شاشةٍ لا يحتاج تبويباً،
- * والشريطُ فوقه زحامٌ لا تنظيم.
+ * ------------------------------------------------------------------
+ * **والقسمُ يبقى مركَّباً وإن لم يُعرض** (`hidden`): نزعُه من الشجرة يُفقد
+ * ما كُتب في حقوله ويُرجعه فارغاً عند العودة — وهو أسوأُ ما يقع في نموذجٍ
+ * طويلٍ كنموذج الخطّة.
  *
- * **والترتيبُ ترتيبُ التركيب** — وهو ترتيبُ الصفحة نفسِه، فيقرأ الشريطُ
- * كما تُقرأ الشاشة.
+ * **والبطاقةُ تُعرّف نفسَها**: كلُّ `Section` تُسجّل عنوانَها ووصفَها
+ * وأيقونتَها عند التركيب، فتُبنى الشبكةُ من الموجود فعلاً — وصفحةٌ تُضاف
+ * غداً تنالها بلا سطرٍ يُكتب لها.
+ *
+ * **ولا شبكةَ لقسمٍ أو قسمين**: ما يُرى كلُّه في شاشةٍ لا يحتاج بابَ دخول.
  */
 
 import {
   createContext, useCallback, useContext, useEffect, useMemo, useState,
   type ReactNode,
 } from "react";
-import { LayoutList } from "lucide-react";
+import { X } from "lucide-react";
 
-type Entry = { id: string; title: string; group?: string };
+type Entry = {
+  id: string;
+  title: string;
+  subtitle?: string;
+  icon?: ReactNode;
+  group?: string;
+  alert?: boolean;
+  count?: number;
+};
 
 type Ctx = {
-  register: (id: string, title: string, group?: string) => void;
+  register: (e: Entry) => void;
   unregister: (id: string) => void;
   active: string | null;
-  /** يُبوَّب فعلاً؟ — دون ثلاثة أقسامٍ تُعرض كلُّها. */
-  tabbed: boolean;
+  close: () => void;
+  /** تُعرض شبكةٌ فعلاً؟ — دون ثلاثة أقسامٍ تبقى في مكانها. */
+  gridded: boolean;
 };
 
 const SectionTabsCtx = createContext<Ctx | null>(null);
 
-export function useSectionTab(id: string, title: string, group?: string) {
+export function useSectionTab(e: Entry) {
   const ctx = useContext(SectionTabsCtx);
   const reg = ctx?.register;
   const unreg = ctx?.unregister;
+  const { id, title, subtitle, group, alert, count, icon } = e;
+
   /*
     الترتيبُ ترتيبُ التسجيل، والتسجيلُ في أثرٍ — وآثارُ الإخوة تعمل بترتيب
     الشجرة. فيأتي التسجيلُ بترتيب الصفحة نفسِه بلا عدّادٍ يُدار.
 
-    وكان هنا عدّادٌ عامٌّ يُصفَّر في أثرٍ عند تبديل الصفحة، وهو خطأ: أثرُ
-    الأب يعمل **بعد** آثار الأبناء، فيُصفَّر السجلُّ بعد أن سجّلوا فيه
-    فتختفي أقسامُ الصفحة الجديدة. والتنظيفُ يقع وحدَه: أقسامُ الصفحة
-    القديمة تُلغي تسجيلَها عند تفكيكها.
+    والأيقونةُ خارج قائمة التبعيّات: هي عنصرٌ جديدٌ في كلّ رسم، فوضعُها
+    فيها يُعيد التسجيلَ بلا انقطاع.
   */
   useEffect(() => {
     if (!reg || !unreg) return;
-    reg(id, title, group);
+    reg({ id, title, subtitle, icon, group, alert, count });
     return () => unreg(id);
-  }, [reg, unreg, id, title, group]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reg, unreg, id, title, subtitle, group, alert, count]);
 
-  if (!ctx) return { hidden: false };
-  return { hidden: ctx.tabbed && ctx.active !== id };
+  if (!ctx) return { hidden: false, inModal: false, close: () => {} };
+  return {
+    hidden: ctx.gridded && ctx.active !== id,
+    inModal: ctx.gridded && ctx.active === id,
+    close: ctx.close,
+  };
 }
 
 export function SectionTabs({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<Entry[]>([]);
   const [active, setActive] = useState<string | null>(null);
 
-  const register = useCallback((id: string, title: string, group?: string) => {
+  const register = useCallback((e: Entry) => {
     setItems((prev) => {
-      const at = prev.findIndex((x) => x.id === id);
+      const at = prev.findIndex((x) => x.id === e.id);
+      if (at < 0) return [...prev, e];
+      const same =
+        prev[at].title === e.title && prev[at].subtitle === e.subtitle &&
+        prev[at].group === e.group && prev[at].alert === e.alert && prev[at].count === e.count;
+      if (same) return prev;
       /* المسجَّلُ يبقى في موضعه ولو تغيّر عنوانُه — وإلّا قفز إلى الآخر */
-      if (at >= 0) {
-        if (prev[at].title === title && prev[at].group === group) return prev;
-        const copy = [...prev];
-        copy[at] = { id, title, group };
-        return copy;
-      }
-      return [...prev, { id, title, group }];
+      const copy = [...prev];
+      copy[at] = e;
+      return copy;
     });
   }, []);
 
   const unregister = useCallback((id: string) => {
     setItems((prev) => prev.filter((x) => x.id !== id));
+    setActive((cur) => (cur === id ? null : cur));
   }, []);
 
-  const tabbed = items.length >= 3;
+  const gridded = items.length >= 3;
+  const close = useCallback(() => setActive(null), []);
 
-  /*
-    مجموعاتٌ فوق الأقسام — لِما زاد على ثمانية.
-    شاشةُ التخصيص سبعةَ عشرَ قسماً؛ وشريطٌ فيه سبعَ عشرةَ شارةً يُمرَّر
-    عرضاً ليس تبسيطاً، بل هو القائمةُ الطويلةُ نفسُها في ثوبٍ آخر.
-    فتُجمع في خمسٍ أو ستّ، ويُعرض من الثانية إلا ما كان في المفتوحة —
-    فيبقى المرئيُّ في كلّ لحظةٍ قدرَ ما تُمسكه العين.
+  /* الهروبُ يُغلق — ونافذةٌ لا تُغلق إلّا بالفأرة تُتعب من يكتب */
+  useEffect(() => {
+    if (!active) return;
+    const k = (ev: KeyboardEvent) => { if (ev.key === "Escape") setActive(null); };
+    window.addEventListener("keydown", k);
+    return () => window.removeEventListener("keydown", k);
+  }, [active]);
 
-    ولا مجموعاتٍ إن لم تُعلَن، ولا إن كانت واحدةً: طبقةٌ لا تُقسّم شيئاً
-    زحامٌ لا ترتيب.
-  */
+  /* الصفحةُ لا تتمرّر خلف النافذة — وإلّا ضاع موضعُ الشبكة عند الإغلاق */
+  useEffect(() => {
+    if (!active) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, [active]);
+
   const groups = useMemo(() => {
     const out: string[] = [];
     items.forEach((i) => { if (i.group && !out.includes(i.group)) out.push(i.group); });
     return out;
   }, [items]);
-  const grouped = tabbed && groups.length >= 2 && items.every((i) => i.group);
 
-  const [group, setGroup] = useState<string | null>(null);
-  useEffect(() => {
-    if (!grouped) { setGroup(null); return; }
-    setGroup((cur) => (cur && groups.includes(cur) ? cur : groups[0] ?? null));
-  }, [grouped, groups]);
+  const ctx = useMemo<Ctx>(
+    () => ({ register, unregister, active, close, gridded }),
+    [register, unregister, active, close, gridded]
+  );
 
-  /* ما يُعرض في صفّ الأقسام: أقسامُ المجموعة المفتوحة، أو الكلُّ بلا مجموعات */
-  const shown = grouped ? items.filter((i) => i.group === group) : items;
+  const card = (i: Entry) => (
+    <button key={i.id} type="button" onClick={() => setActive(i.id)} className={`sg-card ${i.alert ? "is-alert" : ""}`}>
+      {i.icon && <span className="sg-card-i">{i.icon}</span>}
+      <span className="min-w-0 flex-1">
+        <span className="sg-card-t">{i.title}</span>
+        {i.subtitle && <span className="sg-card-h">{i.subtitle}</span>}
+      </span>
+      {i.count !== undefined && i.count > 0 && (
+        <span className="sg-card-n">{i.count.toLocaleString("ar-EG")}</span>
+      )}
+    </button>
+  );
 
-  /* الافتراضُ أوّلُ قسم — ويُصحَّح إن حُذف القسمُ المعروض. */
-  useEffect(() => {
-    if (!tabbed) { setActive(null); return; }
-    setActive((cur) => (cur && shown.some((x) => x.id === cur) ? cur : shown[0]?.id ?? null));
-  }, [shown, tabbed]);
-
-  const ctx = useMemo<Ctx>(() => ({ register, unregister, active, tabbed }), [register, unregister, active, tabbed]);
+  const grouped = groups.length >= 2 && items.every((i) => i.group);
 
   return (
     <SectionTabsCtx.Provider value={ctx}>
       {/*
-        الشريطُ في الواجهة لا عائماً في الأسفل.
-        العائمُ يُغطّي آخرَ الشاشة ويُنازع أزرارَ الحفظ مكانَها، ويُقرأ
-        شريطَ أدواتٍ لا فهرسَ أقسام. وموضعُه الطبيعيُّ أعلى المحتوى:
-        يُقرأ أوّلَ ما تُفتح الشاشةُ فيُعرف ما فيها قبل النزول.
-
-        و`sticky` لا `fixed`: يبقى في مجرى الصفحة فلا يُغطّي شيئاً، ويلصق
-        عند التمرير فيبقى في المتناول.
-
-        **و`top-0` لا رقمٌ يُقدَّر لارتفاع التول بار.** الحاوي المتمرّر هو
-        المتنُ نفسُه (`main.app-scroll` عليه `overflow-y:auto`) لا النافذة،
-        والتول بارُ خارجَه لا يتمرّر أصلاً. فأعلى المتن **هو** أسفلُ التول
-        بار: يلتصق به تماماً بلا فجوةٍ ولا تراكب، ويصحّ مهما تغيّر ارتفاعُ
-        الشريط بتبديل تصميمه أو إخفائه.
-
-        والهوامشُ السالبةُ تُلغي حشوةَ المتن فيمتدّ الشريطُ عرضَه كلَّه،
-        ثمّ تُعاد الحشوةُ داخلَه — فلا تمرّ البطاقاتُ من تحت حوافّه عاريةً.
+        الشبكةُ تُرسم قبل المحتوى، والأقسامُ تحتها مخفيّةٌ إلّا المفتوحَ —
+        وهو يرسم نفسَه نافذةً. فيبقى ترتيبُ الشجرة ترتيبَ الصفحة.
       */}
-      {tabbed && (
-        <nav
-          aria-label="أقسام الصفحة"
-          className="sticky top-0 z-[60] -mx-4 -mt-4 mb-4 space-y-2 border-b border-border bg-background/85 px-4 pb-3 pt-4 backdrop-blur-xl sm:-mx-6 sm:-mt-6 sm:px-6 sm:pt-6"
-        >
-          {grouped && (
-            <div className="flex max-w-full items-center gap-1.5 overflow-x-auto">
-              {groups.map((g) => (
-                <button
-                  key={g}
-                  type="button"
-                  onClick={() => setGroup(g)}
-                  className={`font-kufi shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[11px] font-extrabold transition ${
-                    group === g
-                      ? "bg-[hsl(var(--primary))] text-white"
-                      : "border border-border bg-card/80 text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {g}
-                </button>
-              ))}
-            </div>
-          )}
-          <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-[1.25rem] border border-border/70 bg-card/80 p-1.5">
-            <span className="grid size-9 shrink-0 place-items-center rounded-2xl bg-[hsl(var(--gold)/0.22)] text-primary">
-              <LayoutList className="size-4" />
-            </span>
-            {shown.map((i, n) => (
-              <button
-                key={i.id}
-                type="button"
-                onClick={() => setActive(i.id)}
-                aria-current={active === i.id ? "true" : undefined}
-                className={`font-kufi flex shrink-0 items-center gap-2 whitespace-nowrap rounded-2xl px-3.5 py-2 text-[11.5px] font-bold transition ${
-                  active === i.id
-                    ? "btn-glow text-white shadow-[0_4px_12px_-4px_hsl(var(--primary)/.5)]"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                {/* الرقمُ يقول «الثالثُ من ستّة» — موضعٌ لا زخرفة */}
-                <span
-                  className={`grid size-4 place-items-center rounded-full text-[9px] font-extrabold [font-variant-numeric:tabular-nums] ${
-                    active === i.id ? "bg-white/25" : "bg-muted-foreground/15"
-                  }`}
-                >
-                  {(n + 1).toLocaleString("ar-EG")}
-                </span>
-                {i.title}
-              </button>
-            ))}
-          </div>
-        </nav>
+      {gridded && (
+        <div className="mb-4">
+          {grouped
+            ? groups.map((g) => (
+                <div key={g} className="sg-group">
+                  <p className="sg-group-t">{g}</p>
+                  <div className="sg">{items.filter((i) => i.group === g).map(card)}</div>
+                </div>
+              ))
+            : <div className="sg">{items.map(card)}</div>}
+        </div>
       )}
 
       {children}
     </SectionTabsCtx.Provider>
+  );
+}
+
+/** غلافُ النافذة — يستعمله `Section` حين يكون هو المفتوح. */
+export function SectionModal({
+  title, subtitle, icon, actions, onClose, children,
+}: {
+  title: ReactNode;
+  subtitle?: ReactNode;
+  icon?: ReactNode;
+  actions?: ReactNode;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className="lm-scrim"
+      role="dialog"
+      aria-label={typeof title === "string" ? title : "قسم"}
+      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="lm">
+        <header className="lm-head">
+          {icon && <span className="sg-card-i">{icon}</span>}
+          <div className="min-w-0 flex-1">
+            <h2 className="lm-title">{title}</h2>
+            {subtitle && <p className="lm-sub">{subtitle}</p>}
+          </div>
+          {actions}
+          <button onClick={onClose} className="lm-x" aria-label="إغلاق"><X className="size-4" /></button>
+        </header>
+        <div className="lm-body">{children}</div>
+      </div>
+    </div>
   );
 }
