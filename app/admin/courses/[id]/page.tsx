@@ -8,7 +8,7 @@ import {
   ListChecks, ChevronDown, Check, Link2, X, Loader2, Video, Palette, Wallet, Layers,
 } from "lucide-react";
 import { Collapse } from "@/components/dashboard/collapse";
-import { courseUnits, isSplit, LEGACY_UNIT_ID } from "@/lib/course-units";
+import { courseUnits, isSplit, withUnits, LEGACY_UNIT_ID } from "@/lib/course-units";
 import { PageHeader, Card } from "@/components/dashboard/ui";
 import { Button } from "@/components/ui/primitives";
 import { useContent } from "@/components/content/content-provider";
@@ -71,15 +71,10 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
   const units = courseUnits(subject);
   const videos = units.flatMap((u) => u.lessons ?? []);
 
+  /* التركيبُ في `lib/course-units` — يُكتب من هنا ومن قسم «كلّ الدروس»
+     بالطريقة نفسِها، فلا يفترق الحقلان. */
   const persistUnits = (next: Unit[]) => {
-    const flat = next.flatMap((u) => u.lessons ?? []);
-    const split = next.length > 1 || next[0]?.id !== LEGACY_UNIT_ID;
-    const updated: Subject = {
-      ...subject,
-      units: split ? next : [],
-      videos: flat,
-      lessons: flat.length,
-    };
+    const updated = withUnits(subject, next);
     save({ subjects: subjects.map((s) => (s.id === id ? updated : s)) });
   };
 

@@ -55,6 +55,7 @@ const SLOTS: Record<string, IconSlot> = {
   Bell: "bell",
   Wallet: "wallet",
   Youtube: "video",
+  ListVideo: "video",
   Database: "database",
   Shield: "shield",
   Star: "star",
