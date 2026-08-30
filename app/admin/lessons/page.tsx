@@ -30,10 +30,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
-  Search, PlayCircle, Trash2, Gift, ListChecks, ExternalLink, AlertTriangle,
+  PlayCircle, Trash2, Gift, ListChecks, ExternalLink, AlertTriangle,
   Link2Off, Copy, ListVideo, Settings2, Paperclip,
 } from "lucide-react";
-import { PageHeader, DataTable } from "@/components/dashboard/ui";
+import { DataTable } from "@/components/dashboard/ui";
+import { PageBar } from "@/components/dashboard/page-bar";
+import { Field, Select, Row } from "@/components/dashboard/form";
 import { Section } from "@/components/dashboard/section";
 import { useContent } from "@/components/content/content-provider";
 import { courseUnits, withUnits } from "@/lib/course-units";
@@ -146,9 +148,30 @@ export default function AllLessons() {
 
   return (
     <>
-      <PageHeader
+      <PageBar
         title="كل الدروس"
         subtitle={`${ar(rows.length)} درساً في ${ar(subjects.length)} كورساً — تُبحث وتُعدَّل من مكانها`}
+        search={{ value: q, onChange: setQ, placeholder: "ابحث باسم الدرس أو الكورس أو المادّة" }}
+        activeFilters={(course ? 1 : 0) + (flag !== "all" ? 1 : 0)}
+        onClearFilters={() => { setCourse(""); setFlag("all"); }}
+        filters={
+          <Row cols={2}>
+            <Field label="الكورس">
+              <Select value={course} onChange={(e) => setCourse(e.target.value)}>
+                <option value="">كل الكورسات</option>
+                {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </Select>
+            </Field>
+            <Field label="الحال">
+              <Select value={flag} onChange={(e) => setFlag(e.target.value as typeof flag)}>
+                <option value="all">الكل</option>
+                <option value="free">المجّانية</option>
+                <option value="quiz">ما عليه اختبار</option>
+                <option value="broken">تحتاج انتباهاً</option>
+              </Select>
+            </Field>
+          </Row>
+        }
       />
 
       <div className="mb-4 grid gap-3 sm:grid-cols-4">
@@ -167,31 +190,7 @@ export default function AllLessons() {
         subtitle="من كلّ كورسٍ وكلّ مادّة — العنوانُ والرابطُ والمدّةُ تُعدَّل في الصفّ، وتُحفظ عند مغادرة الحقل"
         icon={<ListVideo className="size-4" />}
         count={shown.length}
-        actions={
-          <div className="flex flex-wrap items-center gap-2">
-            <select value={course} onChange={(e) => setCourse(e.target.value)} className={`${inp} !w-auto`}>
-              <option value="">كل الكورسات</option>
-              {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
-            <select value={flag} onChange={(e) => setFlag(e.target.value as typeof flag)} className={`${inp} !w-auto`}>
-              <option value="all">الكل</option>
-              <option value="free">المجّانية</option>
-              <option value="quiz">ما عليه اختبار</option>
-              <option value="broken">تحتاج انتباهاً</option>
-            </select>
-          </div>
-        }
       >
-        <div className="relative mb-4">
-          <Search className="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="ابحث باسم الدرس أو الكورس أو المادّة"
-            className="w-full rounded-2xl border border-border bg-card/60 py-2.5 pe-10 ps-4 text-sm outline-none focus:border-primary/50"
-          />
-        </div>
-
         {rows.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
             لا دروس بعد. أضِف درساً من داخل أيّ كورس.

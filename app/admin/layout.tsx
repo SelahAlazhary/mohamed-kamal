@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
-import { DashboardShell } from "@/components/dashboard/shell";
-import { SectionTabs } from "@/components/dashboard/section-tabs";
+import { AdminShell } from "@/components/dashboard/admin-shell";
 import { adminNav } from "@/lib/dashboard-data";
 import { getSession } from "@/lib/session";
 import { loadDB, getDB } from "@/lib/db";
@@ -45,22 +44,23 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   return (
     // admin-skin: هوية بصرية خاصة بلوحة الإدارة (تصميم فقط — لا يمسّ الموقع أو بوابة الطالب)
-    <div style={iconFrameVars(getDB().content.iconFrameColors)} className={`admin-skin ${iconFrameClass(findIconFrame(getDB().content.iconFrame))} ${iconCoverClass(findIconCover(getDB().content.iconCover))} ${iconMotionClass(findIconMotion(getDB().content.iconMotion))} ${toolbarClass(bar)} ${stickClass(getDB().content.toolbarStick)} ${getDB().content.toolbarHidden ? "tools-hidden" : ""}`} data-toolbar={bar.id}>
-      <DashboardShell
+    <div style={iconFrameVars(getDB().content.iconFrameColors)} className={`admin-skin ad-root ${iconFrameClass(findIconFrame(getDB().content.iconFrame))} ${iconCoverClass(findIconCover(getDB().content.iconCover))} ${iconMotionClass(findIconMotion(getDB().content.iconMotion))} ${toolbarClass(bar)} ${stickClass(getDB().content.toolbarStick)} ${getDB().content.toolbarHidden ? "tools-hidden" : ""}`} data-toolbar={bar.id}>
+      {/*
+        قشرةُ اللوحة بناءٌ مستقلٌّ عن قشرة الطالب.
+        كانتا واحدةً — عمودٌ عريضٌ فيه اثنان وعشرون رابطاً — وهي تصلح
+        لسبع شاشاتٍ يُنتقل بينها قليلاً، ولا تصلح للوحةٍ يُعمل فيها ساعات.
+        وتبويبُ الأقسام داخلَها، فلا يُلفّ هنا مرّةً أخرى.
+      */}
+      <AdminShell
         nav={nav}
-        role="admin"
         user={{
           name: session.name,
-          sub: isOwner(me) ? "مالكة المنصّة" : "مشرف",
+          sub: isOwner(me) ? "مالك المنصّة" : "مشرف",
           avatar: session.name.charAt(0),
         }}
       >
-        {/*
-          تبويبُ الأقسام — يعرض قسماً واحداً ويبدّل بينها من شريطٍ عائم.
-          فلا طيَّ يُخفي، ولا شاشةً تطول بأقسامٍ مفتوحةٍ كلِّها.
-        */}
-        <SectionTabs>{children}</SectionTabs>
-      </DashboardShell>
+        {children}
+      </AdminShell>
     </div>
   );
 }

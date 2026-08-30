@@ -70,3 +70,6 @@ export function LibIcon({ slot, className = "size-5" }: { slot: IconSlot; classN
   const { content } = useContent();
   return <LibGlyph lib={findIconLib(content.iconLib)} slot={slot} className={className} />;
 }
+
+/* يُصدَّر ليُستعمل في خرائط الأيقونات خارج هذا الملفّ. */
+export type { IconSlot };

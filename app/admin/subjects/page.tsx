@@ -28,9 +28,10 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Plus, PlayCircle, Users, Trash2, ToggleLeft, ToggleRight, X, ListVideo,
-  Search, BookOpen, GraduationCap, Wallet,
+  BookOpen, GraduationCap, Wallet,
 } from "lucide-react";
-import { PageHeader, DataTable, StatusBadge } from "@/components/dashboard/ui";
+import { DataTable, StatusBadge } from "@/components/dashboard/ui";
+import { PageBar } from "@/components/dashboard/page-bar";
 import { Section } from "@/components/dashboard/section";
 import { Button } from "@/components/ui/primitives";
 import { useContent } from "@/components/content/content-provider";
@@ -208,10 +209,11 @@ export default function SubjectsPage() {
 
   return (
     <>
-      <PageHeader
+      <PageBar
         title="الكورسات"
         subtitle={`${subjects.length.toLocaleString("ar-EG")} كورس — الفصل الأول ${inTermCount(1).toLocaleString("ar-EG")}، والفصل الثاني ${inTermCount(2).toLocaleString("ar-EG")}`}
         action={<Button className="px-5 py-2.5" onClick={() => setAdding((v) => !v)}><Plus className="size-4" /> إضافة كورس</Button>}
+        search={{ value: q, onChange: setQ, placeholder: "ابحث باسم الكورس أو الصف" }}
       />
 
       {adding && (
@@ -319,16 +321,6 @@ export default function SubjectsPage() {
         </p>
       ) : (
         <>
-          <div className="relative mb-4">
-            <Search className="pointer-events-none absolute end-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="ابحث باسم الكورس أو الصف — يتخطّى الأقسام كلَّها"
-              className="w-full rounded-2xl border border-border bg-card/60 py-2.5 pe-11 ps-4 text-sm outline-none focus:border-primary/50"
-            />
-          </div>
-
           {q.trim() ? (
             found.length === 0
               ? <p className="rounded-3xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">لا كورسَ بهذا الاسم.</p>
