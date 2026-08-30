@@ -133,13 +133,21 @@ export function SectionTabs({ children }: { children: ReactNode }) {
         يُقرأ أوّلَ ما تُفتح الشاشةُ فيُعرف ما فيها قبل النزول.
 
         و`sticky` لا `fixed`: يبقى في مجرى الصفحة فلا يُغطّي شيئاً، ويلصق
-        بأعلاها عند التمرير فيبقى في المتناول. و`top` بقدر ترويسة اللوحة
-        الملتصقة، وإلّا اختفى تحتها.
+        عند التمرير فيبقى في المتناول.
+
+        **و`top-0` لا رقمٌ يُقدَّر لارتفاع التول بار.** الحاوي المتمرّر هو
+        المتنُ نفسُه (`main.app-scroll` عليه `overflow-y:auto`) لا النافذة،
+        والتول بارُ خارجَه لا يتمرّر أصلاً. فأعلى المتن **هو** أسفلُ التول
+        بار: يلتصق به تماماً بلا فجوةٍ ولا تراكب، ويصحّ مهما تغيّر ارتفاعُ
+        الشريط بتبديل تصميمه أو إخفائه.
+
+        والهوامشُ السالبةُ تُلغي حشوةَ المتن فيمتدّ الشريطُ عرضَه كلَّه،
+        ثمّ تُعاد الحشوةُ داخلَه — فلا تمرّ البطاقاتُ من تحت حوافّه عاريةً.
       */}
       {tabbed && (
         <nav
           aria-label="أقسام الصفحة"
-          className="sticky top-[4.5rem] z-[60] -mx-4 mb-4 space-y-2 px-4 sm:-mx-6 sm:px-6"
+          className="sticky top-0 z-[60] -mx-4 -mt-4 mb-4 space-y-2 border-b border-border bg-background/85 px-4 pb-3 pt-4 backdrop-blur-xl sm:-mx-6 sm:-mt-6 sm:px-6 sm:pt-6"
         >
           {grouped && (
             <div className="flex max-w-full items-center gap-1.5 overflow-x-auto">
@@ -159,7 +167,7 @@ export function SectionTabs({ children }: { children: ReactNode }) {
               ))}
             </div>
           )}
-          <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-[1.25rem] border border-border/70 bg-white/95 p-1.5 shadow-[0_1px_2px_rgba(16,24,40,.05),0_8px_24px_-12px_rgba(16,24,40,.2)] backdrop-blur-xl dark:bg-card/95">
+          <div className="flex max-w-full items-center gap-1 overflow-x-auto rounded-[1.25rem] border border-border/70 bg-card/80 p-1.5">
             <span className="grid size-9 shrink-0 place-items-center rounded-2xl bg-[hsl(var(--gold)/0.22)] text-primary">
               <LayoutList className="size-4" />
             </span>
