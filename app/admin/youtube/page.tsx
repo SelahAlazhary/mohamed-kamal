@@ -16,6 +16,7 @@ import { PageHeader, Card, StatCard } from "@/components/dashboard/ui";
 import { Button } from "@/components/ui/primitives";
 import { useContent } from "@/components/content/content-provider";
 import type { Lesson, YoutubeVideo } from "@/lib/types";
+import { isSplit } from "@/lib/course-units";
 
 export default function YoutubePage() {
   const { db, save, refresh } = useContent();
@@ -84,7 +85,18 @@ export default function YoutubePage() {
       title: addTo.video.title,
       url: `https://www.youtube.com/watch?v=${addTo.video.id}`,
     };
-    const nextVideos = [...(subject.videos ?? []), lesson];
+    /*
+      الفيديو يُضاف إلى آخرِ وحدةٍ في الكورس المقسَّم، وإلى القائمة
+      المسطّحة في غير المقسَّم. وإضافتُه إلى `videos` دائماً تُخفيه في
+      المقسَّم: القراءةُ هناك تمرّ بالوحدات وحدَها فلا يظهر أبداً.
+    */
+    const split = isSplit(subject);
+    const nextUnits = split
+      ? subject.units!.map((u, i) =>
+          i === subject.units!.length - 1 ? { ...u, lessons: [...(u.lessons ?? []), lesson] } : u,
+        )
+      : undefined;
+    const nextVideos = split ? subject.videos ?? [] : [...(subject.videos ?? []), lesson];
     save({
       subjects: subjects.map((s) =>
         s.id === subject.id ? { ...s, videos: nextVideos, lessons: nextVideos.length } : s

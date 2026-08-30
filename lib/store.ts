@@ -53,8 +53,18 @@ function normalizeLists(db: DB): DB {
   const out = db as unknown as Record<string, unknown>;
   for (const k of LIST_KEYS) out[k] = toArray(out[k]);
   // مصفوفات داخلية داخل الكيانات
-  (out.subjects as { videos?: unknown; materials?: unknown }[]).forEach((s) => {
+  (out.subjects as { videos?: unknown; materials?: unknown; units?: unknown }[]).forEach((s) => {
     s.videos = toArray(s.videos);
+    /*
+      Firebase يُعيد المصفوفةَ الفارغةَ عدماً والمصفوفةَ المتقطّعةَ كائناً.
+      فلولا التطبيعُ هنا لانفجر `.map` على وحدةٍ حُذف آخرُ درسٍ منها —
+      ودروسُ الوحدة تُطبَّع كما تُطبَّع دروسُ الكورس، فهي المصفوفةُ
+      المتغيّرةُ الآن لا تلك.
+    */
+    s.units = toArray(s.units).map((u) => {
+      const unit = u as { lessons?: unknown; materials?: unknown };
+      return { ...unit, lessons: toArray(unit.lessons), materials: toArray(unit.materials) };
+    });
     s.materials = toArray(s.materials);
   });
   (out.users as { subscriptions?: unknown; quizResults?: unknown; examAttempts?: unknown; pushSubs?: unknown; enrolled?: unknown; readNotifications?: unknown }[]).forEach((u) => {

@@ -1,6 +1,7 @@
 import type { PublicDB, User } from "./types";
 import { can, type AdminPerm } from "./perms";
 import { gatewayOn, activeMethods } from "./payments";
+import { lessonCount } from "./course-units";
 
 /**
  * ما يحتاج انتباه المشرف الآن.
@@ -107,7 +108,7 @@ export function adminInsights(
 
   /* ---------- كورساتٌ لا تُفيد أحداً ---------- */
   const emptyPublished = (db.subjects ?? []).filter(
-    (s) => s.status === "منشورة" && (s.videos?.length ?? 0) === 0
+    (s) => s.status === "منشورة" && lessonCount(s) === 0
   );
   if (emptyPublished.length > 0) {
     out.push({
@@ -122,7 +123,7 @@ export function adminInsights(
   }
 
   const drafts = (db.subjects ?? []).filter(
-    (s) => s.status === "مسودّة" && (s.videos?.length ?? 0) > 0
+    (s) => s.status === "مسودّة" && lessonCount(s) > 0
   );
   if (drafts.length > 0) {
     out.push({

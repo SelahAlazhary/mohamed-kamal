@@ -8,6 +8,7 @@ import {
 import { seedUsers } from "./seed-admin";
 import { courseActive, lessonActive, planExpiry, planSubjectId, eligibleFor, liveVisible, publicLives } from "./access";
 import { resolvePlan } from "./plans";
+import { allLessons, courseUnits, findLesson, isSplit, lessonCount } from "./course-units";
 import { dropActivity } from "./activity-store";
 import { firebaseConfigured } from "./firebase";
 import { pushConfigured } from "./push";
@@ -445,7 +446,8 @@ export function gradeQuiz(userId: string, subjectId: string, lessonId: string, a
   if (!user) return { ok: false, error: "المستخدم غير موجود" };
 
   const subject = db.subjects.find((s) => s.id === subjectId);
-  const lesson = subject?.videos?.find((v) => v.id === lessonId);
+  /* البحثُ يمرّ بالوحدات: درسٌ في وحدةٍ لا يوجد في `videos` فيُردّ خطأً. */
+  const lesson = subject ? findLesson(subject, lessonId)?.lesson : undefined;
   if (!subject || !lesson) return { ok: false, error: "الدرس غير موجود" };
   if (!lesson.quiz?.enabled || !lesson.quiz.questions.length) return { ok: false, error: "لا يوجد اختبار على هذا الدرس" };
   if (!lesson.isFree && !courseActive(user, subjectId, Date.now(), subject.term)) {
@@ -483,15 +485,34 @@ export function markNotificationsRead(userId: string, ids: string[]) {
 
 type Scope = { uid: string; role: Role } | null;
 
-/** كورس بلا أي روابط (للزائر) — اسم وسعر وغلاف فقط. */
+/**
+ * كورس بلا أي روابط (للزائر) — اسم وسعر وغلاف فقط.
+ *
+ * **والوحداتُ تُفرَّغ كما تُفرَّغ `videos`.** كانت هذه الدالّةُ تُفرّغ
+ * المسطّحةَ وحدَها، فلو أُضيفت الوحداتُ ولم تُذكر هنا لخرجت روابطُ
+ * دروسِها كلِّها إلى كلّ زائر. وعناوينُ الوحدات تبقى: هي فهرسُ المنهج
+ * ويُراد أن تُرى قبل الشراء.
+ */
 function stripSubject(s: Subject): Subject {
-  return { ...s, videos: [], materials: [], lessons: s.videos?.length ?? s.lessons };
+  return {
+    ...s,
+    videos: [],
+    materials: [],
+    units: (s.units ?? []).map((u) => ({ ...u, lessons: [], materials: [] })),
+    lessons: lessonCount(s),
+  };
 }
 
 /** كورس للطالب: رابط الدرس يُرسل فقط إذا كان الدرس مفتوحاً له، وإجابات الاختبار تُحذف دائماً. */
 function scopeSubjectForStudent(s: Subject, me: User | undefined): Subject {
   const owned = courseActive(me, s.id, Date.now(), s.term);
-  const videos: Lesson[] = (s.videos ?? []).map((v) => {
+
+  /*
+    قيدُ الدرس الواحد — يُكتب مرّةً ويُطبَّق على المسطّحة وعلى الوحدات.
+    وكتابتُه مرّتين هي كيف تتسرّب الروابط: يُصلَح أحدُ الموضعين ويُنسى
+    الآخر، ولا يظهر الخللُ في الواجهة لأنّ المشترك يرى كلَّ شيءٍ أصلاً.
+  */
+  const gate = (v: Lesson): Lesson => {
     const open = Boolean(v.isFree) || owned;
     const quiz = v.quiz?.enabled
       ? {
@@ -503,12 +524,18 @@ function scopeSubjectForStudent(s: Subject, me: User | undefined): Subject {
         }
       : undefined;
     return { ...v, url: open ? v.url : "", quiz };
-  });
+  };
+
   return {
     ...s,
-    videos,
+    videos: (s.videos ?? []).map(gate),
+    units: (s.units ?? []).map((u) => ({
+      ...u,
+      lessons: (u.lessons ?? []).map(gate),
+      materials: owned ? u.materials ?? [] : [],
+    })),
     materials: owned ? s.materials ?? [] : [],
-    lessons: s.videos?.length ?? s.lessons,
+    lessons: lessonCount(s),
   };
 }
 

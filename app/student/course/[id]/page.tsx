@@ -13,6 +13,8 @@ import { useContent } from "@/components/content/content-provider";
 import { CaptureGuard } from "@/components/student/capture-guard";
 import { subjectActive, subscriptionFor, daysLeft } from "@/lib/access";
 import type { Lesson } from "@/lib/types";
+import { allLessons, courseUnits } from "@/lib/course-units";
+import { Collapse } from "@/components/dashboard/collapse";
 
 /** تحويل رابط الفيديو إلى صيغة تضمين (YouTube / Vimeo / Bunny Stream / mp4). */
 function toEmbed(url: string): { kind: "video" | "iframe"; src: string; drive?: boolean } {
@@ -45,7 +47,9 @@ export default function CoursePlayer({ params }: { params: Promise<{ id: string 
   const subject = db?.subjects.find((s) => s.id === id);
   const owned = subjectActive(me, subject);
   const fem = me?.gender === "female";
-  const videos = subject?.videos ?? [];
+  /* الوحداتُ هي المعروضة؛ و`videos` المسطّحةُ تبقى للحساب والتنقّل. */
+  const units = subject ? courseUnits(subject) : [];
+  const videos = subject ? allLessons(subject) : [];
   const canPlay = (_lid: string, isFree?: boolean) => Boolean(isFree) || owned;
 
   const [idx, setIdx] = useState(0);
@@ -195,23 +199,58 @@ export default function CoursePlayer({ params }: { params: Promise<{ id: string 
               <span className="text-xs font-bold text-primary">{percent}٪</span>
             </div>
             <Progress value={percent} />
-            <div className="mt-4 space-y-1.5">
-              {videos.map((v, i) => (
-                <button key={v.id} onClick={() => setIdx(i)}
-                  className={`flex w-full items-center gap-3 rounded-2xl p-2.5 text-right transition ${i === idx ? "bg-primary/10 ring-1 ring-primary/20" : "hover:bg-muted"}`}>
-                  <span className={`grid size-8 shrink-0 place-items-center rounded-full text-xs font-bold ${done.has(v.id) ? "bg-emerald-500/15 text-emerald-500" : "bg-muted text-muted-foreground"}`}>
-                    {done.has(v.id) ? <IconCheckCircle className="size-4" /> : i + 1}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold">{v.title}</span>
-                    {v.duration && <span className="text-[11px] text-muted-foreground">{v.duration}</span>}
-                  </span>
-                  {v.isFree && <IconGift className="size-3.5 shrink-0 text-emerald-500" />}
-                  {canPlay(v.id, v.isFree)
-                    ? <IconPlay className={`size-4 shrink-0 ${i === idx ? "text-primary" : "text-muted-foreground"}`} />
-                    : <IconLock className="size-4 shrink-0 text-muted-foreground" />}
-                </button>
-              ))}
+            {/*
+              الدروسُ مجموعةٌ في وحداتها.
+              والرقمُ المكتوب على الدرس يبقى **ترتيبَه في الكورس كلِّه** لا
+              في وحدته: المشغّلُ يُفهرَس بالقائمة المسطّحة، فلو رُقّم الدرسُ
+              داخل وحدته لصار في الكورس ثلاثةُ دروسٍ رقمُها «١».
+
+              والوحدةُ التي فيها الدرسُ الجاري تُفتح وحدَها: فتحُها كلِّها
+              يُعيد القائمةَ الطويلة التي فُرّت منها، وطيُّها كلِّها يُخفي
+              عن الطالب أين هو.
+            */}
+            <div className="mt-4 space-y-2">
+              {units.map((unit) => {
+                const start = videos.findIndex((v) => v.id === (unit.lessons ?? [])[0]?.id);
+                const base = start < 0 ? 0 : start;
+                const inUnit = (unit.lessons ?? []).length;
+                const doneHere = (unit.lessons ?? []).filter((v) => done.has(v.id)).length;
+                const rows = (unit.lessons ?? []).map((v, k) => {
+                  const i = base + k;
+                  return (
+                    <button key={v.id} onClick={() => setIdx(i)}
+                      className={`flex w-full items-center gap-3 rounded-2xl p-2.5 text-right transition ${i === idx ? "bg-primary/10 ring-1 ring-primary/20" : "hover:bg-muted"}`}>
+                      <span className={`grid size-8 shrink-0 place-items-center rounded-full text-xs font-bold ${done.has(v.id) ? "bg-emerald-500/15 text-emerald-500" : "bg-muted text-muted-foreground"}`}>
+                        {done.has(v.id) ? <IconCheckCircle className="size-4" /> : (i + 1).toLocaleString("ar-EG")}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold">{v.title}</span>
+                        {v.duration && <span className="text-[11px] text-muted-foreground">{v.duration}</span>}
+                      </span>
+                      {v.isFree && <IconGift className="size-3.5 shrink-0 text-emerald-500" />}
+                      {canPlay(v.id, v.isFree)
+                        ? <IconPlay className={`size-4 shrink-0 ${i === idx ? "text-primary" : "text-muted-foreground"}`} />
+                        : <IconLock className="size-4 shrink-0 text-muted-foreground" />}
+                    </button>
+                  );
+                });
+
+                /* كورسٌ لم يُقسَّم بعد: وحدةٌ ملفوفةٌ واحدة — فلا يُلفّ
+                   لوحٌ حول قائمةٍ لا شيءَ يقاسمها المكان. */
+                if (units.length === 1) return <div key={unit.id} className="space-y-1.5">{rows}</div>;
+
+                return (
+                  <Collapse
+                    key={unit.id}
+                    title={unit.title}
+                    subtitle={`${doneHere.toLocaleString("ar-EG")} من ${inUnit.toLocaleString("ar-EG")} درساً`}
+                    count={inUnit}
+                    defaultOpen={idx >= base && idx < base + inUnit}
+                  >
+                    <div className="space-y-1.5">{rows}</div>
+                  </Collapse>
+                );
+              })}
             </div>
           </Card>
         </div>

@@ -7,6 +7,8 @@ import {
   ArrowRight, Plus, Trash2, PlayCircle, Gift, FileText, Upload, ImageIcon,
   ListChecks, ChevronDown, Check, Link2, X, Loader2, Video, Palette,
 } from "lucide-react";
+import { Collapse } from "@/components/dashboard/collapse";
+import { courseUnits, LEGACY_UNIT_ID } from "@/lib/course-units";
 import { PageHeader, Card } from "@/components/dashboard/ui";
 import { Button } from "@/components/ui/primitives";
 import { useContent } from "@/components/content/content-provider";
@@ -14,7 +16,7 @@ import { CourseArt, COVER_PATTERNS } from "@/components/brand/course-art";
 import { CoverTextEditor } from "@/components/admin/cover-text-editor";
 import { CoverStickersEditor } from "@/components/admin/cover-stickers-editor";
 import { CoursePricesEditor } from "@/components/admin/course-prices-editor";
-import type { Lesson, Material, Subject, Quiz, QuizQuestion, ImageFit, CoverPattern, CoverText, CoverSticker } from "@/lib/types";
+import type { Lesson, Material, Subject, Quiz, QuizQuestion, ImageFit, CoverPattern, CoverText, CoverSticker, Unit } from "@/lib/types";
 import { mediaSrc } from "@/lib/media";
 
 /** ألوان خلفية جاهزة للوحة الغلاف — من عائلة هوية المخطوط. */
@@ -39,6 +41,8 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
   const coverRef = useRef<HTMLInputElement>(null);
   const [coverUploading, setCoverUploading] = useState(false);
   const [quizFor, setQuizFor] = useState<string | null>(null);
+  /** الوحدةُ التي يُضاف إليها الدرسُ الجديد. */
+  const [intoUnit, setIntoUnit] = useState<string>("");
   const videoRef = useRef<HTMLInputElement>(null);
   const matRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState<"video" | "material" | null>(null);
@@ -52,23 +56,90 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
       </Card>
     );
   }
-  const videos = subject.videos ?? [];
+  /*
+    الوحداتُ هي مصدرُ الحقيقة، و`videos` مرآةٌ لها.
+    ------------------------------------------------------------
+    والمرآةُ مقصودة: أربعةٌ وخمسون كورساً وعشرةُ قرّاءٍ في الشيفرة يقرؤون
+    `videos`. فلو صارت الوحداتُ وحدَها هي المكتوبة لوجب تغييرُ العشرة
+    دفعةً واحدة، ويكفي أن يُنسى واحدٌ ليقرأ كورساً فارغاً. فالكتابةُ
+    تُحدّثهما معاً: القديمُ يقرأ ما يعرف، والجديدُ يقرأ الوحدات.
 
-  const persist = (nextVideos: Lesson[]) => {
-    const updated: Subject = { ...subject, videos: nextVideos, lessons: nextVideos.length };
+    ولا تُكتب `units` حتّى يُقسّم الأستاذُ فعلاً — فكورسٌ لم يُقسَّم يبقى
+    في القاعدة كما كان، ولا يتبدّل شكلُ أربعةٍ وخمسين كورساً لأنّ أحدَها
+    فُتح.
+  */
+  const units = courseUnits(subject);
+  const videos = units.flatMap((u) => u.lessons ?? []);
+
+  const persistUnits = (next: Unit[]) => {
+    const flat = next.flatMap((u) => u.lessons ?? []);
+    const split = next.length > 1 || next[0]?.id !== LEGACY_UNIT_ID;
+    const updated: Subject = {
+      ...subject,
+      units: split ? next : [],
+      videos: flat,
+      lessons: flat.length,
+    };
     save({ subjects: subjects.map((s) => (s.id === id ? updated : s)) });
   };
+
+  /** يمرّ على دروس الوحدات كلِّها — للاختبار والتعديل الموضعيّ. */
+  const mapLessons = (fn: (l: Lesson) => Lesson) =>
+    persistUnits(units.map((u) => ({ ...u, lessons: (u.lessons ?? []).map(fn) })));
 
   const add = () => {
     if (!form.title.trim() || !form.url.trim()) return;
     const lesson: Lesson = { id: `L-${Date.now()}`, title: form.title.trim(), url: form.url.trim(), duration: form.duration.trim() || undefined, isFree: form.isFree };
-    persist([...videos, lesson]);
+    /* يُضاف إلى الوحدة المختارة، أو إلى آخر وحدةٍ إن لم تُختر واحدة. */
+    const target = units.some((u) => u.id === intoUnit) ? intoUnit : units[units.length - 1].id;
+    persistUnits(units.map((u) => (u.id === target ? { ...u, lessons: [...(u.lessons ?? []), lesson] } : u)));
     setForm({ title: "", url: "", duration: "", isFree: false });
   };
-  const remove = (lid: string) => persist(videos.filter((v) => v.id !== lid));
+  const remove = (lid: string) =>
+    persistUnits(units.map((u) => ({ ...u, lessons: (u.lessons ?? []).filter((v) => v.id !== lid) })));
   /** تحديث اختبار درس (تشغيل/إيقاف + الأسئلة). */
   const setQuiz = (lid: string, quiz: Quiz | undefined) =>
-    persist(videos.map((v) => (v.id === lid ? { ...v, quiz } : v)));
+    mapLessons((v) => (v.id === lid ? { ...v, quiz } : v));
+
+  /* ---------- إدارةُ الوحدات ---------- */
+  const addUnit = () => {
+    const base = units[0]?.id === LEGACY_UNIT_ID
+      ? [{ ...units[0], id: `u${Date.now().toString(36)}`, title: units[0].lessons?.length ? "الوحدة الأولى" : "الوحدة الأولى" }]
+      : units;
+    persistUnits([...base, { id: `u${Date.now().toString(36)}x`, title: `الوحدة ${(base.length + 1).toLocaleString("ar-EG")}`, lessons: [] }]);
+  };
+  const renameUnit = (uid: string, title: string) =>
+    persistUnits(units.map((u) => (u.id === uid ? { ...u, title } : u)));
+  /** حذفُ وحدةٍ يُعيد دروسَها إلى ما قبلها — ولا يحذفها معها. */
+  const removeUnit = (uid: string) => {
+    if (units.length <= 1) return;
+    const i = units.findIndex((u) => u.id === uid);
+    const keep = units[i].lessons ?? [];
+    const rest = units.filter((u) => u.id !== uid);
+    const at = Math.max(0, i - 1);
+    persistUnits(rest.map((u, k) => (k === at ? { ...u, lessons: [...(u.lessons ?? []), ...keep] } : u)));
+  };
+  const moveUnit = (i: number, dir: -1 | 1) => {
+    const j = i + dir;
+    if (j < 0 || j >= units.length) return;
+    const arr = [...units];
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+    persistUnits(arr);
+  };
+  /** نقلُ درسٍ إلى وحدةٍ أخرى — يُنزع من موضعه ويُلحق بآخر المقصد. */
+  const moveLessonTo = (lid: string, uid: string) => {
+    const lesson = videos.find((v) => v.id === lid);
+    if (!lesson) return;
+    persistUnits(
+      units.map((u) => ({
+        ...u,
+        lessons:
+          u.id === uid
+            ? [...(u.lessons ?? []).filter((v) => v.id !== lid), lesson]
+            : (u.lessons ?? []).filter((v) => v.id !== lid),
+      })),
+    );
+  };
 
   /** إحصاء محاولات الطلاب على اختبار درس. */
   const quizStats = (lid: string) => {
@@ -137,12 +208,20 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
     if (url) save({ subjects: subjects.map((s) => (s.id === id ? { ...subject, cover: url } : s)) });
     if (coverRef.current) coverRef.current.value = "";
   };
-  const move = (i: number, dir: -1 | 1) => {
-    const j = i + dir;
-    if (j < 0 || j >= videos.length) return;
-    const arr = [...videos];
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-    persist(arr);
+  /*
+    الترتيبُ داخل الوحدة لا عبرها.
+    كان السهمُ يبدّل الدرسَ بجاره في القائمة المسطّحة — وجارُه قد يكون في
+    وحدةٍ أخرى، فيقفز الدرسُ بين البابين بضغطةٍ لم تُرِد ذلك. والنقلُ بين
+    الوحدات له قائمتُه المنسدلة، وهو فعلٌ يُقصد لا يقع بالسهو.
+  */
+  const move = (uid: string, k: number, dir: -1 | 1) => {
+    const u = units.find((x) => x.id === uid);
+    if (!u) return;
+    const arr = [...(u.lessons ?? [])];
+    const j = k + dir;
+    if (j < 0 || j >= arr.length) return;
+    [arr[k], arr[j]] = [arr[j], arr[k]];
+    persistUnits(units.map((x) => (x.id === uid ? { ...x, lessons: arr } : x)));
   };
 
   return (
@@ -381,6 +460,18 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
           <label><span className="mb-1 block text-xs font-semibold text-muted-foreground">المدة</span>
             <input value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} className="inp" placeholder="١٢:٣٠" />
           </label>
+          {/*
+            الوحدةُ المقصودة — تظهر حين تكون هناك وحداتٌ يُختار بينها.
+            وواحدةٌ لا اختيارَ فيها، فإظهارُ قائمةٍ بخيارٍ واحدٍ حشو.
+          */}
+          {units.length > 1 && (
+            <label className="sm:col-span-5"><span className="mb-1 block text-xs font-semibold text-muted-foreground">تُضاف إلى وحدة</span>
+              <select value={units.some((u) => u.id === intoUnit) ? intoUnit : units[units.length - 1].id}
+                onChange={(e) => setIntoUnit(e.target.value)} className="inp">
+                {units.map((u) => <option key={u.id} value={u.id}>{u.title}</option>)}
+              </select>
+            </label>
+          )}
           <label className="flex items-center gap-2 sm:col-span-5">
             <input type="checkbox" checked={form.isFree} onChange={(e) => setForm({ ...form, isFree: e.target.checked })} className="size-4 accent-[hsl(var(--primary))]" />
             <span className="text-sm text-muted-foreground">درس تجريبي مجاني (يظهر لغير المشتركين)</span>
@@ -391,17 +482,65 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
         </div>
       </Card>
 
-      {/* قائمة الدروس */}
-      {videos.length === 0 ? (
+      {/* ---------- الوحدات ودروسُها ---------- */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="font-display text-lg font-extrabold">وحدات الكورس</h3>
+          <p className="text-xs text-muted-foreground">
+            المسار: <b>الكورس ← وحدة ← دروس</b>. قسّم المنهج أبواباً — الطهارة ثمّ الصلاة —
+            فيقرأ الطالبُ منهجاً لا قائمةَ فيديوهات.
+          </p>
+        </div>
+        <Button className="px-4 py-2 text-xs" onClick={addUnit}>+ إضافة وحدة</Button>
+      </div>
+
+      {videos.length === 0 && units.length === 1 ? (
         <p className="rounded-3xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">لا توجد دروس بعد. أضِف أول درس بالأعلى.</p>
       ) : (
         <div className="space-y-2">
-          {videos.map((v, i) => (
+          {units.map((unit, ui) => (
+            <Collapse
+              key={unit.id}
+              defaultOpen={units.length === 1 || ui === 0}
+              storageKey={`course.${id}.${unit.id}`}
+              title={
+                /*
+                  العنوانُ حقلٌ يُكتب فيه مباشرةً — لا زرَّ «إعادة تسمية»
+                  يفتح نافذة. والتسميةُ أكثرُ ما يُفعل بالوحدة، فجعلُها
+                  ثلاثَ نقراتٍ يجعل الأستاذ يتركها بأسمائها الافتراضيّة.
+                */
+                <input
+                  value={unit.title}
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => renameUnit(unit.id, e.target.value)}
+                  className="w-full rounded-xl border border-transparent bg-transparent px-2 py-1 text-sm font-bold outline-none transition hover:border-border focus:border-primary/50 focus:bg-card"
+                />
+              }
+              count={(unit.lessons ?? []).length}
+              actions={
+                <>
+                  <button onClick={() => moveUnit(ui, -1)} disabled={ui === 0} title="أعلى"
+                    className="grid size-7 place-items-center rounded-full border border-border text-muted-foreground transition hover:text-primary disabled:opacity-30">▲</button>
+                  <button onClick={() => moveUnit(ui, 1)} disabled={ui === units.length - 1} title="أسفل"
+                    className="grid size-7 place-items-center rounded-full border border-border text-muted-foreground transition hover:text-primary disabled:opacity-30">▼</button>
+                  <button onClick={() => removeUnit(unit.id)} disabled={units.length <= 1}
+                    title="حذف الوحدة — دروسُها تنتقل إلى ما قبلها ولا تُحذف"
+                    className="grid size-7 place-items-center rounded-full border border-border text-rose-500 transition hover:border-rose-500 disabled:opacity-30">
+                    <Trash2 className="size-3.5" />
+                  </button>
+                </>
+              }
+            >
+              {(unit.lessons ?? []).length === 0 ? (
+                <p className="py-4 text-center text-xs text-muted-foreground">وحدةٌ فارغة — اختَرها في نموذج الإضافة بالأعلى.</p>
+              ) : (
+        <div className="space-y-2">
+          {(unit.lessons ?? []).map((v, i) => (
             <Card key={v.id} className="!p-3">
               <div className="flex items-center gap-3">
                 <div className="flex flex-col text-muted-foreground">
-                  <button onClick={() => move(i, -1)} className="hover:text-primary disabled:opacity-30" disabled={i === 0}>▲</button>
-                  <button onClick={() => move(i, 1)} className="hover:text-primary disabled:opacity-30" disabled={i === videos.length - 1}>▼</button>
+                  <button onClick={() => move(unit.id, i, -1)} className="hover:text-primary disabled:opacity-30" disabled={i === 0}>▲</button>
+                  <button onClick={() => move(unit.id, i, 1)} className="hover:text-primary disabled:opacity-30" disabled={i === (unit.lessons ?? []).length - 1}>▼</button>
                 </div>
                 <span className="grid size-9 place-items-center rounded-2xl bg-primary/12 text-primary"><PlayCircle className="size-5" /></span>
                 <div className="min-w-0 flex-1">
@@ -417,12 +556,22 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
                   {v.quiz?.enabled ? `اختبار (${v.quiz.questions.length})` : "اختبار"}
                   <ChevronDown className={`size-3 transition ${quizFor === v.id ? "rotate-180" : ""}`} />
                 </button>
+                {units.length > 1 && (
+                  <select value={unit.id} onChange={(e) => moveLessonTo(v.id, e.target.value)} title="نقل إلى وحدة"
+                    className="rounded-full border border-border bg-card/60 px-2.5 py-1.5 text-xs font-bold outline-none focus:border-primary/50">
+                    {units.map((u) => <option key={u.id} value={u.id}>{u.title}</option>)}
+                  </select>
+                )}
                 <button onClick={() => remove(v.id)} title="حذف" className="grid size-8 place-items-center rounded-full border border-border text-rose-500 transition hover:border-rose-500"><Trash2 className="size-4" /></button>
               </div>
               {quizFor === v.id && (
                 <QuizEditor lesson={v} onChange={(q) => setQuiz(v.id, q)} results={quizStats(v.id)} />
               )}
             </Card>
+          ))}
+        </div>
+              )}
+            </Collapse>
           ))}
         </div>
       )}
