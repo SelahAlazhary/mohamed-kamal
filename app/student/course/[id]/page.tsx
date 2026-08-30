@@ -103,7 +103,7 @@ export default function CoursePlayer({ params }: { params: Promise<{ id: string 
       </Link>
       <PageHeader
         title={subject.name}
-        subtitle={`${subject.teacher} · ${videos.length} درس`}
+        subtitle={`${subject.teacher} · ${units.length > 1 ? `${units.length.toLocaleString("ar-EG")} وحدات · ` : ""}${videos.length.toLocaleString("ar-EG")} درساً`}
         action={
           sub ? (
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-xs font-bold text-emerald-500">
@@ -153,6 +153,16 @@ export default function CoursePlayer({ params }: { params: Promise<{ id: string 
             </div>
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
               <div>
+                {/*
+                  اسمُ الوحدة فوق عنوان الدرس.
+                  الطالبُ يدخل من رابطٍ أو يقفز في القائمة، فيرى عنواناً
+                  لا يعرف من أيّ بابٍ هو. والوحدةُ فوقه تضعه في المنهج.
+                */}
+                {units.length > 1 && (
+                  <p className="font-kufi mb-0.5 text-[11px] font-bold text-[hsl(var(--gold))]">
+                    {units.find((u) => (u.lessons ?? []).some((v) => v.id === current.id))?.title}
+                  </p>
+                )}
                 <h3 className="font-display text-lg font-extrabold">{current.title}</h3>
                 {current.duration && <p className="text-xs text-muted-foreground">{current.duration}</p>}
               </div>

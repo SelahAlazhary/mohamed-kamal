@@ -54,10 +54,20 @@ export type ShariVectorId = (typeof SHARI_VECTOR)[number]["id"];
 
 type P = { size?: number; className?: string };
 
-/* ألوانُ الهوية — تُقرأ من المتغيّرات فتتبع اللوحةَ المختارة. */
-const NAVY = "hsl(var(--primary))";
-const GOLD = "hsl(var(--gold))";
-const PAPER = "hsl(var(--card))";
+/*
+  ألوانُ الرسم تُقرأ من متغيّرات المكتبة لا من الهوية مباشرةً.
+  ------------------------------------------------------------------
+  ولها احتياطيٌّ من الهوية: `var(--sv-body, hsl(var(--primary)))`. فمن
+  رسم لوحةً في موضعٍ لا يحمل صنفَ المكتبة — أو قبل وصول الاختيار من
+  القاعدة — نالها بألوان الهوية لا بلا لون. والقيمةُ الفارغةُ في CSS
+  تُبطل التصريحَ كلَّه فيخرج الشكلُ أسودَ افتراضياً، وهو أسوأُ ما يقع.
+
+  والأسماءُ باقيةٌ (NAVY/GOLD/PAPER) لأنّها تصف **الدور** لا اللون:
+  الجسمُ والزخرفةُ والسطح. وهي أدوارٌ ثابتةٌ في كلّ لوحةٍ من الأربعين.
+*/
+const NAVY = "var(--sv-body, hsl(var(--primary)))";
+const GOLD = "var(--sv-accent, hsl(var(--gold)))";
+const PAPER = "var(--sv-paper, hsl(var(--card)))";
 
 /**
  * المصحفُ المفتوحُ والقلمُ يكتب.
@@ -569,5 +579,15 @@ const MAP = {
 /** الرسمُ باسمه — لترويسةِ قسمٍ أو حالةٍ فارغةٍ أو بطاقةٍ مميّزة. */
 export function ShariVector({ id, size = 120, className = "" }: { id: ShariVectorId } & P) {
   const C = MAP[id];
-  return <C size={size} className={className} />;
+  /*
+    الغلافُ `sv-art` هو ما يعلّق عليه التشطيبُ أرضَه وهالتَه وحدَّه.
+    وتعليقُها على الـ`svg` نفسِه لا يصحّ: أرضُ التشطيب طبقةٌ **خلف**
+    الرسم، والرسمُ شفّافُ الأطراف — فخلفيّةٌ عليه تُظهر له حدّاً مربّعاً
+    لم يُرسم.
+  */
+  return (
+    <span className={`sv-art ${className}`}>
+      <C size={size} />
+    </span>
+  );
 }

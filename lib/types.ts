@@ -332,6 +332,8 @@ export type SiteContent = {
    */
   signatureInvert?: boolean;
   iconLib?: string;
+  /** مكتبةُ رسوم الموقع — ثماني لوحاتٍ في خمسِ تشطيبات (٤٠). */
+  vectorLib?: string;
   iconCover?: string;
   iconMotion?: string;
   heroShell?: string;

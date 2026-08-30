@@ -103,8 +103,13 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
 
   /* ---------- إدارةُ الوحدات ---------- */
   const addUnit = () => {
+    /*
+      أوّلُ إضافةٍ تُثبّت الوحدةَ الملفوفة وحدةً حقيقيّةً بمعرّفٍ خاصّ بها.
+      ولولا ذلك لبقي معرّفُها `u-legacy` فيظنّها المُخزِّن غيرَ مقسَّمةٍ
+      ويكتبها مسطّحةً — فتضيع الوحدةُ الثانيةُ فورَ إنشائها.
+    */
     const base = units[0]?.id === LEGACY_UNIT_ID
-      ? [{ ...units[0], id: `u${Date.now().toString(36)}`, title: units[0].lessons?.length ? "الوحدة الأولى" : "الوحدة الأولى" }]
+      ? [{ ...units[0], id: `u${Date.now().toString(36)}`, title: "الوحدة الأولى" }]
       : units;
     persistUnits([...base, { id: `u${Date.now().toString(36)}x`, title: `الوحدة ${(base.length + 1).toLocaleString("ar-EG")}`, lessons: [] }]);
   };

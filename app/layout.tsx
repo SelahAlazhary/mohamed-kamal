@@ -10,6 +10,7 @@ import { ToTop } from "@/components/brand/to-top";
 import { findIconFrame, iconFrameClass, iconFrameVars } from "@/lib/icon-frames";
 import { findIconMotion, iconMotionClass } from "@/lib/icon-motion";
 import { findIconCover, iconCoverClass } from "@/lib/icon-covers";
+import { findVectorLib, vectorLibClass } from "@/lib/vector-libs";
 import { RouteTransition } from "@/components/ui/route-transition";
 import { RegisterSW } from "@/components/pwa/register-sw";
 import { getPublicDB, getScopedDB, loadDB } from "@/lib/db";
@@ -199,7 +200,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           المنصّة كلِّها بلا استثناء.
         */
         style={iconFrameVars(pub.content?.iconFrameColors)}
-        className={`${plex.variable} ${lalezar.variable} ${ruqaa.variable} font-sans ${iconFrameClass(findIconFrame(pub.content?.iconFrame))} ${iconCoverClass(findIconCover(pub.content?.iconCover))} ${iconMotionClass(findIconMotion(pub.content?.iconMotion))}`}
+        className={`${plex.variable} ${lalezar.variable} ${ruqaa.variable} font-sans ${iconFrameClass(findIconFrame(pub.content?.iconFrame))} ${iconCoverClass(findIconCover(pub.content?.iconCover))} ${iconMotionClass(findIconMotion(pub.content?.iconMotion))} ${vectorLibClass(findVectorLib(pub.content?.vectorLib))}`}
       >
         {/*
           الخلفيةُ خارج كلّ ما يتحرّك.

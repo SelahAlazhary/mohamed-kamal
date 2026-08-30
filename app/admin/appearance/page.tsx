@@ -27,6 +27,8 @@ import { ICON_FRAMES, findIconFrame, DEFAULT_ICON_FRAME, type IconFrame } from "
 import { ICON_MOTIONS, findIconMotion, DEFAULT_ICON_MOTION, type IconMotion } from "@/lib/icon-motion";
 import { ICON_COVERS, findIconCover, DEFAULT_ICON_COVER, type IconCover } from "@/lib/icon-covers";
 import { ICON_LIBS, findIconLib, DEFAULT_ICON_LIB, ICON_SLOTS, type IconLib } from "@/lib/icon-libs";
+import { VECTOR_LIBS, findVectorLib, vectorLibClass, type VectorLib } from "@/lib/vector-libs";
+import { ShariVector, SHARI_VECTOR } from "@/components/brand/shari-vector";
 import { AMBIENTS, AMBIENT_SPEEDS, findAmbient, DEFAULT_AMBIENT } from "@/lib/ambient-motion";
 import { SHADOW_STYLES, findShadow, DEFAULT_SHADOW } from "@/lib/shadow-styles";
 import { LibGlyph } from "@/components/brand/lib-icon";
@@ -150,6 +152,7 @@ export default function AppearancePage() {
   const iconMotion = findIconMotion(content.iconMotion);
   const iconCover = findIconCover(content.iconCover);
   const iconLib = findIconLib(content.iconLib);
+  const vecLib = findVectorLib(content.vectorLib);
   const icColors = content.iconFrameColors ?? {};
   const glow = (content.glow ?? []) as GlowRule[];
   const plansStyle = findPlansStyle(content.plansStyle);
@@ -404,6 +407,12 @@ export default function AppearancePage() {
   const pickLib = async (x: IconLib) => {
     setBusy(`il-${x.id}`);
     await saveContent({ iconLib: x.id });
+    setBusy(null);
+  };
+
+  const pickVecLib = async (x: VectorLib) => {
+    setBusy(`vl-${x.id}`);
+    await saveContent({ vectorLib: x.id });
     setBusy(null);
   };
 
@@ -1792,6 +1801,75 @@ export default function AppearancePage() {
                   </button>
                 );
               })}
+            </div>
+          </Card>
+
+          {/* ---------- مكتبة رسوم الموقع ---------- */}
+          <Card className="mb-4">
+            <p className="font-display mb-1 text-sm font-bold">
+              مكتبة الرسوم ({VECTOR_LIBS.length.toLocaleString("ar-EG")} مكتبة)
+            </p>
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              المكتبةُ المختارة تسري على رسوم المنصّة كلِّها — ترويساتُ الأقسام والحالاتُ
+              الفارغةُ والبطاقاتُ معاً. و<b>ليست أربعين طقماً مرسوماً</b>: أربعون طقماً بيدٍ
+              واحدةٍ يعني مئتين وأربعين لوحة، ولا تُرسم مئتان وأربعون بجودةٍ واحدة — تخرج
+              منها خمسٌ حسنةٌ وبقيّةٌ حشو. بل هندسةٌ واحدةٌ محكمةٌ وأربعون معالجةً لها:
+              <b> ثماني لوحاتِ لونٍ</b> (أيُّ الألوان الثلاثة يكون جسماً وأيُّها سطحاً
+              وأيُّها زخرفة — وتبديلُ الأدوار وحدَه يقلب الرسمَ رأساً على عقب) مضروبةً في
+              <b> خمسِ تشطيبات</b> (مسطّح · على قرص · بهالة · بظلّ · بحدّ). وهكذا تُبنى
+              مكتباتُ الرسم أصلاً.
+            </p>
+          </Card>
+
+          <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {VECTOR_LIBS.map((x) => {
+              const on = x.id === vecLib.id;
+              return (
+                <button
+                  key={x.id}
+                  type="button"
+                  onClick={() => pickVecLib(x)}
+                  disabled={busy !== null}
+                  className={`rounded-3xl border-2 p-3 text-right transition disabled:opacity-60 ${
+                    on ? "border-primary shadow-bento" : "border-border hover:border-primary/50"
+                  }`}
+                >
+                  {/*
+                    عيّنةٌ حيّةٌ بالمكتبة نفسِها لا وصفٌ لها.
+                    وأصنافُ المكتبة تُكتب على غلاف العيّنة وحدَها — فتُرى
+                    كلُّ بطاقةٍ بمكتبتها في الصفحة نفسِها قبل أن تُعتمد،
+                    ولا يُضطرّ الأستاذُ أن يجرّب أربعين ويعود.
+                  */}
+                  <div className={`mb-2.5 grid place-items-center rounded-2xl bg-muted/50 px-2 py-4 ${vectorLibClass(x)}`}>
+                    <ShariVector id={SHARI_VECTOR[1].id} size={64} />
+                  </div>
+                  <div className="flex items-center justify-between gap-2 px-1">
+                    <p className="min-w-0 truncate text-xs font-bold">{x.name}</p>
+                    {busy === `vl-${x.id}` ? (
+                      <Loader2 className="size-4 shrink-0 animate-spin text-primary" />
+                    ) : on ? (
+                      <span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary text-white">
+                        <Check className="size-3" />
+                      </span>
+                    ) : null}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* اللوحاتُ الستّ بالمكتبة المختارة — لتُرى مجتمعةً قبل الاعتماد */}
+          <Card className={`mb-8 ${vectorLibClass(vecLib)}`}>
+            <p className="font-display mb-3 text-sm font-bold">
+              رسوم «{vecLib.name}» ({SHARI_VECTOR.length.toLocaleString("ar-EG")} لوحات)
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-6">
+              {SHARI_VECTOR.map((v) => (
+                <div key={v.id} className="grid place-items-center gap-1.5">
+                  <ShariVector id={v.id} size={78} />
+                  <span className="text-[10px] text-muted-foreground">{v.name}</span>
+                </div>
+              ))}
             </div>
           </Card>
 

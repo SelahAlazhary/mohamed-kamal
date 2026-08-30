@@ -4165,3 +4165,94 @@ body {
 .btn-glow .text-gold,
 [class*="-ink"] .text-gold,
 .student-header .text-gold { color: hsl(var(--gold)); }
+
+/* ============================================================
+   مكتباتُ الرسم — ثماني لوحاتٍ في خمسِ تشطيبات
+   ------------------------------------------------------------
+   الرسمُ يكتب `var(--sv-body)` ولا يعلم أيَّ مكتبةٍ اختيرت، والصنفُ على
+   جذر الصفحة يكتب المتغيّر. فتبديلُ المكتبة لا يُعيد رسمَ شيء، ولوحةٌ
+   سابعةٌ تُضاف غداً تتبع الأربعين كلَّها بلا سطرٍ واحد.
+
+   والافتراضيُّ مكتوبٌ في `:root` لا في صنفِ اللوحة الأولى: من لم يختر
+   شيئاً يرى «الأصيل» بلا صنفٍ على الجذر — فلا تنقلب المنصّةُ بإضافة
+   الميزة، ولا تُرسم اللوحاتُ بلا لونٍ لحظةً قبل وصول الاختيار.
+   ============================================================ */
+
+:root {
+  --sv-body: hsl(var(--primary));
+  --sv-paper: hsl(var(--card));
+  --sv-accent: hsl(var(--gold));
+  /* أرضيّةُ التشطيب — قرصٌ أو هالة. شفّافةٌ في المسطّح. */
+  --sv-ground: transparent;
+  --sv-ring: transparent;
+}
+
+/* ---------- اللوحات ---------- */
+.svp-asil     { --sv-body: hsl(var(--primary)); --sv-paper: hsl(var(--card));    --sv-accent: hsl(var(--gold)); }
+.svp-maqlub   { --sv-body: hsl(var(--gold));    --sv-paper: hsl(var(--card));    --sv-accent: hsl(var(--primary)); }
+.svp-layli    { --sv-body: hsl(var(--card));    --sv-paper: hsl(var(--primary)); --sv-accent: hsl(var(--gold)); }
+.svp-muhabbar { --sv-body: hsl(var(--primary)); --sv-paper: hsl(var(--primary) / 0.18); --sv-accent: hsl(var(--primary) / 0.55); }
+.svp-dhahabi  { --sv-body: hsl(var(--gold));    --sv-paper: hsl(var(--gold) / 0.2);     --sv-accent: hsl(var(--gold) / 0.62); }
+.svp-waraqi   { --sv-body: hsl(var(--primary) / 0.62); --sv-paper: hsl(var(--card)); --sv-accent: hsl(var(--gold) / 0.7); }
+.svp-shafaqi  { --sv-body: hsl(var(--gold));    --sv-paper: hsl(var(--primary) / 0.12); --sv-accent: hsl(var(--primary)); }
+.svp-hadd     { --sv-body: hsl(var(--primary)); --sv-paper: hsl(0 0% 100%);      --sv-accent: hsl(var(--gold)); }
+
+/*
+  اللوحاتُ التي جسمُها فاتحٌ تحتاج أرضاً داكنةً وإلّا اختفت.
+  «الليليّ» جسمُه ورقٌ — على ورقٍ لا يُرى منه شيء. فأرضُه كحليّةٌ دائماً،
+  ولا يُترك ذلك للتشطيب: تشطيبٌ «مسطّح» بلا أرضٍ يُخرجه فارغاً.
+*/
+.svp-layli { --sv-ground: hsl(var(--primary)); }
+
+/* ---------- التشطيبات ---------- */
+/*
+  التشطيبُ يُكتب متغيّراتٍ لا خصائصَ مباشرة.
+  ------------------------------------------------------------
+  كان «المسطّح» يكتب `display: none` على أرضيّته. وصنفُ المكتبة يجلس على
+  `<body>` — فكلُّ عيّنةٍ في لوحة الإدارة تُلبَس تشطيبَها **داخل** جسمٍ
+  مسطّح، فيصلها `display: none` من السلف ولا شيءَ يزيحه: التشطيبُ الداخليُّ
+  يكتب اللونَ ولا يكتب العرضَ. فبقيت الأربعون تُرى واحدةً.
+
+  والمتغيّراتُ لا تقع فيها هذه: أقربُ سلفٍ يكتب المتغيّرَ يغلب، فالتشطيبُ
+  الداخليُّ يغلب الخارجيَّ دائماً بلا حسابِ أوزان. والأرضيّةُ حاضرةٌ في
+  الجميع وشفّافةٌ في المسطّح — فلا شيءَ يُخفى ولا شيءَ يُرى.
+*/
+.sv-art { position: relative; display: inline-grid; place-items: center; }
+
+/* الأرضيّةُ طبقةٌ خلف الرسم لا خلفيّةٌ عليه: الرسمُ شفّافُ الأطراف،
+   فخلفيّةٌ مربّعةٌ تُظهر له حدّاً لم يُرسم. */
+.sv-art::before {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  border-radius: 999px;
+  background: var(--sv-ground, transparent);
+  box-shadow: 0 0 0 var(--sv-ring-w, 0) var(--sv-ring, transparent);
+  filter: blur(var(--sv-blur, 0));
+  z-index: 0;
+}
+.sv-art > svg {
+  position: relative;
+  z-index: 1;
+  /*
+    الظلُّ الطويلُ بـ`drop-shadow` لا بنسخةٍ ثانيةٍ من الرسم.
+    والنسخةُ الثانيةُ تضاعف المسارات وتُبطئ الصفحةَ في كلّ لوحة؛
+    و`drop-shadow` يتبع شكلَ الرسم نفسِه — بما فيه ثقوبُه — بلا زيادة.
+  */
+  filter: var(--sv-fx, none);
+}
+
+.svf-flat .sv-art   { --sv-ground: transparent; --sv-ring: transparent; --sv-ring-w: 0; --sv-blur: 0; --sv-fx: none; }
+.svf-disc .sv-art   { --sv-ground: hsl(var(--gold) / 0.18); --sv-ring: transparent; --sv-ring-w: 0; --sv-blur: 0; --sv-fx: none; }
+.svf-halo .sv-art   { --sv-ground: hsl(var(--gold) / 0.5);  --sv-ring: transparent; --sv-ring-w: 0; --sv-blur: 12px; --sv-fx: none; }
+.svf-ringed .sv-art { --sv-ground: hsl(var(--gold) / 0.1);  --sv-ring: hsl(var(--gold) / 0.65); --sv-ring-w: 2px; --sv-blur: 0; --sv-fx: none; }
+.svf-shadow .sv-art { --sv-ground: transparent; --sv-ring: transparent; --sv-ring-w: 0; --sv-blur: 0;
+                      --sv-fx: drop-shadow(7px 9px 0 hsl(var(--primary) / 0.16)); }
+
+/*
+  «الليليّ» جسمُه ورقٌ — على ورقٍ لا يُرى منه شيء. فأرضُه كحليّةٌ في
+  التشطيبات كلِّها، وتُكتب **بعدها** لتغلبها بالترتيب لا بوزنٍ مصطنع.
+  والهالةُ والحدُّ يبقيان فوقها فلا يُفقد التشطيبُ أثرَه.
+*/
+.svp-layli .sv-art        { --sv-ground: hsl(var(--primary)); }
+.svp-layli.svf-shadow .sv-art { --sv-fx: drop-shadow(7px 9px 0 hsl(0 0% 0% / 0.28)); }
