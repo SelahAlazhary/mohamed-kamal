@@ -4256,3 +4256,13 @@ body {
 */
 .svp-layli .sv-art        { --sv-ground: hsl(var(--primary)); }
 .svp-layli.svf-shadow .sv-art { --sv-fx: drop-shadow(7px 9px 0 hsl(0 0% 0% / 0.28)); }
+
+/*
+  أرضٌ مستطيلةٌ للرسوم العريضة.
+  رسومُ الحالات الفارغة ١٦٠×١٢٠، والأرضُ الدائريّةُ حولها تخرج قرصاً
+  مطّاطاً لا يجلس تحتها. والاستدارةُ المعتدلةُ تُجلسها كما تُجلس البطاقة.
+*/
+.sv-art.sv-wide::before {
+  inset: -6% -4%;
+  border-radius: 1.6rem;
+}

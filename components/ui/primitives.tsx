@@ -3,7 +3,7 @@
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { RuleOrnament } from "@/components/brand/pattern";
-import { ShariAnim, type ShariAnimId } from "@/components/brand/shari-art";
+import { ShariMotion, type ShariMotionId } from "@/components/brand/shari-motion";
 import { ShariVector, type ShariVectorId } from "@/components/brand/shari-vector";
 
 /* ---------------- الزر ---------------- */
@@ -81,7 +81,7 @@ export function SectionHeading({
 }: {
   eyebrow?: string;
   /** علامةٌ متحرّكة تتصدّر القسم. */
-  anim?: ShariAnimId;
+  anim?: ShariMotionId;
   /**
    * رسمٌ متجهٌ يتصدّر القسم — يُقدَّم على `anim` حين يجتمعان.
    * والفرقُ بينهما ليس في الشكل: `anim` صورةٌ نقطيّةٌ بحجمٍ واحدٍ تُنقل
@@ -113,7 +113,7 @@ export function SectionHeading({
         </span>
       ) : anim ? (
         <span className={`mb-3 flex ${center ? "justify-center" : ""}`}>
-          <ShariAnim id={anim} size={112} round />
+          <ShariMotion id={anim} size={124} />
         </span>
       ) : null}
       {eyebrow && (

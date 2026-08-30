@@ -18,6 +18,7 @@ import { CoverStickersEditor } from "@/components/admin/cover-stickers-editor";
 import { CoursePricesEditor } from "@/components/admin/course-prices-editor";
 import type { Lesson, Material, Subject, Quiz, QuizQuestion, ImageFit, CoverPattern, CoverText, CoverSticker, Unit } from "@/lib/types";
 import { mediaSrc } from "@/lib/media";
+import { Fold } from "@/components/dashboard/fold";
 
 /** ألوان خلفية جاهزة للوحة الغلاف — من عائلة هوية المخطوط. */
 const COVER_COLORS: { hex: string; label: string }[] = [
@@ -236,9 +237,16 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
       </Link>
       <PageHeader title={`دروس: ${subject.name}`} subtitle={`${videos.length} درس · السعر ${subject.price.toLocaleString("ar-EG")} ج.م`} />
 
+      {/*
+        التصميمُ مفصولٌ عن العمل.
+        غلافُ الكورس ونصُّه وصورُه تُضبط مرّةً عند إنشائه ثمّ لا تُمسّ؛
+        وإضافةُ الدروس وترتيبُها عملٌ يوميّ. وجمعُهما في عمودٍ واحدٍ
+        مفتوحٍ يجعل الأستاذ يمرّ على أربع لوحاتِ تصميمٍ كلَّ مرّةٍ يضيف
+        فيها درساً. فالتصميمُ مطويٌّ والعملُ مفتوح.
+      */}
+      <p className="font-kufi mb-2 mt-2 text-[11px] font-bold text-muted-foreground">تصميم البطاقة</p>
       {/* غلاف الكورس */}
-      <Card className="mb-6">
-        <h3 className="mb-1 flex items-center gap-2 font-display font-extrabold"><ImageIcon className="size-5 text-primary" /> غلاف الكورس</h3>
+      <Fold className="mb-6" title={<><ImageIcon className="size-5 text-primary" /> غلاف الكورس</>} storageKey="course.cover">
         <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
           مقاس البطاقة ثابت ولا يتمدّد. عند التكبير ١٠٠٪ تظهر صورتك <b>كاملة</b>؛ ولو أردت ملء الإطار
           كبّرها وحرّكها بنفسك — ما يخرج عن الإطار يُقصّ بإرادتك أنت لا تلقائياً.
@@ -383,31 +391,25 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
             </div>
           )}
         </div>
-      </Card>
+      </Fold>
 
       {/* نصّ على الغلاف */}
-      <Card className="mb-6">
-        <h3 className="mb-1 flex items-center gap-2 font-display font-extrabold">
-          <ImageIcon className="size-5 text-primary" /> نصّ على الغلاف
-        </h3>
+      <Fold className="mb-6" title={<><ImageIcon className="size-5 text-primary" /> نصّ على الغلاف</>} storageKey="course.coverText">
         <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
           اكتب نصّاً يظهر فوق لوحة الغلاف، ثم اسحبه بالماوس إلى مكانه. الموضع يُحفظ بالنسبة
           المئوية فيبقى في مكانه على بطاقة الطالب الصغيرة وعلى المعاينة الكبيرة سواء.
         </p>
         <CoverTextEditor subject={subject} onChange={setCoverText} />
-      </Card>
+      </Fold>
 
       {/* صور على الغلاف */}
-      <Card className="mb-6">
-        <h3 className="mb-1 flex items-center gap-2 font-display font-extrabold">
-          <ImageIcon className="size-5 text-primary" /> صور على الغلاف
-        </h3>
+      <Fold className="mb-6" title={<><ImageIcon className="size-5 text-primary" /> صور على الغلاف</>} storageKey="course.coverStickers">
         <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
           ارفع صورة — تُفتح أداة القصّ وإزالة الخلفية أولاً — ثم اسحبها بالماوس إلى مكانها
           واضبط حجمها ودورانها وشفافيتها. الصور تُرسم تحت نصّ الغلاف ليبقى النصّ فوقها.
         </p>
         <CoverStickersEditor subject={subject} onChange={setCoverStickers} />
-      </Card>
+      </Fold>
 
       {/* أسعار الكورس */}
       <Card className="mb-6">
@@ -434,9 +436,9 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
         />
       </Card>
 
+      <p className="font-kufi mb-2 mt-6 text-[11px] font-bold text-muted-foreground">الدروس والوحدات</p>
       {/* إضافة درس */}
-      <Card className="mb-6">
-        <h3 className="mb-4 font-display font-extrabold">إضافة درس</h3>
+      <Fold className="mb-6" title="إضافة درس" storageKey="course.addLesson" defaultOpen>
         <div className="grid gap-3 sm:grid-cols-6">
           <label className="sm:col-span-2"><span className="mb-1 block text-xs font-semibold text-muted-foreground">عنوان الدرس</span>
             <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="inp" placeholder="مثال: مقدّمة في علوم القرآن" />
@@ -485,7 +487,7 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
             <Button className="w-full px-5 py-2.5" onClick={add}><Plus className="size-4" /> إضافة</Button>
           </div>
         </div>
-      </Card>
+      </Fold>
 
       {/* ---------- الوحدات ودروسُها ---------- */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

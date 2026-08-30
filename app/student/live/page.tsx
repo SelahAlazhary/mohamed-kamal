@@ -20,6 +20,7 @@ import { useContent } from "@/components/content/content-provider";
 import { liveVisible } from "@/lib/access";
 import type { Live } from "@/lib/types";
 import { useMaintGate } from "@/components/brand/maint-gate";
+import { EmptyLive } from "@/components/brand/illustrations";
 
 /** ترتيب: مباشر ← مجدول (الأقرب موعداً) ← منتهي (الأحدث). */
 function orderLives(list: Live[]): Live[] {
@@ -167,7 +168,7 @@ export default function StudentLivePage() {
       {/* ---------- بقيّة الجلسات ---------- */}
       {all.length === 0 ? (
         <Card className="flex flex-col items-center gap-3 py-14 text-center">
-          <span className="grid size-14 place-items-center rounded-2xl bg-primary/12 text-primary"><IconRadio className="size-7" /></span>
+          <EmptyLive width={190} />
           <p className="font-display text-lg font-extrabold">لا توجد جلسات بث حالياً</p>
           <p className="max-w-sm text-sm text-muted-foreground">سيظهر هنا موعد البث القادم فور جدولته.</p>
         </Card>
