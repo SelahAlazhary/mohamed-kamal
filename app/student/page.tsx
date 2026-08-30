@@ -82,13 +82,13 @@ export default function StudentHome() {
                   : "sm:grid-cols-3"                                // صفّ متساوٍ
           }`}
         >
-          <StatTile index={0} ring={avg} label="متوسّط تقدّمك" icon={<ShariAnim id="capStarsAnim" size={58} framed={false} />} className={tileCls} shape={shapeStyle(D.tile)} tone={statsTone} />
+          <StatTile index={0} ring={avg} label="متوسّط تقدّمك" icon={<ShariAnim id="capStarsAnim" size={74} framed={false} />} className={tileCls} shape={shapeStyle(D.tile)} tone={statsTone} />
           <StatTile
             index={1}
             value={ar(courses.length)}
             unit={courses.length === 1 ? "كورس" : "كورسات"}
             label="كورساتك"
-            icon={<ShariAnim id="booksCapAnim" size={58} framed={false} />}
+            icon={<ShariAnim id="booksCapAnim" size={74} framed={false} />}
             className={tileCls}
             shape={shapeStyle(D.tile)}
             tone={statsTone}
@@ -96,7 +96,7 @@ export default function StudentHome() {
           {/* الاشتراك الساري — يعرض ما تبقّى حتى الانتهاء */}
           <StatTile
             index={2}
-            icon={<ShariAnim id="capBookAnim" size={58} framed={false} />}
+            icon={<ShariAnim id="capBookAnim" size={74} framed={false} />}
             badge={subs.length > 1 ? `${ar(subs.length)} اشتراكات` : undefined}
             value={
               subs.length === 0 ? "—" : permanent && !expiring ? "دائم" : ar(expiring?.left ?? 0)

@@ -159,8 +159,10 @@ export function StatTile({
             <span
               className="ic-frame tile-badge grid place-items-center overflow-hidden rounded-[1.15rem] bg-white"
               style={{
-                width: "4.4rem",
-                height: "4.4rem",
+                /* اللوحُ يتّسع للصورة المتحرّكة: صورةٌ بتفاصيلَ في ٧٠ بكسل
+                   تُرى رمزاً لا صورة. */
+                width: "5.6rem",
+                height: "5.6rem",
                 boxShadow: "0 2px 5px -2px rgb(0 0 0 / 0.22), 0 10px 22px -10px rgb(0 0 0 / 0.45)",
               }}
             >

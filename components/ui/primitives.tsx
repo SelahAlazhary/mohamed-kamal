@@ -100,7 +100,7 @@ export function SectionHeading({
       */}
       {anim && (
         <span className={`mb-3 flex ${center ? "justify-center" : ""}`}>
-          <ShariAnim id={anim} size={76} />
+          <ShariAnim id={anim} size={112} />
         </span>
       )}
       {eyebrow && (
