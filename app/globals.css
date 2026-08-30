@@ -2264,6 +2264,10 @@ body {
 
 /* الخلفية */
 .ct-fill-ink .ct-panel { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+/* واللكنةُ ذهبٌ على الداكن — للعلّة التي شُرحت عند الفوتر: `--accent`
+   هي الأساسيُّ نفسُه، فنصٌّ بها على سطحٍ أساسيٍّ تباينُه ١٫٠٠:١. */
+.ct-fill-ink .ct-panel .text-accent,
+.ct-fill-gradient .ct-panel .text-accent { color: hsl(var(--gold)); }
 .ct-fill-gradient .ct-panel {
   background: linear-gradient(125deg, hsl(var(--primary)), hsl(var(--glow)));
   color: hsl(var(--primary-foreground));
@@ -2337,6 +2341,25 @@ body {
 .ft-fill-ink.site-footer { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
 .ft-fill-ink.site-footer a { color: hsl(var(--primary-foreground) / 0.85); }
 .ft-fill-ink.site-footer .text-muted-foreground { color: hsl(var(--primary-foreground) / 0.7) !important; }
+
+/*
+  اللكنةُ والتحويمُ على السطح الداكن.
+  ------------------------------------------------------------
+  `--accent` تأخذ لونَ الأساسيّ (لأنّ الذهبَ على الورق تباينُه ١٫٥:١ فلا
+  يُقرأ). وهو صوابٌ على الورق، وخطأٌ قاتلٌ هنا: خلفيةُ هذا الفوتر هي
+  الأساسيُّ نفسُه — فعنوانٌ بـ`text-accent` عليه **نصٌّ بلون خلفيّته
+  تماماً**، تباينُه ١٫٠٠:١، لا يُرى أصلاً. وكذلك `hover:text-primary`
+  على الروابط: تختفي عند مرور المؤشّر.
+
+  ولا يظهر ذلك في اللوحة ولا في الشيفرة — يظهر في الصفحة وحدَها، ولا
+  يُلتقط إلّا بقياس التباين.
+
+  فيُصحَّح **حيث تُعرف داكنيّةُ السطح**: هنا، لا في كلّ عنصرٍ يُوضع فيه.
+  فأيُّ مكوّنٍ يُنقل إلى هذا الفوتر يصحّ تلقائياً.
+  والذهبُ على هذا الكحليّ تباينُه نحو ٧:١ — يُقرأ ويليق.
+*/
+.ft-fill-ink.site-footer .text-accent { color: hsl(var(--gold)); }
+.ft-fill-ink.site-footer a:hover { color: hsl(var(--gold)); }
 .ft-fill-gradient.site-footer {
   background: linear-gradient(to top, hsl(var(--muted)), transparent);
 }

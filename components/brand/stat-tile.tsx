@@ -195,22 +195,38 @@ export function StatTile({
               ولونَها، فالمربّعُ يقصّها ويقطعها عمّا حولها ويُظهرها
               ملصقاً على البطاقة لا جزءاً منها.
 
-              وبدلَه هالةٌ خافتةٌ من لون البطاقة نفسِها: تُجلس الصورةَ في
-              مكانها بلا حدٍّ يفصلها — الخلفيةُ تُلائم اللون كما طُلب.
+              **ثمّ عادت — لأنّ الرسومَ مصمَّمةٌ لخلفيةٍ فاتحة.**
+              خطوطُها سوداءُ وحشوُها أبيض. ووضعُها على لوحٍ كحليٍّ يُذيب
+              الخطَّ في الخلفية فيبقى الحشوُ الأبيضُ كتلةً بلا شكل: قبّعةٌ
+              وشريطٌ أبيضُ لا يُعرف ما هو. وهذا عيبُ **السياق** لا عيبُ
+              الرسم — ولا يُصلحه تتبّعٌ أدقُّ ولا رسمٌ جديد.
+
+              فالمقعدُ الفاتحُ يُعيد للرسم السياقَ الذي صُمّم له: قرصٌ
+              كريميٌّ بظلٍّ غائرٍ يفصله عن اللوح، فتُقرأ خطوطُه السوداءُ
+              كما تُقرأ على الورق. والهالةُ وحدَها لا تكفي — لا تُعطي
+              سطحاً، وإنّما تُضيء ما حولَه.
+
+              وعلى الورق يبقى بلا قرص: السياقُ صحيحٌ أصلاً، والقرصُ فيه
+              حدٌّ لا داعيَ له.
             */}
             <span
-              className="tile-badge relative grid shrink-0 place-items-center"
-              style={{ width: "4.9rem", height: "4.9rem" }}
+              className="tile-badge relative grid shrink-0 place-items-center rounded-full"
+              style={{
+                width: "4.9rem",
+                height: "4.9rem",
+                background: ink ? "hsl(var(--background))" : "transparent",
+                boxShadow: ink
+                  ? "0 2px 6px -2px rgb(0 0 0 / 0.35), 0 12px 24px -12px rgb(0 0 0 / 0.55)"
+                  : "none",
+              }}
             >
-              <span
-                aria-hidden="true"
-                className="absolute inset-0 rounded-full blur-md"
-                style={{
-                  background: ink
-                    ? "radial-gradient(circle, hsl(0 0% 100% / 0.16) 0%, transparent 70%)"
-                    : "radial-gradient(circle, hsl(var(--gold) / 0.3) 0%, transparent 70%)",
-                }}
-              />
+              {!ink && (
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 rounded-full blur-md"
+                  style={{ background: "radial-gradient(circle, hsl(var(--gold) / 0.3) 0%, transparent 70%)" }}
+                />
+              )}
               <span className="relative">{icon}</span>
             </span>
           </span>
