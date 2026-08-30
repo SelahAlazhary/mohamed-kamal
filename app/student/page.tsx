@@ -20,7 +20,6 @@ import {
 import { CornerKnot, Shamsa, ElegantRule } from "@/components/brand/pattern";
 import { CourseArt } from "@/components/brand/course-art";
 import { StatTile } from "@/components/brand/stat-tile";
-import { EmptyCourses } from "@/components/brand/illustrations";
 import { StudentHomeSkeleton } from "@/components/ui/skeleton";
 import { InstallApp } from "@/components/pwa/install-app";
 import { EnableNotifications } from "@/components/pwa/enable-notifications";
@@ -82,13 +81,13 @@ export default function StudentHome() {
                   : "sm:grid-cols-3"                                // صفّ متساوٍ
           }`}
         >
-          <StatTile index={0} ring={avg} label="متوسّط تقدّمك" icon={<ShariAnim id="capStarsAnim" size={74} framed={false} />} className={tileCls} shape={shapeStyle(D.tile)} tone={statsTone} />
+          <StatTile index={0} ring={avg} label="متوسّط تقدّمك" icon={<ShariAnim id="capStarsAnim" size={74} framed={false} round />} className={tileCls} shape={shapeStyle(D.tile)} tone={statsTone} />
           <StatTile
             index={1}
             value={ar(courses.length)}
             unit={courses.length === 1 ? "كورس" : "كورسات"}
             label="كورساتك"
-            icon={<ShariAnim id="booksCapAnim" size={74} framed={false} />}
+            icon={<ShariAnim id="booksCapAnim" size={74} framed={false} round />}
             className={tileCls}
             shape={shapeStyle(D.tile)}
             tone={statsTone}
@@ -96,7 +95,7 @@ export default function StudentHome() {
           {/* الاشتراك الساري — يعرض ما تبقّى حتى الانتهاء */}
           <StatTile
             index={2}
-            icon={<ShariAnim id="capBookAnim" size={74} framed={false} />}
+            icon={<ShariAnim id="capBookAnim" size={74} framed={false} round />}
             badge={subs.length > 1 ? `${ar(subs.length)} اشتراكات` : undefined}
             value={
               subs.length === 0 ? "—" : permanent && !expiring ? "دائم" : ar(expiring?.left ?? 0)
@@ -331,7 +330,7 @@ export default function StudentHome() {
 
       {courses.length === 0 && (
         <Card className="flex flex-col items-center gap-3 py-12 text-center">
-          <EmptyCourses className="text-accent" width={168} />
+          <ShariAnim id="capOpenBookAnim" size={150} framed={false} />
           <p className="font-display text-lg font-bold">لم {y("تفعّل")} أي كورس بعد</p>
           <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
             {y("تصفّح")} الكورسات المتاحة {y("واشتر")} ما يناسبك، ثم {y("فعّل")}ه بكود التفعيل.

@@ -644,6 +644,7 @@ export default function AppearancePage() {
             <div className="grid gap-2.5">
               {([
                 ["panel", "لوح الترحيب"],
+                ["panel2", "لون التدرّج الثاني"],
                 ["panelText", "نصّ اللوح"],
                 ["tile", "البطاقات"],
                 ["edge", "الحدود"],

@@ -219,10 +219,11 @@ export function shapeStyle(s: DesignShape): React.CSSProperties {
  * الفارغُ لا يُكتب فيرث لون الثيم — فمن لم يختر لوناً لم يُفرض عليه لون.
  */
 export function designVars(
-  c: { panel?: string; panelText?: string; tile?: string; edge?: string } | undefined
+  c: { panel?: string; panel2?: string; panelText?: string; tile?: string; edge?: string } | undefined
 ): React.CSSProperties {
   const v: Record<string, string> = {};
   if (c?.panel) v["--dsg-panel"] = c.panel;
+  if (c?.panel2) v["--dsg-panel2"] = c.panel2;
   if (c?.panelText) v["--dsg-panel-text"] = c.panelText;
   if (c?.tile) v["--dsg-tile"] = c.tile;
   if (c?.edge) v["--dsg-edge"] = c.edge;

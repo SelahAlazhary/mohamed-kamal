@@ -10,7 +10,6 @@ import {
 } from "@/components/brand/icons";
 import { CornerKnot, RuleOrnament } from "@/components/brand/pattern";
 import { CourseArt } from "@/components/brand/course-art";
-import { EmptyCourses } from "@/components/brand/illustrations";
 import { PageHeader, Card, Progress } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
 import { subjectActive, subscriptionFor, daysLeft, eligibleFor, termLabel } from "@/lib/access";
@@ -20,6 +19,7 @@ import type { Subject, SitePlan } from "@/lib/types";
 import { mediaSrc } from "@/lib/media";
 import { cleanPrefix, gatewayOn } from "@/lib/payments";
 import { useMaintGate } from "@/components/brand/maint-gate";
+import { ShariAnim } from "@/components/brand/shari-art";
 
 const COLORS = ["#12b981", "#2b8bf6", "#7c3aed", "#e11d48", "#f59e0b", "#0ea5e9"];
 
@@ -127,7 +127,7 @@ export default function MySubjects() {
 
       {subjects.length === 0 && (
         <Card className="flex flex-col items-center gap-3 py-14 text-center">
-          <EmptyCourses className="text-primary" width={176} />
+          <ShariAnim id="capOpenBookAnim" size={158} framed={false} />
           <p className="font-display text-lg font-extrabold">لا توجد كورسات متاحة بعد</p>
           <p className="max-w-sm text-sm text-muted-foreground">سيتم إضافة الكورسات قريباً — تابعينا.</p>
         </Card>
@@ -135,7 +135,7 @@ export default function MySubjects() {
 
       {subjects.length > 0 && termSubjects.length === 0 && (
         <Card className="flex flex-col items-center gap-3 py-12 text-center">
-          <EmptyCourses className="text-primary" width={160} />
+          <ShariAnim id="capOpenBookAnim" size={142} framed={false} />
           <p className="font-display font-extrabold">لا توجد كورسات في {termLabel(activeTerm)}</p>
           <p className="text-sm text-muted-foreground">جرّب الفصل الآخر من الأعلى.</p>
         </Card>

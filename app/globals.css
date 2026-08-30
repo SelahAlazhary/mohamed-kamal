@@ -4094,19 +4094,34 @@ body {
   فتُشترط القاعدةُ بوجود المتغيّر في نمط الجذر السطريّ، فلا تُكتب لمن
   لم يختر.
 */
-.dsg[style*="--dsg-panel"] .student-header {
-  background-image: linear-gradient(var(--dsg-panel), var(--dsg-panel));
-}
-.dsg[style*="--dsg-panel-text"] .student-header,
-.dsg[style*="--dsg-panel-text"] .student-header * { color: var(--dsg-panel-text); }
+/*
+  الطبقتان لا الشرط.
+  كنتُ أشترط وجودَ المتغيّر في نمط الجذر ثمّ أكتب لوناً واحداً — فإن
+  فرغ المتغيّرُ سقطت القاعدةُ كلُّها ولم يتغيّر شيء مهما اختار الأدمن.
 
-.dsg[style*="--dsg-tile"] .stat-tile,
-.dsg[style*="--dsg-tile"] .course-card {
-  background-image: linear-gradient(var(--dsg-tile), var(--dsg-tile));
+  والأصحُّ طبقتان في `background-image`: الأولى لونُ الأدمن، والثانية
+  تدرّجُ الهوية. فإن كان الأوّلُ شفّافاً — وهو حالُ المتغيّر الفارغ —
+  ظهر ما تحته؛ وإن مُلئ غطّاه. لا شرطَ يسقط ولا قاعدةَ تُبطَل.
+*/
+.dsg .student-header {
+  background-image:
+    linear-gradient(var(--dsg-panel, transparent), var(--dsg-panel2, var(--dsg-panel, transparent))),
+    linear-gradient(158deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.92) 58%, hsl(var(--glow) / 0.9) 130%);
 }
-.dsg[style*="--dsg-edge"] .stat-tile,
-.dsg[style*="--dsg-edge"] .course-card,
-.dsg[style*="--dsg-edge"] .student-header { border-color: var(--dsg-edge); }
+.dsg .student-header,
+.dsg .student-header h1,
+.dsg .student-header p,
+.dsg .student-header span { color: var(--dsg-panel-text, inherit); }
+
+.dsg .stat-tile,
+.dsg .course-card {
+  background-image:
+    linear-gradient(var(--dsg-tile, transparent), var(--dsg-tile, transparent));
+}
+
+.dsg .stat-tile,
+.dsg .course-card,
+.dsg .student-header { border-color: var(--dsg-edge, hsl(var(--border))); }
 
 /* ============================================================
    قاعدةُ الهوية: الذهبُ لا يُوضع على الورق

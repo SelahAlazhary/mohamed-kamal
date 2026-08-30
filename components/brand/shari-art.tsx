@@ -82,12 +82,20 @@ export function ShariAnim({
   id,
   size = 84,
   framed = true,
+  round = false,
   className = "",
 }: {
   id: ShariAnimId;
   size?: number;
   /** يُلبَس إطارَ المنصّة — يُطفأ لمن أرادها عاريةً. */
   framed?: boolean;
+  /**
+   * تُقصّ دائرةً.
+   * خلفيةُ هذه الصور بيضاءُ مصمتةٌ لا شفّافة — فتظهر مربّعاً أبيضَ حول
+   * الرسم مهما وُضعت. والقصُّ الدائريُّ يجعل ذلك البياضَ قرصاً مقصوداً
+   * تجلس عليه الصورةُ، بدل مربّعٍ يبدو خطأً في التصدير.
+   */
+  round?: boolean;
   className?: string;
 }) {
   const pad = Math.round(size * 0.17);
@@ -103,12 +111,23 @@ export function ShariAnim({
       /* لا `loading="lazy"` هنا: هي في الترويسة، وتأخيرُها يُظهر فجوةً
          ثمّ تقفز الحركةُ فجأةً — وهو أسوأُ من تحميلها مع القسم. */
       decoding="async"
-      className="select-none object-contain"
+      className={`select-none object-contain ${round ? "rounded-full" : ""}`}
       style={{ width: size, height: size }}
     />
   );
 
-  if (!framed) return <span className={className}>{img}</span>;
+  if (!framed) {
+    if (!round) return <span className={className}>{img}</span>;
+    /* حلقةٌ ذهبيّةٌ رفيعة تُنهي القرصَ فلا يذوب في سطحٍ فاتحٍ تحته */
+    return (
+      <span
+        className={`relative inline-grid place-items-center rounded-full ring-1 ring-[hsl(var(--gold)/0.55)] ${className}`}
+        style={{ width: size, height: size }}
+      >
+        {img}
+      </span>
+    );
+  }
 
   return (
     <span

@@ -312,7 +312,7 @@ export type SiteContent = {
    * مستقلّةٌ عن ألوان الهوية: قد يريدها الأستاذ لوحاً أغمقَ أو أفتحَ من
    * أساسيّه دون أن يمسّ الهويةَ كلَّها.
    */
-  designColors?: { panel?: string; panelText?: string; tile?: string; edge?: string };
+  designColors?: { panel?: string; panel2?: string; panelText?: string; tile?: string; edge?: string };
   shadowStyle?: string;
   ambient?: string;
   ambientSpeed?: string;
