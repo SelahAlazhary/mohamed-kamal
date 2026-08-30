@@ -26,16 +26,18 @@
  * بقائمةٍ واحدة بدل حذفٍ وإعادةِ إضافة.
  */
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Search, PlayCircle, Trash2, Gift, ListChecks, ExternalLink, AlertTriangle,
-  Link2Off, Copy, ListVideo,
+  Link2Off, Copy, ListVideo, Settings2, Paperclip,
 } from "lucide-react";
 import { PageHeader, DataTable } from "@/components/dashboard/ui";
 import { Section } from "@/components/dashboard/section";
 import { useContent } from "@/components/content/content-provider";
 import { courseUnits, withUnits } from "@/lib/course-units";
+import { LessonModal } from "@/components/admin/lesson-modal";
 import type { Lesson, Subject, Unit } from "@/lib/types";
 
 const ar = (n: number) => n.toLocaleString("ar-EG");
@@ -53,9 +55,21 @@ export default function AllLessons() {
   const { db, save } = useContent();
   const subjects = useMemo(() => db?.subjects ?? [], [db]);
 
+  /*
+    الكورسُ قد يأتي من الرابط: من ضغط «٧ دروساً» في شاشة الموادّ يقصد
+    دروسَ ذلك الكورس، فتُفتح مصفّاةً لا على الكلّ.
+  */
+  const params = useSearchParams();
   const [q, setQ] = useState("");
   const [course, setCourse] = useState("");
+  useEffect(() => {
+    const c = params.get("course");
+    if (c) setCourse(c);
+  }, [params]);
   const [flag, setFlag] = useState<"all" | "free" | "quiz" | "broken">("all");
+  /* الدرسُ المفتوحُ في نافذة الإدارة — مفتاحُه لا كائنُه، ليبقى مرتبطاً
+     بالقاعدة فيُحدَّث معها بعد الحفظ. */
+  const [openKey, setOpenKey] = useState<string | null>(null);
 
   const rows: Row[] = useMemo(() => {
     const out: Row[] = [];
@@ -207,11 +221,18 @@ export default function AllLessons() {
                           }}
                           className={inp}
                         />
-                        {r.lesson.quiz?.enabled && (r.lesson.quiz.questions?.length ?? 0) > 0 && (
-                          <span className="mt-1 inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                            <ListChecks className="size-3" /> {ar(r.lesson.quiz.questions.length)} أسئلة
-                          </span>
-                        )}
+                        <span className="mt-1 flex flex-wrap items-center gap-2">
+                          {r.lesson.quiz?.enabled && (r.lesson.quiz.questions?.length ?? 0) > 0 && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                              <ListChecks className="size-3" /> {ar(r.lesson.quiz.questions.length)} أسئلة
+                            </span>
+                          )}
+                          {(r.lesson.materials?.length ?? 0) > 0 && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary">
+                              <Paperclip className="size-3" /> {ar(r.lesson.materials!.length)} مرفقاً
+                            </span>
+                          )}
+                        </span>
                       </div>
                     </div>
                   </td>
@@ -288,10 +309,17 @@ export default function AllLessons() {
                   <td className="px-3 py-3">
                     <div className="flex items-center gap-1">
                       {/* الاختبارُ والملفّاتُ أكبرُ من صفّ — تُفتح في محرّر الكورس */}
+                      <button
+                        onClick={() => setOpenKey(`${r.subject.id}|${r.unit.id}|${r.lesson.id}`)}
+                        title="إدارة الدرس — الفيديو والواجب والمرفقات"
+                        className="grid size-8 place-items-center rounded-full border border-border text-primary transition hover:border-primary"
+                      >
+                        <Settings2 className="size-4" />
+                      </button>
                       <Link
                         href={`/admin/courses/${r.subject.id}`}
-                        title="فتح الكورس — للاختبار والملفّات والترتيب"
-                        className="grid size-8 place-items-center rounded-full border border-border text-primary transition hover:border-primary"
+                        title="فتح الكورس"
+                        className="grid size-8 place-items-center rounded-full border border-border text-muted-foreground transition hover:border-primary hover:text-primary"
                       >
                         <ListChecks className="size-4" />
                       </Link>
@@ -310,6 +338,26 @@ export default function AllLessons() {
           </DataTable>
         )}
       </Section>
+
+      {/*
+        النافذةُ تُبنى من القاعدة لا من نسخةٍ محفوظةٍ في الحالة: بعد الحفظ
+        تُعاد قراءةُ الدرس فتُرى التعديلاتُ فيها فوراً.
+      */}
+      {(() => {
+        if (!openKey) return null;
+        const [sid, uid, lid] = openKey.split("|");
+        const r = rows.find((x) => x.subject.id === sid && x.unit.id === uid && x.lesson.id === lid);
+        if (!r) return null;
+        return (
+          <LessonModal
+            lesson={r.lesson}
+            courseName={r.subject.name}
+            unitName={r.unit.title}
+            onClose={() => setOpenKey(null)}
+            onSave={(next) => { patch(r, next); setOpenKey(null); }}
+          />
+        );
+      })()}
     </>
   );
 }

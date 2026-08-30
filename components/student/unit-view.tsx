@@ -204,8 +204,18 @@ export function UnitView({
   /* هل تُباع هذه المادّةُ وحدَها؟ — بها يُقصد الشراءُ إلى موضعه */
   const sellsUnit = (unit.prices ?? []).some((p) => (p.label ?? "").trim());
 
-  /* ملفّاتُ المادّة تُضاف إلى ملفّات الكورس ولا تُلغيها */
-  const files: Material[] = [...(unit.materials ?? []), ...(course.materials ?? [])];
+  /*
+    ملفّاتُ الدرس ثمّ المادّة ثمّ الكورس — من الأخصّ إلى الأعمّ.
+    والترتيبُ مقصود: مذكّرةُ هذا الدرس أوّلُ ما يُطلب وهو يشاهده، وملزمةُ
+    الكورس آخرُ ما يُطلب. وعرضُها بالعكس يجعله يمرّ على ما لا يخصّه.
+
+    وتُضاف ولا تُلغي: كلُّ مستوى يزيد ولا يحجب ما فوقه.
+  */
+  const files: Material[] = [
+    ...(current?.materials ?? []),
+    ...(unit.materials ?? []),
+    ...(course.materials ?? []),
+  ];
 
   if (lessons.length === 0) {
     return (
@@ -296,7 +306,7 @@ export function UnitView({
 
         {files.length > 0 && (
           <div className="mt-6">
-            <p className="mb-3 flex items-center gap-2 font-display font-extrabold"><IconFile className="size-5 text-primary" /> ملفات المادّة</p>
+            <p className="mb-3 flex items-center gap-2 font-display font-extrabold"><IconFile className="size-5 text-primary" /> ملفّات الدرس والمادّة</p>
             <div className="grid gap-2 sm:grid-cols-2">
               {files.map((m) => (
                 <a key={m.id} href={m.url} target="_blank" rel="noreferrer" download
