@@ -9,15 +9,31 @@
  * مسارٌ ذهبيٌّ ثالث. ولا `stroke` في الملفّ كلِّه.
  *
  * وهذا هو الفرقُ بين الرسمِ والأيقونة: الأيقونةُ خطٌّ بعرضٍ ثابت يصغر
- * فيدقّ ويكبر فيرقّ، والرسمُ كتلةٌ تحتفظ بثقلها في كلّ حجم. فمن أراد
- * جودةَ اللوتي كتب مساراتٍ ممتلئةً لا خطوطاً.
+ * فيدقّ ويكبر فيرقّ، والرسمُ كتلةٌ تحتفظ بثقلها في كلّ حجم.
  *
+ * ------------------------------------------------------------------
+ * وأربعُ قواعدَ تُخرج الرسمَ من «مقبولٍ» إلى «قويّ»، وهي المطبَّقةُ هنا:
+ *
+ * ١ ــ **ثلاثُ نبراتٍ لا لونان.** كحليٌّ للجسم، وورقٌ للسطح المضيء،
+ *      وذهبٌ للزخرفة. ولونان يُخرجان صورةً ظلّيّةً مسطّحة.
+ *
+ * ٢ ــ **عمقٌ بالتراكب لا بالظلّ.** المئذنةُ خلف القبّة، والصفحةُ خلف
+ *      الصفحة، والقوسُ داخل القوس. والظلُّ المتدرّج يفسد المسطّح؛ أمّا
+ *      التراكبُ فيبني العمقَ بالشكل نفسِه.
+ *
+ * ٣ ــ **لا زاويةً قائمةً عارية.** كلُّ ركنٍ إمّا مستديرٌ أو مقطوعٌ أو
+ *      مُغطّى بشكلٍ آخر. والزوايا الحادّةُ العارية أظهرُ ما يُفقد الرسمَ
+ *      نعومتَه ويُظهره مبنيّاً من مستطيلات.
+ *
+ * ٤ ــ **الحركةُ تصف الشيء لا تُزيّنه.** الشعلةُ تتمايل ولا تُومض، والسطرُ
+ *      يُكتب من اليمين، والختمُ يلمع لمعةَ معدن. وحركةٌ لا تصف شيئاً
+ *      تُلهي عن الرسم.
+ *
+ * ------------------------------------------------------------------
  * **والذهبُ حلَّ محلَّ الأزرقِ الفاتح لا محلَّ الكحليّ.** الأصلُ فيه
  * كحليٌّ داكنٌ للجسم وأزرقُ ساطعٌ وأصفرُ للزخرفة. والذهبُ `#e5caa5`
  * تباينُه مع الورق ١٫٥:١ — جسمٌ كلُّه ذهبٌ على ورقٍ فاتحٍ لا يُرى أصلاً.
- * فالكحليُّ يبقى جسماً، والذهبُ يأخذ كلَّ ما كان أزرقَ ساطعاً أو أصفر:
- * إطاراتُ الصفحات، وسطورُ الكتابة، والأهلّة، والأختام. وهو ما تراه ذهباً
- * في الرسم كلِّه.
+ * فالكحليُّ يبقى جسماً، والذهبُ يأخذ كلَّ ما كان أزرقَ ساطعاً أو أصفر.
  *
  * والحركةُ SMIL داخل الـSVG لا JavaScript: تعمل قبل ترطيب React، ولا
  * تتوقّف مع تبديل الصفحات، ولا تُحسب في حزمة الجافاسكربت.
@@ -29,7 +45,9 @@ export const SHARI_VECTOR = [
   { id: "quranWrite", name: "المصحف والكتابة" },
   { id: "mosqueNight", name: "المسجد والهلال" },
   { id: "ijazah", name: "الإجازة والختم" },
-  { id: "lantern", name: "المشكاة" },
+  { id: "lantern", name: "الفانوس" },
+  { id: "rihal", name: "المصحف على الرَّحل" },
+  { id: "rosette", name: "الشمسة الثمانيّة" },
 ] as const;
 
 export type ShariVectorId = (typeof SHARI_VECTOR)[number]["id"];
@@ -146,56 +164,113 @@ function QuranWrite({ size = 120, className = "" }: P) {
 /**
  * المسجدُ والهلال.
  *
- * القبّةُ نصفُ دائرةٍ مشدودةٌ إلى عنقٍ مستقيم — والقوسُ فيها `A` بنصفَي
- * قطرٍ متساويين فلا تنبعج. والنوافذُ أقواسٌ مدبّبةٌ تُبنى من نقطتَي تحكّم
- * تلتقيان في القمّة، وهو القوسُ الإسلاميُّ لا نصفُ الدائرة الروميّ.
+ * **قوّةُ هذا الرسم في القبّة.** القبّةُ الإسلاميّةُ ليست نصفَ دائرة —
+ * نصفُ الدائرة قبّةٌ روميّة. وهذه بصلـيّةٌ (ogee): تخرج من عنقها أوسعَ
+ * من قاعدتها ثمّ تنعطف إلى قمّةٍ مدبّبة. وتُبنى من منحنيَي بيزييه لكلّ
+ * جانب: الأوّلُ يتّسع، والثاني يضيق إلى نقطةٍ واحدةٍ في القمّة تلتقي
+ * فيها المماسّتان — فإن لم تلتقيا خرجت القمّةُ منبعجة.
  *
- * والهلالُ فرقُ دائرتين لا قوسٌ مرسوم: دائرةٌ كاملةٌ ينقص منها قرصٌ مزاحٌ
- * قليلاً — وهو ما يعطيه طرفَيه الحادّين. والقوسُ المرسومُ بخطٍّ يعطي
- * طرفين غليظين متساويين، وهو أظهرُ ما يفسد الهلال.
+ * والواجهةُ صفُّ أقواسٍ مدبّبةٍ لا نوافذَ مثقوبة، والقوسُ المدبّبُ نقطتا
+ * تحكّمٍ تلتقيان في القمّة. وفوقها شريطُ مقرنصاتٍ — مثلّثاتٌ متتابعةٌ
+ * تصل الجسمَ بالقبّة، وبها يُقرأ المسجدُ مسجداً لا صندوقاً فوقه نصفُ
+ * كرة.
+ *
+ * والهلالُ فرقُ دائرتين لا قوسٌ مرسوم: دائرةٌ ينقص منها قرصٌ مزاح — وهو
+ * ما يعطيه طرفَيه الحادّين. والقوسُ المرسومُ بخطٍّ يعطي طرفين غليظين
+ * متساويين، وهو أظهرُ ما يفسد الهلال.
  */
 function MosqueNight({ size = 120, className = "" }: P) {
   const u = useId().replace(/:/g, "");
+
+  /** قوسٌ مدبّبٌ مملوء: يبدأ من الأسفل ويصعد إلى قمّةٍ واحدة. */
+  const arch = (cx: number, base: number, w: number, h: number) =>
+    `M${cx - w} ${base}L${cx - w} ${base - h * 0.45}` +
+    `C${cx - w} ${base - h * 0.86} ${cx - w * 0.5} ${base - h} ${cx} ${base - h}` +
+    `C${cx + w * 0.5} ${base - h} ${cx + w} ${base - h * 0.86} ${cx + w} ${base - h * 0.45}` +
+    `L${cx + w} ${base}Z`;
+
   return (
     <svg viewBox="0 0 240 240" width={size} height={size} className={className} aria-hidden="true">
       <defs>
         <mask id={`${u}-cr`}>
           <rect width="240" height="240" fill="#000" />
-          <circle cx="120" cy="34" r="18" fill="#fff" />
-          <circle cx="127" cy="30" r="16" fill="#000" />
+          <circle cx="120" cy="30" r="15" fill="#fff" />
+          <circle cx="126" cy="26" r="13.5" fill="#000" />
         </mask>
       </defs>
 
-      {/* هالةٌ ذهبيّةٌ تتنفّس خلف الهلال */}
-      <circle cx="120" cy="34" r="24" fill={GOLD} opacity="0.18">
-        <animate attributeName="r" values="20;28;20" dur="4s" repeatCount="indefinite" />
-        <animate attributeName="opacity" values="0.1;0.24;0.1" dur="4s" repeatCount="indefinite" />
+      {/* هالةٌ تتنفّس خلف الهلال — تصف ضوءَه ولا تُزيّن */}
+      <circle cx="120" cy="30" r="21" fill={GOLD} opacity="0.16">
+        <animate attributeName="r" values="17;25;17" dur="4.4s" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="0.08;0.2;0.08" dur="4.4s" repeatCount="indefinite" />
       </circle>
       <rect width="240" height="240" fill={GOLD} mask={`url(#${u}-cr)`} />
 
-      {/* المئذنتان */}
-      <path fill={NAVY} d="M34 108h20v96H34zM24 204h40v10H24z" />
-      <path fill={NAVY} d="M44 70l12 30H32z" />
-      <rect x="36" y="98" width="16" height="8" fill={GOLD} />
-      <path fill={NAVY} d="M186 108h20v96h-20zM176 204h40v10h-40z" />
-      <path fill={NAVY} d="M196 70l12 30h-24z" />
-      <rect x="188" y="98" width="16" height="8" fill={GOLD} />
+      {/* نجمتان تخفقان بتوقيتين مختلفين فلا تبدوان مضبوطتين بساعة */}
+      <circle cx="80" cy="40" r="3" fill={GOLD}>
+        <animate attributeName="opacity" values="0.25;1;0.25" dur="3.1s" repeatCount="indefinite" />
+      </circle>
+      <circle cx="164" cy="52" r="2.4" fill={GOLD}>
+        <animate attributeName="opacity" values="1;0.3;1" dur="2.3s" repeatCount="indefinite" />
+      </circle>
 
-      {/* القبّة والعنق */}
-      <path fill={NAVY} d="M72 122a48 48 0 0 1 96 0z" />
-      <rect x="66" y="122" width="108" height="12" fill={NAVY} />
+      {/* المئذنتان — خلف الجسم فتبدوان أبعدَ منه */}
+      {[46, 194].map((x, i) => (
+        <g key={i}>
+          {/* الجذع */}
+          <path fill={NAVY} d="M0 0h0z" />
+          <rect x={x - 11} y="96" width="22" height="112" rx="4" fill={NAVY} />
+          {/* الشرفة */}
+          <rect x={x - 15} y="120" width="30" height="9" rx="4" fill={NAVY} />
+          <rect x={x - 8} y="104" width="16" height="12" rx="3" fill={GOLD} />
+          {/* الطاقيّة البصليّة */}
+          <path
+            fill={NAVY}
+            d={`M${x} 60C${x + 12} 70 ${x + 14} 82 ${x + 10} 96L${x - 10} 96C${x - 14} 82 ${x - 12} 70 ${x} 60Z`}
+          />
+          <rect x={x - 1.6} y="48" width="3.2" height="13" rx="1.6" fill={GOLD} />
+          <circle cx={x} cy="46" r="3.4" fill={GOLD} />
+        </g>
+      ))}
 
-      {/* الجسم */}
-      <rect x="62" y="134" width="116" height="70" fill={NAVY} />
-      <rect x="52" y="204" width="136" height="12" fill={NAVY} />
+      {/* القبّةُ البصليّة — منحنيان يلتقيان في قمّةٍ واحدة */}
+      <path
+        fill={NAVY}
+        d="M120 62C150 82 160 100 158 122L82 122C80 100 90 82 120 62Z"
+      />
+      {/* شريطٌ ذهبيٌّ عند خصر القبّة يفصلها عن عنقها */}
+      <rect x="80" y="118" width="80" height="7" rx="3.5" fill={GOLD} />
+      {/* الصاري والهلالُ الصغير فوق القبّة */}
+      <rect x="118.4" y="46" width="3.2" height="18" rx="1.6" fill={GOLD} />
 
-      {/* البابُ قوسٌ مدبّب — والنوافذُ مثلُه أصغر */}
-      <path fill={GOLD} d="M120 148c14 0 22 12 22 24v32h-44v-32c0-12 8-24 22-24z" />
-      <path fill={PAPER} opacity="0.85" d="M120 158c9 0 14 8 14 16v30h-28v-30c0-8 5-16 14-16z">
-        <animate attributeName="opacity" values="0.5;0.95;0.5" dur="3.4s" repeatCount="indefinite" />
+      {/* شريطُ المقرنصات — مثلّثاتٌ تصل القبّةَ بالجسم */}
+      <path
+        fill={NAVY}
+        d="M64 125h112l-8 13h-96z"
+      />
+      {[78, 96, 114, 132, 150, 168].map((x) => (
+        <path key={x} fill={GOLD} d={`M${x - 6} 127l6 9 6-9z`} opacity="0.9" />
+      ))}
+
+      {/* الجسمُ وقاعدتُه */}
+      <rect x="62" y="138" width="116" height="70" rx="6" fill={NAVY} />
+      <rect x="48" y="204" width="144" height="14" rx="6" fill={NAVY} />
+      <rect x="56" y="218" width="128" height="8" rx="4" fill={NAVY} opacity="0.55" />
+
+      {/* البابُ — قوسٌ مدبّبٌ ذهبيٌّ فيه بابٌ ورقيٌّ يضيء */}
+      <path fill={GOLD} d={arch(120, 208, 24, 58)} />
+      <path fill={PAPER} d={arch(120, 208, 16, 46)} opacity="0.9">
+        <animate attributeName="opacity" values="0.55;0.95;0.55" dur="3.6s" repeatCount="indefinite" />
       </path>
-      <path fill={GOLD} d="M82 152c6 0 10 6 10 12v18H72v-18c0-6 4-12 10-12z" />
-      <path fill={GOLD} d="M158 152c6 0 10 6 10 12v18h-20v-18c0-6 4-12 10-12z" />
+      <rect x="118.6" y="170" width="2.8" height="38" fill={NAVY} opacity="0.5" />
+
+      {/* نافذتان مدبّبتان — أصغرُ من الباب بالنسبة نفسِها */}
+      {[84, 156].map((x) => (
+        <g key={x}>
+          <path fill={GOLD} d={arch(x, 194, 13, 34)} />
+          <path fill={NAVY} d={arch(x, 194, 6.5, 22)} opacity="0.35" />
+        </g>
+      ))}
     </svg>
   );
 }
@@ -203,11 +278,15 @@ function MosqueNight({ size = 120, className = "" }: P) {
 /**
  * الإجازةُ وختمُها.
  *
- * الشريطُ لسانان يخرجان من تحت الختم بقطعٍ مائلٍ في أسفلهما — والقطعُ
- * المائلُ هو ما يجعله شريطاً؛ ولسانٌ مستقيمُ الأسفل يبدو مستطيلاً معلّقاً.
+ * **مخطوطٌ ملفوفٌ لا ورقةٌ مستطيلة.** الإجازةُ في تقليد العلمِ الشرعيِّ
+ * تُكتب على درجٍ يُلفّ طرفاه؛ ومستطيلٌ بحدٍّ يُقرأ شهادةً مدرسيّةً حديثة.
+ * واللفّةُ تُبنى من مستطيلٍ مستديرِ الأطراف يظهر منه طرفٌ داخليٌّ أغمق —
+ * وهو ما يجعلها أسطوانةً لا شريطاً.
  *
- * والختمُ يلمع لمعةً تمرّ عليه: مستطيلٌ مائلٌ شفّافٌ يعبره أفقيّاً داخل
- * قصٍّ دائريّ — وهي لمعةُ المعدن، تُقرأ ختماً محفوراً لا قرصاً مسطّحاً.
+ * والسطورُ تظهر واحداً بعد واحدٍ ثمّ تختفي معاً: كتابةٌ تتلوها طيّة.
+ *
+ * والختمُ يلمع لمعةً تمرّ عليه: مستطيلٌ مائلٌ شفّافٌ يعبره داخل قصٍّ
+ * دائريّ — وهي لمعةُ المعدن، تُقرأ ختماً محفوراً لا قرصاً مسطّحاً.
  */
 function Ijazah({ size = 120, className = "" }: P) {
   const u = useId().replace(/:/g, "");
@@ -215,44 +294,68 @@ function Ijazah({ size = 120, className = "" }: P) {
     <svg viewBox="0 0 240 240" width={size} height={size} className={className} aria-hidden="true">
       <defs>
         <clipPath id={`${u}-seal`}>
-          <circle cx="170" cy="162" r="30" />
+          <circle cx="168" cy="168" r="30" />
         </clipPath>
       </defs>
 
-      {/* الوثيقة */}
-      <rect x="26" y="42" width="164" height="122" rx="10" fill={NAVY} />
-      <rect x="38" y="54" width="140" height="98" rx="5" fill={PAPER} />
-      <rect x="46" y="62" width="124" height="82" rx="3" fill="none" stroke={GOLD} strokeWidth="3" />
+      {/* ورقةُ الدرج */}
+      <path fill={PAPER} d="M40 54h150v122H40z" />
+      <path
+        fill="none"
+        stroke={GOLD}
+        strokeWidth="3.5"
+        d="M56 70h118v90H56z"
+      />
 
-      {/* السطور — تظهر واحداً بعد واحد */}
+      {/* السطور — تُكتب واحداً بعد واحدٍ ثمّ تُطوى معاً */}
       {[
-        [62, 84, 92],
-        [62, 98, 70],
-        [62, 112, 84],
-        [62, 126, 54],
+        [70, 88, 90],
+        [70, 104, 68],
+        [70, 120, 84],
+        [70, 136, 50],
       ].map(([x, y, w], i) => (
-        <rect key={i} x={x} y={y} width={w} height="7" rx="3.5" fill={NAVY} opacity="0.28">
+        <rect key={i} x={x} y={y} width={w} height="7" rx="3.5" fill={NAVY} opacity="0.3">
           <animate
             attributeName="opacity"
-            values="0;0.28;0.28;0"
-            keyTimes={`0;${(0.12 + i * 0.07).toFixed(2)};0.88;1`}
-            dur="5s"
+            values="0;0.3;0.3;0"
+            keyTimes={`0;${(0.14 + i * 0.08).toFixed(2)};0.86;1`}
+            dur="5.4s"
             repeatCount="indefinite"
           />
         </rect>
       ))}
 
-      {/* الشريط — لسانان بقطعٍ مائل */}
-      <path fill={NAVY} d="M150 172h20v46l-10-12-10 12z" />
-      <path fill={NAVY} d="M172 172h20v46l-10-12-10 12z" />
+      {/* اللفّتان — أسطوانتان بطرفٍ داخليٍّ أغمق */}
+      {[
+        { y: 40, h: 26 },
+        { y: 172, h: 26 },
+      ].map(({ y, h }) => (
+        <g key={y}>
+          <rect x="28" y={y} width="174" height={h} rx={h / 2} fill={NAVY} />
+          <rect x="40" y={y + h * 0.3} width="150" height={h * 0.22} rx={h * 0.11} fill={GOLD} opacity="0.55" />
+          <circle cx="34" cy={y + h / 2} r={h * 0.2} fill={GOLD} />
+          <circle cx="196" cy={y + h / 2} r={h * 0.2} fill={GOLD} />
+        </g>
+      ))}
+
+      {/* شريطُ الختم — لسانان بقطعٍ مائلٍ في أسفلهما */}
+      <path fill={NAVY} d="M150 178h19v44l-9.5-11.5L150 222z" />
+      <path fill={NAVY} d="M171 178h19v44l-9.5-11.5L171 222z" />
 
       {/* الختمُ ولمعتُه */}
-      <circle cx="170" cy="162" r="30" fill={GOLD} />
-      <circle cx="170" cy="162" r="22" fill="none" stroke={NAVY} strokeWidth="4" />
-      <path fill={NAVY} d="M170 148l4.2 9 9.8 1.4-7 7 1.7 9.8-8.7-4.6-8.7 4.6 1.7-9.8-7-7 9.8-1.4z" />
+      <circle cx="168" cy="168" r="31" fill={NAVY} />
+      <circle cx="168" cy="168" r="25" fill={GOLD} />
+      {/* حزٌّ مسنّنٌ حول الختم — حافّةُ الشمع لا حافّةُ قرص */}
+      {Array.from({ length: 20 }, (_, i) => {
+        const a = (i / 20) * Math.PI * 2;
+        return (
+          <circle key={i} cx={168 + Math.cos(a) * 29} cy={168 + Math.sin(a) * 29} r="2.6" fill={NAVY} />
+        );
+      })}
+      <path fill={NAVY} d="M168 154l4.4 9.4 10.3 1.5-7.4 7.3 1.8 10.3-9.1-4.9-9.1 4.9 1.8-10.3-7.4-7.3 10.3-1.5z" />
       <g clipPath={`url(#${u}-seal)`}>
-        <rect x="-40" y="126" width="26" height="72" fill={PAPER} opacity="0.55" transform="rotate(18 -27 162)">
-          <animate attributeName="x" values="-40;220" dur="3.6s" repeatCount="indefinite" />
+        <rect x="-40" y="130" width="24" height="76" fill={PAPER} opacity="0.5" transform="rotate(18 -28 168)">
+          <animate attributeName="x" values="-40;220" dur="3.8s" repeatCount="indefinite" />
         </rect>
       </g>
     </svg>
@@ -260,9 +363,17 @@ function Ijazah({ size = 120, className = "" }: P) {
 }
 
 /**
- * المشكاةُ — الفانوسُ وشعلتُه.
+ * الفانوس.
  *
- * الشعلةُ لا تُومض بالشفافية: الوميضُ يجعلها تختفي وتعود، وهي لا تختفي.
+ * **جسمُه سُداسيٌّ منظورٌ لا مستطيلٌ مائل.** الفانوسُ جسمٌ مجسَّم، وأقربُ
+ * ما يصفه في المسطّح ثلاثةُ ألواحٍ رأسيّة: أوسطُها مواجهٌ فأعرضُ وأفتح،
+ * وجانباه منحرفان فأضيقُ وأغمق. وبهذا الفرقِ وحدَه يُقرأ مجسَّماً بلا
+ * ظلٍّ متدرّجٍ ولا تدرّجِ لون.
+ *
+ * وقمّتُه بصليّةٌ كقبّةِ المسجد — وهي الرابطُ بين الرسمين — تنتهي بصارٍ
+ * وكُرة.
+ *
+ * والشعلةُ لا تُومض بالشفافية: الوميضُ يجعلها تختفي وتعود، وهي لا تختفي.
  * بل تتمايل — `scale` غيرُ متساوٍ في المحورين حول مركزٍ في قاعدتها، فتطول
  * وتقصر كما تفعل النار. والمركزُ في القاعدة لا في الوسط، وإلّا هبطت
  * الشعلةُ تحت فتيلتها كلّما قصرت.
@@ -270,43 +381,178 @@ function Ijazah({ size = 120, className = "" }: P) {
 function Lantern({ size = 120, className = "" }: P) {
   return (
     <svg viewBox="0 0 240 240" width={size} height={size} className={className} aria-hidden="true">
-      {/* التعليقة */}
-      <path d="M120 18v18" stroke={NAVY} strokeWidth="8" strokeLinecap="round" fill="none" />
-      <path d="M96 40h48" stroke={NAVY} strokeWidth="10" strokeLinecap="round" fill="none" />
+      {/* السلسلةُ — حلقاتٌ لا خطّ */}
+      {[16, 27, 38].map((cy) => (
+        <ellipse key={cy} cx="120" cy={cy} rx="5" ry="6.5" fill="none" stroke={NAVY} strokeWidth="4" />
+      ))}
+      <path d="M96 50h48" stroke={NAVY} strokeWidth="9" strokeLinecap="round" fill="none" />
 
-      {/* القبّعةُ العليا */}
-      <path fill={NAVY} d="M120 48l34 26H86z" />
-      <rect x="78" y="74" width="84" height="12" rx="4" fill={NAVY} />
+      {/* القمّةُ البصليّة */}
+      <path fill={NAVY} d="M120 54c22 14 27 26 24 38H96c-3-12 2-24 24-38Z" />
+      <rect x="76" y="90" width="88" height="13" rx="6" fill={NAVY} />
+      <rect x="86" y="94" width="68" height="5" rx="2.5" fill={GOLD} opacity="0.6" />
 
-      {/* الزجاجُ — جسمٌ ذهبيٌّ يضيء */}
-      <path fill={GOLD} d="M88 88h64l10 78c1 8-5 14-13 14H91c-8 0-14-6-13-14z">
-        <animate attributeName="opacity" values="0.82;1;0.82" dur="2.6s" repeatCount="indefinite" />
+      {/* ثلاثةُ ألواح: الجانبان أضيقُ وأغمق، والأوسطُ مواجهٌ وأفتح */}
+      <path fill={NAVY} d="M78 104h84l9 66c1 9-6 16-15 16H84c-9 0-16-7-15-16Z" />
+      <path fill={GOLD} d="M88 110h64l7 58c.7 6-4 11-10 11H91c-6 0-10.7-5-10-11Z" opacity="0.5" />
+      <path fill={GOLD} d="M105 110h30l3 58c.3 6-4 11-10 11h-16c-6 0-10.3-5-10-11Z">
+        <animate attributeName="opacity" values="0.85;1;0.85" dur="2.6s" repeatCount="indefinite" />
       </path>
-      <path
-        fill="none"
-        stroke={NAVY}
-        strokeWidth="7"
-        strokeLinejoin="round"
-        d="M88 88h64l10 78c1 8-5 14-13 14H91c-8 0-14-6-13-14z"
-      />
+      {/* الأعمدةُ الفاصلةُ بين الألواح */}
+      <path fill={NAVY} d="M102 110h5l2.6 69h-5.6zM133 110h5l-2 69h-5.6z" opacity="0.85" />
 
       {/* القاعدة */}
-      <rect x="82" y="182" width="76" height="14" rx="5" fill={NAVY} />
-      <rect x="94" y="196" width="52" height="12" rx="5" fill={NAVY} />
+      <rect x="72" y="186" width="96" height="15" rx="7" fill={NAVY} />
+      <rect x="88" y="201" width="64" height="13" rx="6" fill={NAVY} />
+      <rect x="100" y="214" width="40" height="8" rx="4" fill={NAVY} opacity="0.5" />
 
       {/* الشعلة — تتمايل ولا تختفي */}
-      <g style={{ transformOrigin: "120px 160px" }}>
+      <g style={{ transformOrigin: "120px 168px" }}>
         <animateTransform
           attributeName="transform"
           type="scale"
           additive="sum"
-          values="1 1;1.12 0.9;0.94 1.1;1 1"
-          dur="1.6s"
+          values="1 1;1.1 0.9;0.95 1.08;1 1"
+          dur="1.7s"
           repeatCount="indefinite"
         />
-        <path fill={PAPER} d="M120 108c14 14 20 24 20 34a20 20 0 0 1-40 0c0-10 6-20 20-34z" />
-        <path fill={NAVY} d="M120 126c7 8 10 13 10 19a10 10 0 0 1-20 0c0-6 3-11 10-19z" />
+        <path fill={PAPER} d="M120 122c13 14 19 24 19 33a19 19 0 0 1-38 0c0-9 6-19 19-33Z" />
+        <path fill={GOLD} d="M120 136c7 8 10 14 10 19a10 10 0 0 1-20 0c0-5 3-11 10-19Z" />
       </g>
+    </svg>
+  );
+}
+
+/**
+ * المصحفُ على الرَّحل.
+ *
+ * الرَّحلُ لوحان متقاطعان تقاطعَ حرفِ X مفصولان بمحور. ورسمُه خطّين
+ * متقاطعين يُخرجه صليباً؛ وإنّما هو لوحان لكلٍّ منهما سُمك، والأماميُّ
+ * يقطع الخلفيَّ عند التقاطع — فالخلفيُّ يُرسم أوّلاً ثمّ يعبره الأماميُّ
+ * فوقه، وبهذا التتابعِ وحدَه يُقرأ التقاطع.
+ *
+ * والمصحفُ يميل قليلاً كما يميل على الرحل فعلاً، لا يستوي أفقيّاً.
+ */
+function Rihal({ size = 120, className = "" }: P) {
+  return (
+    <svg viewBox="0 0 240 240" width={size} height={size} className={className} aria-hidden="true">
+      {/* اللوحُ الخلفيُّ ثمّ الأماميُّ فوقه — بهذا يُقرأ التقاطع */}
+      <rect x="60" y="118" width="17" height="106" rx="8" fill={NAVY} transform="rotate(-19 68 171)" opacity="0.72" />
+      <rect x="163" y="118" width="17" height="106" rx="8" fill={NAVY} transform="rotate(19 171 171)" opacity="0.72" />
+      <rect x="60" y="118" width="17" height="106" rx="8" fill={NAVY} transform="rotate(19 68 171)" />
+      <rect x="163" y="118" width="17" height="106" rx="8" fill={NAVY} transform="rotate(-19 171 171)" />
+      {/* المحور */}
+      <circle cx="120" cy="170" r="8" fill={GOLD} />
+
+      {/* المصحفُ مائلاً — صفحتان تلتقيان في متنٍ منخفض */}
+      <g transform="rotate(-4 120 110)">
+        {/* الغلاف */}
+        <path fill={NAVY} d="M34 78c30-14 62-12 86 6 24-18 56-20 86-6v66c-30-14-62-12-86 6-24-18-56-20-86-6Z" />
+        {/* الصفحتان */}
+        <path fill={PAPER} d="M45 88c24-9 48-6 68 8v48c-20-14-44-17-68-8Z" />
+        <path fill={PAPER} d="M195 88c-24-9-48-6-68 8v48c20-14 44-17 68-8Z" />
+        {/* المتنُ الذهبيُّ في الوسط */}
+        <path fill={GOLD} d="M116 96h8v52h-8z" />
+        {/* سطورٌ ذهبيّةٌ تُكتب من اليمين */}
+        {[104, 116, 128].map((y, i) => (
+          <g key={y}>
+            <rect x="136" y={y} width="0" height="5" rx="2.5" fill={GOLD} opacity="0.85">
+              <animate
+                attributeName="width"
+                values="0;48;48;0;0"
+                keyTimes={`0;${(0.2 + i * 0.07).toFixed(2)};0.84;0.94;1`}
+                dur="6s"
+                repeatCount="indefinite"
+              />
+            </rect>
+            <rect x="56" y={y} width="0" height="5" rx="2.5" fill={GOLD} opacity="0.85">
+              <animate
+                attributeName="width"
+                values="0;48;48;0;0"
+                keyTimes={`0;${(0.24 + i * 0.07).toFixed(2)};0.84;0.94;1`}
+                dur="6s"
+                repeatCount="indefinite"
+              />
+            </rect>
+          </g>
+        ))}
+      </g>
+    </svg>
+  );
+}
+
+/**
+ * الشمسةُ الثمانيّة.
+ *
+ * الزخرفةُ الإسلاميّةُ تُبنى بالتكرار حول مركز، لا تُرسم شكلاً شكلاً.
+ * فالبتلاتُ هنا واحدةٌ تُكرَّر ثمانيَ مرّاتٍ بالدوران — يتغيّر عددُها
+ * برقمٍ واحد، ولا تختلّ زاويةٌ عن أختها كما يقع في الرسم اليدويّ.
+ *
+ * ونجمتان متراكبتان بزاويةٍ نصفِ الخطوة: الظاهرةُ تدور ببطءٍ في اتّجاه،
+ * والخلفيّةُ في الاتّجاه المضادّ — فيتغيّر التشابكُ بينهما دائماً ولا
+ * يُقرأ الدورانُ انزلاقَ قرصٍ جامد.
+ */
+function Rosette({ size = 120, className = "" }: P) {
+  const n = 8;
+  const petal = (r1: number, r2: number) =>
+    `M0 ${-r1}C${r2 * 0.5} ${-r1 * 0.62} ${r2} ${-r2 * 0.5} ${r2 * 0.72} ${-r2 * 0.72}` +
+    `C${r2 * 0.5} ${-r2} ${r1 * 0.62} ${-r2 * 0.5} 0 ${-r1}Z`;
+
+  return (
+    <svg viewBox="-120 -120 240 240" width={size} height={size} className={className} aria-hidden="true">
+      {/* الحلقةُ الخارجيّة */}
+      <circle r="104" fill="none" stroke={NAVY} strokeWidth="7" opacity="0.35" />
+      <circle r="92" fill="none" stroke={GOLD} strokeWidth="3" />
+
+      {/* النجمةُ الخلفيّة — تدور عكسَ الأمامية */}
+      <g opacity="0.42">
+        <animateTransform
+          attributeName="transform"
+          type="rotate"
+          from="22.5"
+          to="-337.5"
+          dur="44s"
+          repeatCount="indefinite"
+        />
+        {Array.from({ length: n }, (_, i) => (
+          <path
+            key={i}
+            d={petal(86, 60)}
+            fill={NAVY}
+            transform={`rotate(${(i * 360) / n})`}
+          />
+        ))}
+      </g>
+
+      {/* النجمةُ الأمامية */}
+      <g>
+        <animateTransform
+          attributeName="transform"
+          type="rotate"
+          from="0"
+          to="360"
+          dur="60s"
+          repeatCount="indefinite"
+        />
+        {Array.from({ length: n }, (_, i) => (
+          <path
+            key={i}
+            d={petal(78, 54)}
+            fill={GOLD}
+            transform={`rotate(${(i * 360) / n})`}
+          />
+        ))}
+      </g>
+
+      {/* القلبُ — قرصٌ كحليٌّ عليه ثمانيّةٌ ورقيّة تتنفّس */}
+      <circle r="34" fill={NAVY} />
+      <g fill={PAPER}>
+        <rect x="-19" y="-19" width="38" height="38" rx="5" />
+        <rect x="-19" y="-19" width="38" height="38" rx="5" transform="rotate(45)" />
+      </g>
+      <circle r="9" fill={GOLD}>
+        <animate attributeName="r" values="7;11;7" dur="3.8s" repeatCount="indefinite" />
+      </circle>
     </svg>
   );
 }
@@ -316,6 +562,8 @@ const MAP = {
   mosqueNight: MosqueNight,
   ijazah: Ijazah,
   lantern: Lantern,
+  rihal: Rihal,
+  rosette: Rosette,
 } as const;
 
 /** الرسمُ باسمه — لترويسةِ قسمٍ أو حالةٍ فارغةٍ أو بطاقةٍ مميّزة. */
