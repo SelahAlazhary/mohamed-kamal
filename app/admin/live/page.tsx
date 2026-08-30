@@ -13,6 +13,7 @@ import {
   Loader2, LogOut, ShieldCheck, Globe, AlertTriangle, Gift, Tv, Users2, Square, PlayCircle,
 } from "lucide-react";
 import { PageHeader, Card, StatusBadge } from "@/components/dashboard/ui";
+import { Section } from "@/components/dashboard/section";
 import { Button } from "@/components/ui/primitives";
 import { useContent } from "@/components/content/content-provider";
 import { TRACKS } from "@/lib/data";
@@ -207,7 +208,12 @@ export default function LivePage() {
       )}
 
       {/* ---------- ربط حساب جوجل ---------- */}
-      <Card className="mb-6">
+      <Section
+          title="ربط Google Meet"
+        subtitle="تُربط مرّةً فتُنشَأ روابطُ الاجتماعات وحدَها بلا نسخٍ ولصق"
+        icon={<Video className="size-4" />}
+        className="mb-6"
+      >
         <div className="flex flex-wrap items-center gap-4">
           <span className={`grid size-11 shrink-0 place-items-center rounded-2xl ${google?.connected ? "bg-emerald-500/12 text-emerald-500" : "bg-primary/12 text-primary"}`}>
             <Video className="size-5" />
@@ -259,11 +265,16 @@ export default function LivePage() {
             {showUri ? "إخفاء عنوان العودة" : "لا يعمل الربط؟ اعرض عنوان العودة"}
           </button>
         )}
-      </Card>
+      </Section>
 
       {/* ---------- نموذج الإنشاء ---------- */}
       {mode && (
-        <Card className="mb-6">
+        <Section
+          title={mode === "meet" ? "اجتماع Google Meet جديد" : "جلسة برابط خارجي"}
+          subtitle="موعدُها وصفُّها ومن يفتحها"
+          icon={<Radio className="size-4" />}
+          className="mb-6"
+        >
           <div className="mb-4 flex items-center justify-between">
             <h3 className="font-display font-extrabold">
               {mode === "meet" ? "اجتماع Google Meet جديد" : "جلسة برابط خارجي"}
@@ -374,12 +385,18 @@ export default function LivePage() {
               <button onClick={reset} className="rounded-full border border-border px-4 py-2.5 text-sm font-bold">إلغاء</button>
             </div>
           </div>
-        </Card>
+        </Section>
       )}
 
       {/* ---------- الجلسة الجارية ---------- */}
       {now && (
-        <Card className="mb-6">
+        <Section
+          title="الجلسة الجارية الآن"
+          subtitle="ما يراه الطلابُ مفتوحاً هذه اللحظة"
+          icon={<Radio className="size-4" />}
+          tone="alert"
+          className="mb-6"
+        >
           <div className="flex flex-wrap items-center gap-4">
             <span className="relative grid size-12 shrink-0 place-items-center rounded-2xl bg-rose-500/12 text-rose-500">
               <Radio className="size-6" />
@@ -399,10 +416,16 @@ export default function LivePage() {
               <a href={now.url} target="_blank" rel="noreferrer" className="rounded-full btn-glow px-5 py-2.5 text-xs font-bold text-white">فتح البث</a>
             )}
           </div>
-        </Card>
+        </Section>
       )}
 
       {/* ---------- كل الجلسات ---------- */}
+      <Section
+        title="كل الجلسات"
+        subtitle="المجدولةُ والمنتهية — تُعدَّل أو تُحذف من بطاقتها"
+        icon={<Radio className="size-4" />}
+        count={live.length}
+      >
       {live.length === 0 ? (
         <p className="rounded-3xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
           لا توجد جلسات بث بعد.
@@ -486,7 +509,8 @@ export default function LivePage() {
             );
           })}
         </div>
-      )}
+)}
+      </Section>
 
       <style>{`.inp{width:100%;border-radius:0.9rem;border:1px solid hsl(var(--border));background:hsl(var(--card)/0.6);padding:0.55rem 0.8rem;font-size:0.85rem;outline:none;color:inherit;font-family:inherit}.inp:focus{border-color:hsl(var(--primary)/0.6)}.lbl{margin-bottom:0.25rem;display:block;font-size:0.7rem;font-weight:600;color:hsl(var(--muted-foreground))}`}</style>
     </>
