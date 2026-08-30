@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { DashboardShell } from "@/components/dashboard/shell";
-import { SectionNav } from "@/components/dashboard/section-nav";
+import { SectionTabs } from "@/components/dashboard/section-tabs";
 import { adminNav } from "@/lib/dashboard-data";
 import { getSession } from "@/lib/session";
 import { loadDB, getDB } from "@/lib/db";
@@ -55,9 +55,11 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           avatar: session.name.charAt(0),
         }}
       >
-        {children}
-        {/* شريطُ أقسام الصفحة — يمسحها بنفسه فلا يُوصَل بكلّ شاشة */}
-        <SectionNav />
+        {/*
+          تبويبُ الأقسام — يعرض قسماً واحداً ويبدّل بينها من شريطٍ عائم.
+          فلا طيَّ يُخفي، ولا شاشةً تطول بأقسامٍ مفتوحةٍ كلِّها.
+        */}
+        <SectionTabs>{children}</SectionTabs>
       </DashboardShell>
     </div>
   );

@@ -21,7 +21,8 @@
  * ولا حالةَ تُحفظ ولا `storageKey`: القسمُ لا يُطوى، فلا شيءَ يُذكَر.
  */
 
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
+import { useSectionTab } from "./section-tabs";
 
 export function Section({
   title,
@@ -47,6 +48,18 @@ export function Section({
   className?: string;
 }) {
   const alert = tone === "alert";
+  /*
+    البطاقةُ تُسجّل نفسَها في شريط التبويب، فيُبنى من الموجود فعلاً.
+    والعنوانُ نصٌّ حين يكون نصّاً؛ وما ليس نصّاً لا اسمَ له في الشريط
+    فيُسمّى «قسم».
+  */
+  const uid = useId();
+  const label = typeof title === "string" ? title : "قسم";
+  const { hidden } = useSectionTab(uid, label);
+  /*
+    ويُخفى بـ`hidden` لا بالإزالة من الشجرة: الإزالةُ تُفقد ما كُتب في
+    حقوله وترجعه فارغاً عند العودة إليه — وهو أسوأُ ما يقع في نموذجٍ طويل.
+  */
 
   return (
     <section
@@ -56,7 +69,8 @@ export function Section({
         والعنوانُ نصٌّ حين يكون نصّاً؛ وإن كان عنصراً فلا اسمَ له فيُترك.
       */
       data-section={typeof title === "string" ? title : undefined}
-      className={`glass scroll-mt-24 overflow-hidden rounded-3xl shadow-bento ${className}`}
+      hidden={hidden}
+      className={`glass scroll-mt-24 overflow-hidden rounded-3xl shadow-bento ${hidden ? "hidden" : ""} ${className}`}
     >
       <header
         className={`flex flex-wrap items-center gap-3 border-b px-4 py-3 sm:px-5 ${
