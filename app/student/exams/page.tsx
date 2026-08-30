@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import {
   IconClipboardCheck, IconClock, IconCheckCircle, IconCalendar, IconLock, IconArrowLeft,
 } from "@/components/brand/icons";
+import { ShariAnim } from "@/components/brand/shari-art";
 import { PageHeader, Card, StatusBadge } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
 import { useMaintGate } from "@/components/brand/maint-gate";
@@ -48,7 +49,13 @@ export default function StudentExamsPage() {
 
       {exams.length === 0 && (
         <Card className="flex flex-col items-center gap-3 py-14 text-center">
-          <span className="grid size-14 place-items-center rounded-2xl bg-primary/12 text-primary"><IconClipboardCheck className="size-7" /></span>
+          {/*
+            رسمٌ لا رمزٌ في صندوق.
+            الحالةُ الفارغة تشغل عرضَ الشاشة، ورمزٌ خطّيٌّ بحجم ٢٨ بكسل
+            فيها يبدو كأنّ الصفحةَ لم تُحمَّل. والمتّجهُ يملأ موضعَه ويقول
+            ما القسمُ الذي فرغ.
+          */}
+          <ShariAnim id="checklistAnim" size={132} framed={false} />
           <p className="font-display text-lg font-extrabold">لا توجد اختبارات بعد</p>
           <p className="max-w-sm text-sm text-muted-foreground">ستظهر اختباراتك هنا فور نشرها.</p>
         </Card>

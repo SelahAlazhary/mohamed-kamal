@@ -1696,7 +1696,7 @@ export default function AppearancePage() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   key={a.id}
-                  src={`/art/${a.id}.webp`}
+                  src={`/art/${a.id}.svg`}
                   alt={a.name}
                   className="size-12 object-contain"
                   style={{
