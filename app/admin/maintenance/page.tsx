@@ -16,6 +16,7 @@ import { Wrench, Power, Loader2, Check, Eye } from "lucide-react";
 import { PageHeader, Card } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
 import { MaintenancePanel } from "@/components/brand/maintenance";
+import { Fold } from "@/components/dashboard/fold";
 import {
   SCOPE_GROUPS, SCOPE_LABEL, DEFAULT_TITLE, DEFAULT_MESSAGE,
   type MaintScope, type Maintenance,
@@ -52,13 +53,9 @@ export default function MaintenancePage() {
         subtitle="أغلق المنصّة كلّها أو قسماً بعينه — والمشرفون يمرّون دائماً"
       />
 
-      {/* ---------- المفتاح الكبير ---------- */}
-      <Card className={`mb-5 ${on ? "border-amber-500/50 bg-amber-500/[0.07]" : ""}`}>
+      <Fold className={`mb-5 ${on ? "border-amber-500/50 bg-amber-500/[0.07]" : ""}`} title="المفتاح الكبير" storageKey="maintenance.المفتاح الكبير" defaultOpen>
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="min-w-0">
-            <p className="font-display flex items-center gap-2 font-bold">
-              <Wrench className="size-4 text-primary" /> صيانة المنصّة كلّها
-            </p>
             <p className="mt-1 max-w-xl text-[11px] leading-relaxed text-muted-foreground">
               لوحُ صيانةٍ يحلّ محلَّ كلّ شيء لكلّ زائرٍ وطالب. والمشرفون يمرّون ويرون المنصّة
               كاملةً — صيانةٌ تحجب من يصلحها ليست صيانة — ويُنبَّهون بشريطٍ أعلى الصفحة.
@@ -76,11 +73,9 @@ export default function MaintenancePage() {
             {on ? "المنصّة مغلقة — أعِد فتحها" : "أغلق المنصّة للصيانة"}
           </button>
         </div>
-      </Card>
+      </Fold>
 
-      {/* ---------- الأقسام ---------- */}
-      <Card className="mb-5">
-        <p className="font-display mb-1 font-bold">صيانة قسمٍ بعينه</p>
+      <Fold className="mb-5" title="الأقسام" storageKey="maintenance.الأقسام">
         <p className="mb-4 text-[11px] leading-relaxed text-muted-foreground">
           القسمُ المختار وحدَه يُغلق ويبقى ما سواه يعمل — فلا تُغلق المنصّة من أجل جزءٍ منها.
           {on && " (إغلاقُ الكلّ يغلقها جميعاً الآن على أيّ حال.)"}
@@ -113,7 +108,7 @@ export default function MaintenancePage() {
             </div>
           ))}
         </div>
-      </Card>
+      </Fold>
 
       {/* ---------- النصّ ---------- */}
       <div className="grid gap-5 lg:grid-cols-2">

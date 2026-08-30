@@ -61,6 +61,7 @@ import {
 } from "@/lib/nav-styles";
 import { STUDENT_DESIGNS, findDesign, DEFAULT_DESIGN, type StudentDesign } from "@/lib/designs";
 import { HOME_LAYOUTS, findHomeLayout, DEFAULT_HOME_LAYOUT, type HomeLayout } from "@/lib/home-layouts";
+import { Fold } from "@/components/dashboard/fold";
 
 /** ألوان جاهزة تُستخدم في أكثر من منتقٍ. */
 const SWATCH = ["#233b8b", "#095e86", "#245c4b", "#87263a", "#8a6212", "#4a3570", "#1f5a5e", "#2b3140"];
@@ -642,9 +643,7 @@ export default function AppearancePage() {
 
       {tab === "design" && (
         <>
-          {/* ---------- ألوان الهيئة ---------- */}
-          <Card className="mb-5">
-            <p className="font-display mb-1 text-sm font-bold">ألوان الهيئة</p>
+          <Fold className="mb-5" title="ألوان الهيئة" storageKey="appearance.ألوان الهيئة" defaultOpen>
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               لوحُ الترحيب والبطاقات في بوابة الطالب يأخذان لونَهما من الهوية. ومن أرادهما
               أغمقَ أو أفتحَ لا يريد أن يُغيّر الهويةَ كلَّها من أجلهما — فلهما لونُهما هنا.
@@ -698,7 +697,7 @@ export default function AppearancePage() {
                 );
               })}
             </div>
-          </Card>
+          </Fold>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {STUDENT_DESIGNS.map((x) => {
@@ -1636,9 +1635,7 @@ export default function AppearancePage() {
             </p>
           </Card>
 
-          {/* ---------- ألوان الإطار ---------- */}
-          <Card className="mb-5">
-            <p className="font-display mb-1 text-sm font-bold">ألوان الإطار</p>
+          <Fold className="mb-5" title="ألوان الإطار" storageKey="appearance.ألوان الإطار">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               الشكلُ هيئةٌ واللونُ هوية — واللونُ المتروك يرث لون الثيم.
             </p>
@@ -1682,11 +1679,9 @@ export default function AppearancePage() {
                 </div>
               ))}
             </div>
-          </Card>
+          </Fold>
 
-          {/* ---------- ظلال العناصر ---------- */}
-          <Card className="mb-5">
-            <p className="font-display mb-1 text-sm font-bold">ظلال العناصر</p>
+          <Fold className="mb-5" title="ظلال العناصر" storageKey="appearance.ظلال العناصر">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               الظلُّ معلومةُ ارتفاعٍ لا زخرفة: يقول للعين أيُّ لوحٍ أقربُ إليها. وكلُّ ظلٍّ هنا
               طبقتان — قريبةٌ ترسم الحافّة وبعيدةٌ تعطي الارتفاع — ولونُه من لون النصّ لا أسودُ
@@ -1714,11 +1709,9 @@ export default function AppearancePage() {
             <p className="mt-3 text-[10px] text-muted-foreground">
               الحاليّ: {findShadow(content.shadowStyle).name} — {findShadow(content.shadowStyle).hint}
             </p>
-          </Card>
+          </Fold>
 
-          {/* ---------- الحركة الدائمة ---------- */}
-          <Card className="mb-5">
-            <p className="font-display mb-1 text-sm font-bold">الحركة الدائمة</p>
+          <Fold className="mb-5" title="الحركة الدائمة" storageKey="appearance.الحركة الدائمة">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               حركاتُ الدخول تقع مرّةً حين يظهر العنصر ثمّ تسكن الصفحةُ أبداً. وهذه لا تتوقّف ما
               دامت الصفحةُ مفتوحة. والتأخيرُ يُشتقّ من ترتيب اللوح فيتموّج المشهدُ ولا يخفق
@@ -1767,11 +1760,9 @@ export default function AppearancePage() {
                 الحاليّة: {findAmbient(content.ambient).name}
               </span>
             </div>
-          </Card>
+          </Fold>
 
-          {/* ---------- العمق الثلاثي ---------- */}
-          <Card className="mb-5">
-            <p className="font-display mb-1 text-sm font-bold">العمق الثلاثيّ في الصفحة</p>
+          <Fold className="mb-5" title="العمق الثلاثي" storageKey="appearance.العمق الثلاثي">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               كلُّ لوحٍ يميل نحو المؤشّر بحسب موضعه هو — والتفاوتُ بين الألواح هو ما تقرؤه
               العينُ مجسّماً، لا شدّةُ الميل. وعلى الهاتف يُقاد بميل الجهاز نفسِه. ومن ضبط
@@ -1802,13 +1793,9 @@ export default function AppearancePage() {
                 );
               })}
             </div>
-          </Card>
+          </Fold>
 
-          {/* ---------- مكتبة رسوم الموقع ---------- */}
-          <Card className="mb-4">
-            <p className="font-display mb-1 text-sm font-bold">
-              مكتبة الرسوم ({VECTOR_LIBS.length.toLocaleString("ar-EG")} مكتبة)
-            </p>
+          <Fold className="mb-4" title="مكتبة رسوم الموقع" storageKey="appearance.مكتبة رسوم الموقع">
             <p className="text-[11px] leading-relaxed text-muted-foreground">
               المكتبةُ المختارة تسري على رسوم المنصّة كلِّها — ترويساتُ الأقسام والحالاتُ
               الفارغةُ والبطاقاتُ معاً. و<b>ليست أربعين طقماً مرسوماً</b>: أربعون طقماً بيدٍ
@@ -1819,65 +1806,61 @@ export default function AppearancePage() {
               <b> خمسِ تشطيبات</b> (مسطّح · على قرص · بهالة · بظلّ · بحدّ). وهكذا تُبنى
               مكتباتُ الرسم أصلاً.
             </p>
-          </Card>
 
-          <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {VECTOR_LIBS.map((x) => {
-              const on = x.id === vecLib.id;
-              return (
-                <button
-                  key={x.id}
-                  type="button"
-                  onClick={() => pickVecLib(x)}
-                  disabled={busy !== null}
-                  className={`rounded-3xl border-2 p-3 text-right transition disabled:opacity-60 ${
-                    on ? "border-primary shadow-bento" : "border-border hover:border-primary/50"
-                  }`}
-                >
-                  {/*
-                    عيّنةٌ حيّةٌ بالمكتبة نفسِها لا وصفٌ لها.
-                    وأصنافُ المكتبة تُكتب على غلاف العيّنة وحدَها — فتُرى
-                    كلُّ بطاقةٍ بمكتبتها في الصفحة نفسِها قبل أن تُعتمد،
-                    ولا يُضطرّ الأستاذُ أن يجرّب أربعين ويعود.
-                  */}
-                  <div className={`mb-2.5 grid place-items-center rounded-2xl bg-muted/50 px-2 py-4 ${vectorLibClass(x)}`}>
-                    <ShariVector id={SHARI_VECTOR[1].id} size={64} />
-                  </div>
-                  <div className="flex items-center justify-between gap-2 px-1">
-                    <p className="min-w-0 truncate text-xs font-bold">{x.name}</p>
-                    {busy === `vl-${x.id}` ? (
-                      <Loader2 className="size-4 shrink-0 animate-spin text-primary" />
-                    ) : on ? (
-                      <span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary text-white">
-                        <Check className="size-3" />
-                      </span>
-                    ) : null}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* اللوحاتُ الستّ بالمكتبة المختارة — لتُرى مجتمعةً قبل الاعتماد */}
-          <Card className={`mb-8 ${vectorLibClass(vecLib)}`}>
-            <p className="font-display mb-3 text-sm font-bold">
-              رسوم «{vecLib.name}» ({SHARI_VECTOR.length.toLocaleString("ar-EG")} لوحات)
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-6">
-              {SHARI_VECTOR.map((v) => (
-                <div key={v.id} className="grid place-items-center gap-1.5">
-                  <ShariVector id={v.id} size={78} />
-                  <span className="text-[10px] text-muted-foreground">{v.name}</span>
-                </div>
-              ))}
+            <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {VECTOR_LIBS.map((x) => {
+                const on = x.id === vecLib.id;
+                return (
+                  <button
+                    key={x.id}
+                    type="button"
+                    onClick={() => pickVecLib(x)}
+                    disabled={busy !== null}
+                    className={`rounded-3xl border-2 p-3 text-right transition disabled:opacity-60 ${
+                      on ? "border-primary shadow-bento" : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    {/*
+                      عيّنةٌ حيّةٌ بالمكتبة نفسِها لا وصفٌ لها.
+                      وأصنافُ المكتبة تُكتب على غلاف العيّنة وحدَها — فتُرى
+                      كلُّ بطاقةٍ بمكتبتها في الصفحة نفسِها قبل أن تُعتمد،
+                      ولا يُضطرّ الأستاذُ أن يجرّب أربعين ويعود.
+                    */}
+                    <div className={`mb-2.5 grid place-items-center rounded-2xl bg-muted/50 px-2 py-4 ${vectorLibClass(x)}`}>
+                      <ShariVector id={SHARI_VECTOR[1].id} size={64} />
+                    </div>
+                    <div className="flex items-center justify-between gap-2 px-1">
+                      <p className="min-w-0 truncate text-xs font-bold">{x.name}</p>
+                      {busy === `vl-${x.id}` ? (
+                        <Loader2 className="size-4 shrink-0 animate-spin text-primary" />
+                      ) : on ? (
+                        <span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary text-white">
+                          <Check className="size-3" />
+                        </span>
+                      ) : null}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
-          </Card>
 
-          {/* ---------- مكتبة الأيقونات ---------- */}
-          <Card className="mb-4">
-            <p className="font-display mb-1 text-sm font-bold">
-              مكتبة الأيقونات ({ICON_LIBS.length.toLocaleString("ar-EG")} مكتبات)
-            </p>
+            {/* اللوحاتُ الستّ بالمكتبة المختارة — لتُرى مجتمعةً قبل الاعتماد */}
+            <Card className={`mb-8 ${vectorLibClass(vecLib)}`}>
+              <p className="font-display mb-3 text-sm font-bold">
+                رسوم «{vecLib.name}» ({SHARI_VECTOR.length.toLocaleString("ar-EG")} لوحات)
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-6">
+                {SHARI_VECTOR.map((v) => (
+                  <div key={v.id} className="grid place-items-center gap-1.5">
+                    <ShariVector id={v.id} size={78} />
+                    <span className="text-[10px] text-muted-foreground">{v.name}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </Fold>
+
+          <Fold className="mb-4" title="مكتبة الأيقونات" storageKey="appearance.مكتبة الأيقونات">
             <p className="text-[11px] leading-relaxed text-muted-foreground">
               المكتبةُ المختارة تسري على كلّ رمزٍ في المنصّة — القائمة الجانبية وشريط الهاتف
               ورأس اللوحة معاً. وثلاثُ هندساتٍ لا عشر: خطّيّةٌ ومصمتةٌ وكوفيّة، والمكتباتُ
@@ -1885,61 +1868,61 @@ export default function AppearancePage() {
               المعروفة أصلاً، هندسةٌ واحدة بأوزانٍ عدّة، لا عشرُ رسماتٍ للرمز الواحد فيختلّ
               اتّساقُ المجموعة.
             </p>
-          </Card>
 
-          <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {ICON_LIBS.map((x) => {
-              const on = x.id === iconLib.id;
-              return (
-                <button
-                  key={x.id}
-                  type="button"
-                  onClick={() => pickLib(x)}
-                  disabled={busy !== null}
-                  className={`rounded-3xl border-2 p-3 text-right transition disabled:opacity-60 ${
-                    on ? "border-primary shadow-bento" : "border-border hover:border-primary/50"
-                  }`}
-                >
-                  {/* عيّنةٌ من ثمانية رموزٍ بالمكتبة نفسِها — لا وصفٌ لها */}
-                  <div className="mb-2.5 flex flex-wrap items-center justify-center gap-3 rounded-2xl bg-muted/50 px-2 py-3 text-primary">
-                    {ICON_SLOTS.slice(0, 8).map((sl) => (
-                      <LibGlyph key={sl} lib={x} slot={sl} className="size-5" />
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between gap-2 px-1">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-bold">{x.name}</p>
-                      <p className="truncate text-[10px] text-muted-foreground">{x.hint}</p>
+            <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {ICON_LIBS.map((x) => {
+                const on = x.id === iconLib.id;
+                return (
+                  <button
+                    key={x.id}
+                    type="button"
+                    onClick={() => pickLib(x)}
+                    disabled={busy !== null}
+                    className={`rounded-3xl border-2 p-3 text-right transition disabled:opacity-60 ${
+                      on ? "border-primary shadow-bento" : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    {/* عيّنةٌ من ثمانية رموزٍ بالمكتبة نفسِها — لا وصفٌ لها */}
+                    <div className="mb-2.5 flex flex-wrap items-center justify-center gap-3 rounded-2xl bg-muted/50 px-2 py-3 text-primary">
+                      {ICON_SLOTS.slice(0, 8).map((sl) => (
+                        <LibGlyph key={sl} lib={x} slot={sl} className="size-5" />
+                      ))}
                     </div>
-                    {busy === `il-${x.id}` ? (
-                      <Loader2 className="size-4 shrink-0 animate-spin text-primary" />
-                    ) : on ? (
-                      <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary text-white">
-                        <Check className="size-3.5" />
-                      </span>
-                    ) : null}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* كلُّ خانات المكتبة المختارة — لتُرى قبل أن تُعتمد */}
-          <Card className="mb-8">
-            <p className="font-display mb-3 text-sm font-bold">
-              خانات «{iconLib.name}» ({ICON_SLOTS.length.toLocaleString("ar-EG")} رمزاً)
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {ICON_SLOTS.map((sl) => (
-                <span
-                  key={sl}
-                  className="grid size-11 place-items-center rounded-2xl border border-border text-primary"
-                >
-                  <LibGlyph lib={iconLib} slot={sl} className="size-5" />
-                </span>
-              ))}
+                    <div className="flex items-center justify-between gap-2 px-1">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold">{x.name}</p>
+                        <p className="truncate text-[10px] text-muted-foreground">{x.hint}</p>
+                      </div>
+                      {busy === `il-${x.id}` ? (
+                        <Loader2 className="size-4 shrink-0 animate-spin text-primary" />
+                      ) : on ? (
+                        <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary text-white">
+                          <Check className="size-3.5" />
+                        </span>
+                      ) : null}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
-          </Card>
+
+            {/* كلُّ خانات المكتبة المختارة — لتُرى قبل أن تُعتمد */}
+            <Card className="mb-8">
+              <p className="font-display mb-3 text-sm font-bold">
+                خانات «{iconLib.name}» ({ICON_SLOTS.length.toLocaleString("ar-EG")} رمزاً)
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {ICON_SLOTS.map((sl) => (
+                  <span
+                    key={sl}
+                    className="grid size-11 place-items-center rounded-2xl border border-border text-primary"
+                  >
+                    <LibGlyph lib={iconLib} slot={sl} className="size-5" />
+                  </span>
+                ))}
+              </div>
+            </Card>
+          </Fold>
 
           {/* ---------- ٢٠ إطاراً ---------- */}
           <p className="font-display mb-3 font-bold">الإطار ({ICON_FRAMES.length.toLocaleString("ar-EG")})</p>
@@ -1975,95 +1958,87 @@ export default function AppearancePage() {
             })}
           </div>
 
-          {/* ---------- ٢٠ غلافاً ---------- */}
-          <Card className="mb-4 mt-8">
-            <p className="font-display mb-1 text-sm font-bold">
-              غلاف الأيقونة ({ICON_COVERS.length.toLocaleString("ar-EG")})
-            </p>
+          <Fold className="mb-4 mt-8" title="٢٠ غلافاً" storageKey="appearance.٢٠ غلافاً">
             <p className="text-[11px] leading-relaxed text-muted-foreground">
               الإطارُ يحكم اللوحَ تحت الأيقونة، والغلافُ يحكم ما حوله: حلقةٌ تحيطه، أو هالةٌ
               تتسرّب من خلفه، أو نقشٌ يملؤه، أو شارةٌ على حافّته. ومحوران لا يتداخلان فيُركَّب
               أيُّ غلافٍ على أيّ إطار.
             </p>
-          </Card>
 
-          <div className="mb-8 grid gap-3 grid-cols-2 sm:grid-cols-4 lg:grid-cols-5">
-            {ICON_COVERS.map((x) => {
-              const on = x.id === iconCover.id;
-              return (
-                <button
-                  key={x.id}
-                  type="button"
-                  onClick={() => pickCover(x)}
-                  disabled={busy !== null}
-                  className={`rounded-3xl border-2 p-2 text-right transition disabled:opacity-60 ${
-                    on ? "border-primary shadow-bento" : "border-border hover:border-primary/50"
-                  }`}
-                >
-                  <IconFramePreview frame={iconFrame} cover={x} colors={icColors} />
-                  <div className="flex items-center justify-between gap-2 px-1 pb-0.5 pt-2">
-                    <div className="min-w-0">
-                      <p className="truncate text-xs font-bold">{x.name}</p>
-                      <p className="truncate text-[10px] text-muted-foreground">{x.hint}</p>
+            <div className="mb-8 grid gap-3 grid-cols-2 sm:grid-cols-4 lg:grid-cols-5">
+              {ICON_COVERS.map((x) => {
+                const on = x.id === iconCover.id;
+                return (
+                  <button
+                    key={x.id}
+                    type="button"
+                    onClick={() => pickCover(x)}
+                    disabled={busy !== null}
+                    className={`rounded-3xl border-2 p-2 text-right transition disabled:opacity-60 ${
+                      on ? "border-primary shadow-bento" : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <IconFramePreview frame={iconFrame} cover={x} colors={icColors} />
+                    <div className="flex items-center justify-between gap-2 px-1 pb-0.5 pt-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-bold">{x.name}</p>
+                        <p className="truncate text-[10px] text-muted-foreground">{x.hint}</p>
+                      </div>
+                      {busy === `iv-${x.id}` ? (
+                        <Loader2 className="size-4 shrink-0 animate-spin text-primary" />
+                      ) : on ? (
+                        <span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary text-white">
+                          <Check className="size-3" />
+                        </span>
+                      ) : null}
                     </div>
-                    {busy === `iv-${x.id}` ? (
-                      <Loader2 className="size-4 shrink-0 animate-spin text-primary" />
-                    ) : on ? (
-                      <span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary text-white">
-                        <Check className="size-3" />
-                      </span>
-                    ) : null}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+                  </button>
+                );
+              })}
+            </div>
+          </Fold>
 
-          {/* ---------- ٤٠ حركة ---------- */}
-          <Card className="mb-4">
-            <p className="font-display mb-1 text-sm font-bold">
-              الحركة ({ICON_MOTIONS.length.toLocaleString("ar-EG")} نوعاً)
-            </p>
+          <Fold className="mb-4" title="٤٠ حركة" storageKey="appearance.٤٠ حركة">
             <p className="text-[11px] leading-relaxed text-muted-foreground">
               تُختار واحدةٌ فتسري على أيقونات المنصّة كلِّها — لأنّ الحركة لغةٌ لا زينة، وصفحةٌ كلُّ
               أيقونةٍ فيها تتحرّك حركةً مختلفة تقول ضجيجاً لا معنى. و«عند المرور» تنتظر اليد فتردّ
               عليها، وهي الأنسب للوحة. والمعاينةُ هنا حيّةٌ بالأصناف نفسِها.
             </p>
-          </Card>
 
-          <div className="grid gap-3 grid-cols-2 sm:grid-cols-4 lg:grid-cols-5">
-            {ICON_MOTIONS.map((x) => {
-              const on = x.id === iconMotion.id;
-              return (
-                <button
-                  key={x.id}
-                  type="button"
-                  onClick={() => pickIconMotion(x)}
-                  disabled={busy !== null}
-                  className={`rounded-3xl border-2 p-2 text-right transition disabled:opacity-60 ${
-                    on ? "border-primary shadow-bento" : "border-border hover:border-primary/50"
-                  }`}
-                >
-                  <IconFramePreview frame={iconFrame} cover={iconCover} motion={x} colors={icColors} />
-                  <div className="flex items-center justify-between gap-2 px-1 pb-0.5 pt-2">
-                    <div className="min-w-0">
-                      <p className="truncate text-xs font-bold">{x.name}</p>
-                      <p className="truncate text-[10px] text-muted-foreground">
-                        {x.trigger === "hover" ? "عند المرور" : "دائمة"}
-                      </p>
+            <div className="grid gap-3 grid-cols-2 sm:grid-cols-4 lg:grid-cols-5">
+              {ICON_MOTIONS.map((x) => {
+                const on = x.id === iconMotion.id;
+                return (
+                  <button
+                    key={x.id}
+                    type="button"
+                    onClick={() => pickIconMotion(x)}
+                    disabled={busy !== null}
+                    className={`rounded-3xl border-2 p-2 text-right transition disabled:opacity-60 ${
+                      on ? "border-primary shadow-bento" : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <IconFramePreview frame={iconFrame} cover={iconCover} motion={x} colors={icColors} />
+                    <div className="flex items-center justify-between gap-2 px-1 pb-0.5 pt-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-bold">{x.name}</p>
+                        <p className="truncate text-[10px] text-muted-foreground">
+                          {x.trigger === "hover" ? "عند المرور" : "دائمة"}
+                        </p>
+                      </div>
+                      {busy === `im-${x.id}` ? (
+                        <Loader2 className="size-4 shrink-0 animate-spin text-primary" />
+                      ) : on ? (
+                        <span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary text-white">
+                          <Check className="size-3" />
+                        </span>
+                      ) : null}
                     </div>
-                    {busy === `im-${x.id}` ? (
-                      <Loader2 className="size-4 shrink-0 animate-spin text-primary" />
-                    ) : on ? (
-                      <span className="grid size-5 shrink-0 place-items-center rounded-full bg-primary text-white">
-                        <Check className="size-3" />
-                      </span>
-                    ) : null}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+                  </button>
+                );
+              })}
+            </div>
+          </Fold>
         </>
       )}
 
