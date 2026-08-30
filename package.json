@@ -7,7 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "verify": "esbuild scripts/verify-wiring.mjs --bundle --platform=node --format=esm --outfile=node_modules/.cache/verify.mjs --log-level=error && node node_modules/.cache/verify.mjs"
   },
   "dependencies": {
     "framer-motion": "^11.11.17",
@@ -24,6 +25,7 @@
     "@types/react-dom": "^19.0.2",
     "@types/web-push": "^3.6.4",
     "autoprefixer": "^10.4.20",
+    "esbuild": "^0.28.2",
     "imagetracerjs": "^1.2.6",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
