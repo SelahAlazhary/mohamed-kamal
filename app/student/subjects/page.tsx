@@ -8,7 +8,7 @@ import {
   IconPlay, IconBook, IconArrowLeft, IconLock, IconCart, IconClose,
   IconKey, IconSpinner, IconCheckCircle, IconGraduation, IconCalendar, IconCheck, IconSparkle,
 } from "@/components/brand/icons";
-import { CornerKnot, RuleOrnament } from "@/components/brand/pattern";
+import { RuleOrnament } from "@/components/brand/pattern";
 import { CourseArt } from "@/components/brand/course-art";
 import { PageHeader, Card, Progress } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
@@ -149,7 +149,6 @@ export default function MySubjects() {
           return (
             <motion.div key={c.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
               <Card className="group relative flex h-full flex-col overflow-hidden !p-4">
-                <CornerKnot size={64} className="pointer-events-none absolute left-0 top-0 -scale-x-100 text-primary/25" />
 
                 {/* لوحة الغلاف — SVG بالكامل (زخرفة مولّدة من معرّف الكورس بلا صورة) */}
                 <div className="relative overflow-hidden rounded-2xl">

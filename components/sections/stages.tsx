@@ -11,7 +11,7 @@
  */
 import { motion } from "framer-motion";
 import { SectionHeading, Reveal } from "@/components/ui/primitives";
-import { ArchTile, CornerKnot, ElegantRule } from "@/components/brand/pattern";
+import { ArchTile, ElegantRule } from "@/components/brand/pattern";
 import { useContent } from "@/components/content/content-provider";
 import { mediaSrc } from "@/lib/media";
 import { findSectionStyle, sectionClass, sxGridClass } from "@/lib/section-styles";
@@ -71,7 +71,6 @@ export function Stages() {
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 className={`sx-card group relative h-full overflow-hidden rounded-4xl p-7 ${brand}`}
               >
-                <CornerKnot size={72} className="sx-knot pointer-events-none absolute right-0 top-0 text-accent/40" />
 
                 {/* ترويسة اللوح */}
                 <div className="relative flex items-start gap-4">

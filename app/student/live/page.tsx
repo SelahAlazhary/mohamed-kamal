@@ -14,7 +14,6 @@ import {
   IconRadio, IconPlay, IconCalendar, IconBell, IconLock, IconShield,
   IconGift, IconClock, IconArrowLeft,
 } from "@/components/brand/icons";
-import { CornerKnot } from "@/components/brand/pattern";
 import { PageHeader, Card, StatusBadge } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
 import { liveVisible } from "@/lib/access";
@@ -99,7 +98,6 @@ export default function StudentLivePage() {
       {/* ---------- بطاقة الصدارة ---------- */}
       {featured && (
         <Card className="relative mb-6 overflow-hidden !p-4 sm:!p-5">
-          <CornerKnot size={64} className="pointer-events-none absolute left-0 top-0 -scale-x-100 text-primary/25" />
           <div className="relative grid gap-5 md:grid-cols-[1.5fr_1fr]">
             {/* المسرح — قابل للضغط كاملاً عند توفّر الرابط */}
             <FeaturedStage

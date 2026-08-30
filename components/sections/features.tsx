@@ -10,7 +10,7 @@ import { SectionHeading, Reveal } from "@/components/ui/primitives";
 import { useContent } from "@/components/content/content-provider";
 import { findSectionStyle, sectionClass, sxGridClass } from "@/lib/section-styles";
 import { featureIcon } from "@/components/brand/icons";
-import { ArchTile, CornerKnot } from "@/components/brand/pattern";
+import { ArchTile } from "@/components/brand/pattern";
 
 /** رقم عربي-هندي (١٢٣) لهوية أدقّ. */
 const ar = (n: number) => n.toLocaleString("ar-EG");
@@ -54,10 +54,6 @@ export function Features() {
                   className={`sx-card group relative h-full overflow-hidden rounded-4xl p-6 ${brand}`}
                 >
                   {/* منمنمة الزاوية */}
-                  <CornerKnot
-                    size={64}
-                    className="sx-knot pointer-events-none absolute right-0 top-0 text-accent/45 transition-opacity group-hover:opacity-90"
-                  />
 
                   {/*
                     لوحُ الرقم.

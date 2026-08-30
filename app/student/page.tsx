@@ -17,7 +17,7 @@ import {
   IconPlay, IconClipboardCheck, IconRadio, IconArrowLeft, IconClock,
   IconCalendar, IconLayers, IconBook, IconChart,
 } from "@/components/brand/icons";
-import { CornerKnot, Shamsa, ElegantRule } from "@/components/brand/pattern";
+import { Shamsa, ElegantRule } from "@/components/brand/pattern";
 import { CourseArt } from "@/components/brand/course-art";
 import { StatTile } from "@/components/brand/stat-tile";
 import { StudentHomeSkeleton } from "@/components/ui/skeleton";
@@ -354,7 +354,6 @@ export default function StudentHome() {
           <motion.div key={c.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
             <Link href={`/student/course/${c.id}`} className="group block">
               <Card className="course-card relative flex gap-4 overflow-hidden !p-4 transition hover:border-accent/50">
-                <CornerKnot size={52} className="pointer-events-none absolute left-0 top-0 -scale-x-100 text-accent/35" />
                 {/* لوحة مصغّرة من نفس نظام أغلفة الكورسات */}
                 <span className="relative w-28 shrink-0 overflow-hidden rounded-2xl sm:w-32">
                   <CourseArt
