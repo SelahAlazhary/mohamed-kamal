@@ -31,6 +31,7 @@ import { findDesign, shapeStyle } from "@/lib/designs";
 import { EdgeArtLayer } from "@/components/brand/edge-art";
 import { subjectActive, activeSubs, daysLeft } from "@/lib/access";
 import { MotionMark } from "@/components/brand/motion-mark";
+import { ShariAnim } from "@/components/brand/shari-art";
 
 const ar = (n: number) => n.toLocaleString("ar-EG");
 
@@ -81,13 +82,13 @@ export default function StudentHome() {
                   : "sm:grid-cols-3"                                // صفّ متساوٍ
           }`}
         >
-          <StatTile index={0} ring={avg} label="متوسّط تقدّمك" icon={<MotionMark id="focus" size={30} />} className={tileCls} shape={shapeStyle(D.tile)} tone={statsTone} />
+          <StatTile index={0} ring={avg} label="متوسّط تقدّمك" icon={<ShariAnim id="capStarsAnim" size={36} framed={false} />} className={tileCls} shape={shapeStyle(D.tile)} tone={statsTone} />
           <StatTile
             index={1}
             value={ar(courses.length)}
             unit={courses.length === 1 ? "كورس" : "كورسات"}
             label="كورساتك"
-            icon={<MotionMark id="shRihal" size={30} />}
+            icon={<ShariAnim id="booksCapAnim" size={36} framed={false} />}
             className={tileCls}
             shape={shapeStyle(D.tile)}
             tone={statsTone}
@@ -95,7 +96,7 @@ export default function StudentHome() {
           {/* الاشتراك الساري — يعرض ما تبقّى حتى الانتهاء */}
           <StatTile
             index={2}
-            icon={<MotionMark id="shIjaza" size={30} />}
+            icon={<ShariAnim id="capBookAnim" size={36} framed={false} />}
             badge={subs.length > 1 ? `${ar(subs.length)} اشتراكات` : undefined}
             value={
               subs.length === 0 ? "—" : permanent && !expiring ? "دائم" : ar(expiring?.left ?? 0)

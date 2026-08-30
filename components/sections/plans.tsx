@@ -259,7 +259,7 @@ export function Plans() {
     <section id="plans" className={`relative py-24 ${plansClass(PS)}`}>
       <div className="container">
         <SectionHeading
-        anim="domeAnim"
+        anim="capStarsAnim"
           eyebrow={sec.eyebrow || "الخطط"}
           title={(() => {
             /* العنوان يأتي كاملاً من اللوحة؛ نُبرز كلمته الأخيرة فقط.

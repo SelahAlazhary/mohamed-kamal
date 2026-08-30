@@ -33,7 +33,7 @@ export function Features() {
 
       <div className="container">
         <SectionHeading
-        anim="quranAnim"
+        anim="capOpenBookAnim"
           eyebrow="لماذا نحن"
           title={
             <>

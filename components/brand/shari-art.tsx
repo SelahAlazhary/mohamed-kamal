@@ -54,6 +54,15 @@ export const SHARI_ANIM = [
   { id: "mosqueAnim", name: "المسجد" },
   { id: "domeAnim", name: "القبّة والهلال" },
   { id: "quranAnim", name: "المصحف المفتوح" },
+  { id: "bookAnim", name: "الكتاب المفتوح" },
+  { id: "capAnim", name: "قبّعة التخرّج" },
+  { id: "checklistAnim", name: "قائمة الإنجاز" },
+  { id: "notepadAnim", name: "الدفتر والقلم" },
+  { id: "capBookAnim", name: "القبّعة والكتاب" },
+  { id: "onlineClassAnim", name: "الدرس المباشر" },
+  { id: "booksCapAnim", name: "الكتب والقبّعة" },
+  { id: "capStarsAnim", name: "قبّعة التميّز" },
+  { id: "capOpenBookAnim", name: "القبّعة والمصحف" },
 ] as const;
 
 export type ShariAnimId = (typeof SHARI_ANIM)[number]["id"];

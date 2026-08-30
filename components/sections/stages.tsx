@@ -53,7 +53,7 @@ export function Stages() {
 
       <div className="container">
         <SectionHeading
-        anim="mosqueAnim"
+        anim="onlineClassAnim"
           eyebrow="المراحل"
           title={
             <>
