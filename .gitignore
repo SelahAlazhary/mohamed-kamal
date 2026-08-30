@@ -34,3 +34,8 @@ firebase-debug.log
 # ملف عميل جوجل
 google-client.json
 google-oauth.txt
+
+# ملفّاتُ معاينةٍ مؤقّتة
+_srv.js
+_sheet.html
+_*.mjs
