@@ -276,8 +276,21 @@ export function DashboardShell({
       {/* هالة خلفية خفيفة */}
       <div className="ambient-mesh pointer-events-none fixed inset-0 -z-10 opacity-30" />
 
-      {/* Sidebar سطح المكتب */}
-      <aside className="fixed inset-y-0 right-0 z-40 hidden w-64 flex-col gap-5 overflow-y-auto overscroll-contain border-l border-border bg-card/40 p-5 backdrop-blur-xl lg:flex">
+      {/*
+        القائمةُ الجانبية — لوحٌ عائمٌ لا عمودٌ ملتصقٌ بالحافّة.
+        ------------------------------------------------------------
+        كانت تمتدّ من أعلى الشاشة إلى أسفلها بحدٍّ يفصلها عن المتن —
+        فتبدو جزءاً من إطار المتصفّح لا لوحاً في الصفحة. وصارت تطفو:
+        هامشٌ يحيط بها من الجهات الأربع، وحوافُّ نصفُ دائريّة، وظلٌّ
+        يرفعها عن السطح.
+
+        وبيضاءُ مصمتةٌ لا شفّافة: الشفافيةُ تُظهر ما يمرّ تحتها عند
+        التمرير فتضطرب حروفُها، والأبيضُ يفصلها عن ورق الصفحة الدافئ
+        فتُقرأ حدودُها بلا خطٍّ يرسمها.
+
+        و`inset-y-3` مع `h-auto`: الارتفاعُ يتبع الهامشَ فلا تلمس الحافّة.
+      */}
+      <aside className="fixed inset-y-3 right-3 z-40 hidden w-64 flex-col gap-5 overflow-y-auto overscroll-contain rounded-[1.75rem] border border-border/70 bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,.06),0_12px_32px_-12px_rgba(16,24,40,.22)] lg:flex dark:bg-card">
         {/* تبليط كوفي خافت داخل لوح الحبر */}
         <div className="relative">
           <Brand role={role} />
@@ -317,7 +330,8 @@ export function DashboardShell({
       </AnimatePresence>
 
       {/* المحتوى */}
-      <div className="app-body lg:pr-64">
+      {/* المتنُ يترك عرضَ اللوح وهامشَيه — وإلّا مرّ تحته */}
+      <div className="app-body lg:pr-[17.5rem]">
         {/* Topbar */}
         <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-border bg-background/80 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-xl sm:px-6">
           <button onClick={() => setOpen(true)} aria-label="القائمة" className={`grid size-11 shrink-0 place-items-center rounded-full border border-border lg:hidden ${role === "student" ? "hidden" : ""}`}>

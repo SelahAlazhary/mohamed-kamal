@@ -16,7 +16,7 @@ import { Wrench, Power, Loader2, Check, Eye } from "lucide-react";
 import { PageHeader, Card } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
 import { MaintenancePanel } from "@/components/brand/maintenance";
-import { Fold } from "@/components/dashboard/fold";
+import { Section } from "@/components/dashboard/section";
 import {
   SCOPE_GROUPS, SCOPE_LABEL, DEFAULT_TITLE, DEFAULT_MESSAGE,
   type MaintScope, type Maintenance,
@@ -53,7 +53,7 @@ export default function MaintenancePage() {
         subtitle="أغلق المنصّة كلّها أو قسماً بعينه — والمشرفون يمرّون دائماً"
       />
 
-      <Fold className={`mb-5 ${on ? "border-amber-500/50 bg-amber-500/[0.07]" : ""}`} title="المفتاح الكبير" storageKey="maintenance.المفتاح الكبير" defaultOpen>
+      <Section className={`mb-5 ${on ? "border-amber-500/50 bg-amber-500/[0.07]" : ""}`} title="المفتاح الكبير">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="mt-1 max-w-xl text-[11px] leading-relaxed text-muted-foreground">
@@ -73,9 +73,9 @@ export default function MaintenancePage() {
             {on ? "المنصّة مغلقة — أعِد فتحها" : "أغلق المنصّة للصيانة"}
           </button>
         </div>
-      </Fold>
+      </Section>
 
-      <Fold className="mb-5" title="الأقسام" storageKey="maintenance.الأقسام">
+      <Section className="mb-5" title="الأقسام">
         <p className="mb-4 text-[11px] leading-relaxed text-muted-foreground">
           القسمُ المختار وحدَه يُغلق ويبقى ما سواه يعمل — فلا تُغلق المنصّة من أجل جزءٍ منها.
           {on && " (إغلاقُ الكلّ يغلقها جميعاً الآن على أيّ حال.)"}
@@ -108,7 +108,7 @@ export default function MaintenancePage() {
             </div>
           ))}
         </div>
-      </Fold>
+      </Section>
 
       {/* ---------- النصّ ---------- */}
       <div className="grid gap-5 lg:grid-cols-2">

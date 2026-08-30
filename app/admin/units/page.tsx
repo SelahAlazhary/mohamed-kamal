@@ -22,7 +22,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { PageHeader, Card } from "@/components/dashboard/ui";
 import { Button } from "@/components/ui/primitives";
-import { Fold } from "@/components/dashboard/fold";
+import { Section } from "@/components/dashboard/section";
 import { useContent } from "@/components/content/content-provider";
 import { courseUnits, LEGACY_UNIT_ID, lessonCount } from "@/lib/course-units";
 import type { Subject, Unit } from "@/lib/types";
@@ -150,12 +150,11 @@ export default function AdminUnits() {
             const units = courseUnits(course);
             const split = Boolean(course.units?.length);
             return (
-              <Fold
+              <Section
                 key={course.id}
                 title={course.name}
                 subtitle={`${course.grade} · ${split ? `${ar(units.length)} مادّة` : "غير مقسَّم"} · ${ar(lessonCount(course))} درساً`}
                 count={units.length}
-                storageKey={`units.${course.id}`}
                 actions={
                   <>
                     <Button className="px-3 py-1.5 text-[11px]" onClick={() => addUnit(course)}>
@@ -215,7 +214,7 @@ export default function AdminUnits() {
                     </div>
                   ))}
                 </div>
-              </Fold>
+              </Section>
             );
           })}
         </div>

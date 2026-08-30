@@ -9,7 +9,7 @@ import { useContent } from "@/components/content/content-provider";
 import { Button } from "@/components/ui/primitives";
 import { SUPPORT_KINDS, supportHref } from "@/lib/support";
 import type { Ticket, SupportLink } from "@/lib/types";
-import { Fold } from "@/components/dashboard/fold";
+import { Section } from "@/components/dashboard/section";
 
 const priorityColor: Record<string, string> = { عالية: "text-rose-500", متوسطة: "text-amber-500", منخفضة: "text-sky-500" };
 const cycle: Record<Ticket["status"], Ticket["status"]> = { "مفتوحة": "قيد المعالجة", "قيد المعالجة": "مغلقة", "مغلقة": "مفتوحة" };
@@ -63,7 +63,7 @@ export default function SupportPage() {
       <PageHeader title="الدعم" subtitle="روابط التواصل التي تظهر للطالب + تذاكر الدعم" />
 
       {/* ---------- روابط الدعم ---------- */}
-      <Fold className="mb-6" title={<><Link2 className="size-5 text-primary" /> روابط الدعم</>} storageKey="support.1" defaultOpen>
+      <Section className="mb-6" title={<><Link2 className="size-5 text-primary" /> روابط الدعم</>}>
         <p className="mb-4 text-xs text-muted-foreground">تظهر للطالب في صفحة «المساعدة» — عدّلها متى شئت وتُحفظ فور الخروج من الحقل.</p>
 
         <div className="grid gap-3 sm:grid-cols-3">
@@ -138,7 +138,7 @@ export default function SupportPage() {
             <Button className="px-5 py-2.5" onClick={addLink}><Plus className="size-4" /> إضافة</Button>
           </div>
         </div>
-      </Fold>
+      </Section>
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
         <StatCard index={0} label="تذاكر مفتوحة" value={open} tone="primary" icon={<LifeBuoy className="size-5" />} />

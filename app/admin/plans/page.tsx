@@ -5,9 +5,10 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Plus, Trash2, Pencil, X, Check, Eye, EyeOff, Layers, BookOpen, CalendarClock, Sparkles, Star,
-  Percent, Palette, Tag, Image as ImageIcon,
+  Percent, Palette, Tag, Image as ImageIcon, FileText, Wallet, Users,
 } from "lucide-react";
 import { PageHeader, Card } from "@/components/dashboard/ui";
+import { Section } from "@/components/dashboard/section";
 import { Button } from "@/components/ui/primitives";
 import { TRACKS, STAGES, EDU_SYSTEMS, SCIENCE_BRANCHES, TRACK_STAGE, BRANCH_TRACK, AZHAR } from "@/lib/data";
 import { useContent } from "@/components/content/content-provider";
@@ -190,6 +191,7 @@ export default function PlansPage() {
             <h3 className="font-display font-extrabold">{editing ? "تعديل الخطة" : "خطة جديدة"}</h3>
             <button onClick={() => { setOpen(false); setEditing(null); }} className="grid size-8 place-items-center rounded-full border border-border"><X className="size-4" /></button>
           </div>
+          <Section title="تعريف الخطة" subtitle="اسمها ونوعها وما تفتحه للطالب" icon={<FileText className="size-4" />} className="mb-4">
           <div className="grid gap-3 sm:grid-cols-3">
             <label className="sm:col-span-2"><span className="lbl">اسم الخطة</span>
               <input className="inp" value={f.name} onChange={(e) => set({ name: e.target.value })} placeholder="مثال: الترم الكامل — كل المواد" />
@@ -264,7 +266,12 @@ export default function PlansPage() {
                 </select>
               </label>
             )}
-                        {/*
+                      </div>
+          </Section>
+
+          <Section title="السعر ومدّة التفعيل" subtitle="كم تُكلّف الخطّة ومتى ينتهي ما تفتحه" icon={<Wallet className="size-4" />} className="mb-4">
+          <div className="grid gap-3 sm:grid-cols-3">
+            {/*
               السعرُ يُكتب هنا وحدَه.
               كان يُكتب في الكورس وفي المادّة وهنا، فيصير للشيء الواحد
               سعران لا يُعرف أيُّهما يُحصَّل ولا أيُّهما يُعدَّل — وهو ما لا
@@ -287,6 +294,11 @@ export default function PlansPage() {
                 <input type="number" className="inp" value={f.durationDays} onChange={(e) => set({ durationDays: Number(e.target.value) })} />
               </label>
             )}
+          </div>
+          </Section>
+
+          <Section title="العرض على الصفحة" subtitle="ما يقرؤه الطالبُ على بطاقتها وترتيبُها بين الخطط" icon={<Eye className="size-4" />} className="mb-4">
+          <div className="grid gap-3 sm:grid-cols-3">
             <label><span className="lbl">شارة (اختياري)</span>
               <input className="inp" value={f.badge} onChange={(e) => set({ badge: e.target.value })} placeholder="الأوفر" />
             </label>
@@ -299,6 +311,11 @@ export default function PlansPage() {
             <label><span className="lbl">نص الزر (اختياري)</span>
               <input className="inp" value={f.cta} onChange={(e) => set({ cta: e.target.value })} placeholder="اشترك الآن" />
             </label>
+          </div>
+          </Section>
+
+          <Section title="لمن تظهر" subtitle="تُضيَّق بمرحلة الطالب وصفّه وشعبته — والمتروك «الكل» لا يُضيّق شيئاً" icon={<Users className="size-4" />} className="mb-4">
+          <div className="grid gap-3 sm:grid-cols-3">
             {/*
               فئة الخطة — لمن تظهر بحسب بيانات تسجيله.
               كل حقل «الكل» لا يُضيّق شيئاً، فالخطة العامّة لا تحتاج ضبطاً،
@@ -443,6 +460,11 @@ export default function PlansPage() {
               </span>
             </label>
 
+          </div>
+          </Section>
+
+          <Section title="الشكل والخصم" subtitle="لون البطاقة وصورتها وعرض التخفيض" icon={<Palette className="size-4" />} className="mb-4">
+          <div className="grid gap-3 sm:grid-cols-3">
             {/* لون الخطة */}
             <div className="sm:col-span-3">
               <span className="lbl"><Palette className="inline size-3.5" /> لون الخطة</span>
@@ -601,6 +623,11 @@ export default function PlansPage() {
               )}
             </div>
 
+          </div>
+          </Section>
+
+          <Section title="المزايا والنشر" subtitle="ما يُكتب داخل البطاقة، ثمّ إظهارها للطلاب" icon={<Check className="size-4" />} className="mb-4">
+          <div className="grid gap-3 sm:grid-cols-3">
             <label className="sm:col-span-3"><span className="lbl">المزايا (سطر لكل ميزة)</span>
               <textarea rows={4} className="inp" value={f.perks} onChange={(e) => set({ perks: e.target.value })} placeholder="كل الدروس والملفات" />
             </label>
@@ -612,9 +639,19 @@ export default function PlansPage() {
               <input type="checkbox" checked={f.highlight} onChange={(e) => set({ highlight: e.target.checked })} className="size-4 accent-[hsl(var(--primary))]" />
               <span className="text-sm text-muted-foreground">إبرازها (الأكثر طلباً)</span>
             </label>
-            <div className="flex items-end">
-              <Button className="w-full px-5 py-2.5" onClick={commit}><Check className="size-4" /> {editing ? "حفظ التعديل" : "حفظ الخطة"}</Button>
-            </div>
+          </div>
+          </Section>
+
+          {/*
+            زرُّ الحفظ خارج الأقسام لا داخل آخرها.
+            الأقسامُ ستّة، وزرٌّ في آخرها يعني أنّ من عدّل السعرَ في الثاني
+            يمرّ على أربعةٍ لا شأنَ له بها ليحفظ.
+          */}
+          <div className="flex flex-wrap items-center gap-3 border-t border-border pt-4">
+            <Button className="px-6 py-2.5" onClick={commit}><Check className="size-4" /> {editing ? "حفظ التعديل" : "حفظ الخطة"}</Button>
+            <p className="text-xs text-muted-foreground">
+              اللازمُ الاسمُ والنطاقُ والسعر — وما بعدها له افتراضٌ صالح.
+            </p>
           </div>
         </Card>
       )}

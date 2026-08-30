@@ -17,7 +17,7 @@ import { CoverTextEditor } from "@/components/admin/cover-text-editor";
 import { CoverStickersEditor } from "@/components/admin/cover-stickers-editor";
 import type { Lesson, Material, Subject, Quiz, QuizQuestion, ImageFit, CoverPattern, CoverText, CoverSticker, Unit } from "@/lib/types";
 import { mediaSrc } from "@/lib/media";
-import { Fold } from "@/components/dashboard/fold";
+import { Section } from "@/components/dashboard/section";
 
 /** ألوان خلفية جاهزة للوحة الغلاف — من عائلة هوية المخطوط. */
 const COVER_COLORS: { hex: string; label: string }[] = [
@@ -245,7 +245,7 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
       */}
       <p className="font-kufi mb-2 mt-2 text-[11px] font-bold text-muted-foreground">تصميم البطاقة</p>
       {/* غلاف الكورس */}
-      <Fold className="mb-6" title={<><ImageIcon className="size-5 text-primary" /> غلاف الكورس</>} storageKey="course.cover">
+      <Section className="mb-6" title={<><ImageIcon className="size-5 text-primary" /> غلاف الكورس</>}>
         <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
           مقاس البطاقة ثابت ولا يتمدّد. عند التكبير ١٠٠٪ تظهر صورتك <b>كاملة</b>؛ ولو أردت ملء الإطار
           كبّرها وحرّكها بنفسك — ما يخرج عن الإطار يُقصّ بإرادتك أنت لا تلقائياً.
@@ -390,25 +390,25 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
             </div>
           )}
         </div>
-      </Fold>
+      </Section>
 
       {/* نصّ على الغلاف */}
-      <Fold className="mb-6" title={<><ImageIcon className="size-5 text-primary" /> نصّ على الغلاف</>} storageKey="course.coverText">
+      <Section className="mb-6" title={<><ImageIcon className="size-5 text-primary" /> نصّ على الغلاف</>}>
         <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
           اكتب نصّاً يظهر فوق لوحة الغلاف، ثم اسحبه بالماوس إلى مكانه. الموضع يُحفظ بالنسبة
           المئوية فيبقى في مكانه على بطاقة الطالب الصغيرة وعلى المعاينة الكبيرة سواء.
         </p>
         <CoverTextEditor subject={subject} onChange={setCoverText} />
-      </Fold>
+      </Section>
 
       {/* صور على الغلاف */}
-      <Fold className="mb-6" title={<><ImageIcon className="size-5 text-primary" /> صور على الغلاف</>} storageKey="course.coverStickers">
+      <Section className="mb-6" title={<><ImageIcon className="size-5 text-primary" /> صور على الغلاف</>}>
         <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
           ارفع صورة — تُفتح أداة القصّ وإزالة الخلفية أولاً — ثم اسحبها بالماوس إلى مكانها
           واضبط حجمها ودورانها وشفافيتها. الصور تُرسم تحت نصّ الغلاف ليبقى النصّ فوقها.
         </p>
         <CoverStickersEditor subject={subject} onChange={setCoverStickers} />
-      </Fold>
+      </Section>
 
       {/* أسعار الكورس */}
       {/*
@@ -492,7 +492,7 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
 
       <p className="font-kufi mb-2 mt-6 text-[11px] font-bold text-muted-foreground">الدروس والموادّ</p>
       {/* إضافة درس */}
-      <Fold className="mb-6" title="إضافة درس" storageKey="course.addLesson" defaultOpen>
+      <Section className="mb-6" title="إضافة درس">
         <div className="grid gap-3 sm:grid-cols-6">
           <label className="sm:col-span-2"><span className="mb-1 block text-xs font-semibold text-muted-foreground">عنوان الدرس</span>
             <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="inp" placeholder="مثال: مقدّمة في علوم القرآن" />
@@ -541,7 +541,7 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
             <Button className="w-full px-5 py-2.5" onClick={add}><Plus className="size-4" /> إضافة</Button>
           </div>
         </div>
-      </Fold>
+      </Section>
 
       {/* ---------- الموادّ ودروسُها ---------- */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -562,8 +562,6 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
           {units.map((unit, ui) => (
             <Collapse
               key={unit.id}
-              defaultOpen={units.length === 1 || ui === 0}
-              storageKey={`course.${id}.${unit.id}`}
               title={
                 /*
                   العنوانُ حقلٌ يُكتب فيه مباشرةً — لا زرَّ «إعادة تسمية»

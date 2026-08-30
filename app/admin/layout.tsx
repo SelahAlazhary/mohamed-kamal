@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { DashboardShell } from "@/components/dashboard/shell";
+import { SectionNav } from "@/components/dashboard/section-nav";
 import { adminNav } from "@/lib/dashboard-data";
 import { getSession } from "@/lib/session";
 import { loadDB, getDB } from "@/lib/db";
@@ -55,6 +56,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         }}
       >
         {children}
+        {/* شريطُ أقسام الصفحة — يمسحها بنفسه فلا يُوصَل بكلّ شاشة */}
+        <SectionNav />
       </DashboardShell>
     </div>
   );

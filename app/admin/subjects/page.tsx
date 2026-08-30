@@ -31,7 +31,7 @@ import {
   Search, BookOpen, GraduationCap, Wallet,
 } from "lucide-react";
 import { PageHeader, DataTable, StatusBadge } from "@/components/dashboard/ui";
-import { Fold } from "@/components/dashboard/fold";
+import { Section } from "@/components/dashboard/section";
 import { Button } from "@/components/ui/primitives";
 import { useContent } from "@/components/content/content-provider";
 import { gradeHasTrack } from "@/lib/data";
@@ -340,15 +340,13 @@ export default function SubjectsPage() {
                 const byGrade = Array.from(new Set(inTerm.map((s) => s.grade || "كل الصفوف")))
                   .sort((a, b) => gradeOrder(a) - gradeOrder(b));
                 return (
-                  <Fold
+                  <Section
                     key={t.id}
                     title={t.label}
                     subtitle={inTerm.length ? `${byGrade.length.toLocaleString("ar-EG")} صفّاً دراسيّاً` : "لا كورسات في هذا الفصل بعد"}
                     icon={<BookOpen className="size-4" />}
                     count={inTerm.length}
                     /* يُفتح الفصلُ الذي فيه كورسات — والفارغُ لا يُفتح على فراغ */
-                    defaultOpen={inTerm.length > 0}
-                    storageKey={`subjects.term.${t.id}`}
                   >
                     {inTerm.length === 0 ? (
                       <p className="p-6 text-center text-sm text-muted-foreground">
@@ -369,7 +367,7 @@ export default function SubjectsPage() {
                         ))}
                       </div>
                     )}
-                  </Fold>
+                  </Section>
                 );
               })}
             </div>

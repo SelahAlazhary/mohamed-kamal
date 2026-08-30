@@ -10,9 +10,10 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   Wallet, Plus, Trash2, Check, X, Loader2, Send, Image as ImageIcon,
-  Landmark, Smartphone, Link2, CreditCard, Palette, Inbox, ShieldCheck, RotateCcw,
+  Landmark, Smartphone, Link2, CreditCard, Palette, Inbox, ShieldCheck, RotateCcw, Shield, MessageSquare,
 } from "lucide-react";
 import { PageHeader, Card, StatCard, StatusBadge } from "@/components/dashboard/ui";
+import { Section } from "@/components/dashboard/section";
 import { useContent } from "@/components/content/content-provider";
 import { PAY_STYLES, findPayStyle, DEFAULT_PAY_STYLE, PAY_KINDS, type PayStyle } from "@/lib/pay-styles";
 import { PayPreview } from "@/components/admin/skin-preview";
@@ -425,13 +426,12 @@ function MethodsTab({
 
   return (
     <>
-      <Card className="mb-5">
-        <p className="font-display mb-1 font-bold">إعدادات البوّابة</p>
-        <p className="mb-4 text-[11px] leading-relaxed text-muted-foreground">
-          مطفأةً يبقى الشراء عبر واتساب كما كان. شغّلها ليختار الطالب الخطة ثم
-          طريقة الدفع ثم يرفع إيصال التحويل داخل المنصّة — وتحتاج طريقة دفع
-          مفعّلة واحدة على الأقلّ لتظهر له.
-        </p>
+      <Section
+        title="إعدادات البوّابة"
+        subtitle="مطفأةً يبقى الشراء عبر واتساب كما كان. شغّلها ليختار الطالب الخطة ثم طريقة الدفع ثم يرفع إيصال التحويل داخل المنصّة — وتحتاج طريقة دفع مفعّلة واحدة على الأقلّ لتظهر له."
+        icon={<Wallet className="size-4" />}
+        className="mb-5"
+      >
 
         <div className="grid gap-3">
           <Toggle label="تشغيل بوّابة الدفع" hint="مطفأةً يبقى الشراء عبر واتساب — تحتاج طريقة دفع مفعّلة واحدة على الأقلّ" on={cfg.enabled === true} onChange={(v) => setCfg({ enabled: v })} />
@@ -463,7 +463,7 @@ function MethodsTab({
             حروف وأرقام لاتينية وشرطة. كل كود يُستخدَم مرّة واحدة فقط ثم يُعلَّم مستخدَماً.
           </span>
         </div>
-      </Card>
+      </Section>
 
       <div className="mb-4 flex items-center justify-between gap-3">
         <p className="font-display font-bold">طرق الدفع</p>
@@ -701,13 +701,12 @@ function BotTab() {
 
   return (
     <>
-      <Card className="mb-5">
-        <p className="font-display mb-1 font-bold">بوت تليجرام</p>
-        <p className="mb-4 text-[11px] leading-relaxed text-muted-foreground">
-          يصلك كل طلب تحويل على تليجرام ببيانات الطالب وصورة الإيصال وزرَّي
-          قبول ورفض — تبتّ فيه من هاتفك دون فتح اللوحة. التوكن يبقى على
-          الخادم ولا يظهر هنا بعد حفظه.
-        </p>
+      <Section
+        title="بوت تليجرام"
+        subtitle="يصلك كل طلب تحويل على تليجرام ببيانات الطالب وصورة الإيصال وزرَّي قبول ورفض — تبتّ فيه من هاتفك دون فتح اللوحة. التوكن يبقى على الخادم ولا يظهر هنا بعد حفظه."
+        icon={<Send className="size-4" />}
+        className="mb-5"
+      >
 
         <ol className="mb-4 grid gap-2 text-[12px] leading-relaxed text-muted-foreground">
           <li>١. افتح <b className="text-foreground">@BotFather</b> على تليجرام وأرسل <code className="rounded bg-muted px-1">/newbot</code> واتبع الخطوات.</li>
@@ -825,17 +824,15 @@ function BotTab() {
             التوكن مضبوط من متغيّر بيئة على الاستضافة — لن يُغيّره الحفظ هنا.
           </p>
         )}
-      </Card>
+      </Section>
 
       {/* المعرّفات المسموح لها */}
-      <Card className="mb-5">
-        <p className="font-display mb-1 font-bold">المعرّفات المسموح لها</p>
-        <p className="mb-4 text-[11px] leading-relaxed text-muted-foreground">
-          البوت عامّ على تليجرام: أيّ أحد يعرف اسمه يستطيع مراسلته. هذه القائمة تحدّد
-          مَن يُجيبه البوت ومَن يبتّ في التحويلات — أضف معرّفك ومعرّف كل مشرف يراجع
-          الطلبات. أرسل <code className="rounded bg-muted px-1">/start</code> للبوت من حسابك
-          ليردّ بمعرّفك.
-        </p>
+      <Section
+        title="المعرّفات المسموح لها"
+        subtitle="البوت عامّ على تليجرام: أيّ أحد يعرف اسمه يستطيع مراسلته. هذه القائمة تحدّد مَن يُجيبه البوت ومَن يبتّ في التحويلات — أضف معرّفك ومعرّف كل مشرف يراجع الطلبات. أرسل <code className='rounded bg-muted px-1'>/start</code> للبوت من حسابك ليردّ بمعرّفك."
+        icon={<Shield className="size-4" />}
+        className="mb-5"
+      >
 
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <input
@@ -896,16 +893,15 @@ function BotTab() {
             ))}
           </div>
         )}
-      </Card>
+      </Section>
 
       {/* جسر الدعم */}
-      <Card className="mb-5">
-        <p className="font-display mb-1 font-bold">محادثات الدعم على تليجرام</p>
-        <p className="mb-4 text-[11px] leading-relaxed text-muted-foreground">
-          رسالة الطالب تصلك على تليجرام، و<b>ردُّك عليها هناك</b> يصل الطالبَ داخل المنصّة
-          كأيّ ردّ من الدعم — لا يرى فرقاً بين ردٍّ كُتب في اللوحة وردٍّ كُتب في تليجرام،
-          ولا يُكشف له حسابُك.
-        </p>
+      <Section
+        title="محادثات الدعم على تليجرام"
+        subtitle="رسالة الطالب تصلك على تليجرام، و<b>ردُّك عليها هناك</b> يصل الطالبَ داخل المنصّة كأيّ ردّ من الدعم — لا يرى فرقاً بين ردٍّ كُتب في اللوحة وردٍّ كُتب في تليجرام، ولا يُكشف له حسابُك."
+        icon={<MessageSquare className="size-4" />}
+        className="mb-5"
+      >
 
         <ol className="mb-4 grid gap-1.5 text-[12px] leading-relaxed text-muted-foreground">
           <li>١. اترك المعرّف فارغاً لتصل المحادثات إلى محادثة التنبيهات نفسها، أو ضع معرّف مجموعة خاصّة بالدعم.</li>
@@ -943,7 +939,7 @@ function BotTab() {
             {state?.supportOff ? "تشغيل جسر الدعم" : "إيقاف جسر الدعم"}
           </button>
         </div>
-      </Card>
+      </Section>
 
       <Card>
         <p className="font-display mb-2 font-bold">أوامر البوت</p>

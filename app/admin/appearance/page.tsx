@@ -64,7 +64,7 @@ import {
 } from "@/lib/nav-styles";
 import { STUDENT_DESIGNS, findDesign, DEFAULT_DESIGN, type StudentDesign } from "@/lib/designs";
 import { HOME_LAYOUTS, findHomeLayout, DEFAULT_HOME_LAYOUT, type HomeLayout } from "@/lib/home-layouts";
-import { Fold } from "@/components/dashboard/fold";
+import { Section } from "@/components/dashboard/section";
 
 /** ألوان جاهزة تُستخدم في أكثر من منتقٍ. */
 const SWATCH = ["#233b8b", "#095e86", "#245c4b", "#87263a", "#8a6212", "#4a3570", "#1f5a5e", "#2b3140"];
@@ -646,7 +646,7 @@ export default function AppearancePage() {
 
       {tab === "design" && (
         <>
-          <Fold className="mb-5" title="ألوان الهيئة" storageKey="appearance.ألوان الهيئة" defaultOpen>
+          <Section className="mb-5" title="ألوان الهيئة">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               لوحُ الترحيب والبطاقات في بوابة الطالب يأخذان لونَهما من الهوية. ومن أرادهما
               أغمقَ أو أفتحَ لا يريد أن يُغيّر الهويةَ كلَّها من أجلهما — فلهما لونُهما هنا.
@@ -700,7 +700,7 @@ export default function AppearancePage() {
                 );
               })}
             </div>
-          </Fold>
+          </Section>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {STUDENT_DESIGNS.map((x) => {
@@ -1638,7 +1638,7 @@ export default function AppearancePage() {
             </p>
           </Card>
 
-          <Fold className="mb-5" title="ألوان الإطار" storageKey="appearance.ألوان الإطار">
+          <Section className="mb-5" title="ألوان الإطار">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               الشكلُ هيئةٌ واللونُ هوية — واللونُ المتروك يرث لون الثيم.
             </p>
@@ -1682,9 +1682,9 @@ export default function AppearancePage() {
                 </div>
               ))}
             </div>
-          </Fold>
+          </Section>
 
-          <Fold className="mb-5" title="عمق الرسوم (ثلاثية الأبعاد)" storageKey="appearance.artDepth">
+          <Section className="mb-5" title="عمق الرسوم (ثلاثية الأبعاد)">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               الرسومُ مسطّحةٌ بطبعها. والبُعدُ الثالثُ لا يلزم منه إعادةُ رسمها: ظلالٌ صلبةٌ
               متراكبةٌ تتبع حدودَ الرسم نفسِه فتصنع له جانباً مبثوقاً، وطبقةُ إضاءةٍ
@@ -1744,9 +1744,9 @@ export default function AppearancePage() {
                 );
               })}
             </div>
-          </Fold>
+          </Section>
 
-          <Fold className="mb-5" title="ألوان الرسوم" storageKey="appearance.artTint">
+          <Section className="mb-5" title="ألوان الرسوم">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               تُلوَّن الرسومُ بمرشّحٍ محسوب: تُسوَّى رماديّةً أوّلاً ثمّ تُصبغ باللون
               المطلوب، فتخرج أحاديّةَ اللون محتفظةً بتفاصيلها. والمرشّحُ يُحسب في
@@ -1842,9 +1842,9 @@ export default function AppearancePage() {
                 />
               </label>
             )}
-          </Fold>
+          </Section>
 
-          <Fold className="mb-5" title="ظلال العناصر" storageKey="appearance.ظلال العناصر">
+          <Section className="mb-5" title="ظلال العناصر">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               الظلُّ معلومةُ ارتفاعٍ لا زخرفة: يقول للعين أيُّ لوحٍ أقربُ إليها. وكلُّ ظلٍّ هنا
               طبقتان — قريبةٌ ترسم الحافّة وبعيدةٌ تعطي الارتفاع — ولونُه من لون النصّ لا أسودُ
@@ -1872,9 +1872,9 @@ export default function AppearancePage() {
             <p className="mt-3 text-[10px] text-muted-foreground">
               الحاليّ: {findShadow(content.shadowStyle).name} — {findShadow(content.shadowStyle).hint}
             </p>
-          </Fold>
+          </Section>
 
-          <Fold className="mb-5" title="الحركة الدائمة" storageKey="appearance.الحركة الدائمة">
+          <Section className="mb-5" title="الحركة الدائمة">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               حركاتُ الدخول تقع مرّةً حين يظهر العنصر ثمّ تسكن الصفحةُ أبداً. وهذه لا تتوقّف ما
               دامت الصفحةُ مفتوحة. والتأخيرُ يُشتقّ من ترتيب اللوح فيتموّج المشهدُ ولا يخفق
@@ -1923,9 +1923,9 @@ export default function AppearancePage() {
                 الحاليّة: {findAmbient(content.ambient).name}
               </span>
             </div>
-          </Fold>
+          </Section>
 
-          <Fold className="mb-5" title="العمق الثلاثي" storageKey="appearance.العمق الثلاثي">
+          <Section className="mb-5" title="العمق الثلاثي">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               كلُّ لوحٍ يميل نحو المؤشّر بحسب موضعه هو — والتفاوتُ بين الألواح هو ما تقرؤه
               العينُ مجسّماً، لا شدّةُ الميل. وعلى الهاتف يُقاد بميل الجهاز نفسِه. ومن ضبط
@@ -1956,9 +1956,9 @@ export default function AppearancePage() {
                 );
               })}
             </div>
-          </Fold>
+          </Section>
 
-          <Fold className="mb-4" title="مكتبة رسوم الموقع" storageKey="appearance.مكتبة رسوم الموقع">
+          <Section className="mb-4" title="مكتبة رسوم الموقع">
             <p className="text-[11px] leading-relaxed text-muted-foreground">
               المكتبةُ المختارة تسري على رسوم المنصّة كلِّها — الساكنةُ والمتحرّكةُ
               والحالاتُ الفارغةُ معاً. و<b>ليست مئةَ طقمٍ مرسوم</b>: مئةُ طقمٍ بيدٍ واحدةٍ
@@ -2022,9 +2022,9 @@ export default function AppearancePage() {
                 ))}
               </div>
             </Card>
-          </Fold>
+          </Section>
 
-          <Fold className="mb-4" title="مكتبة الأيقونات" storageKey="appearance.مكتبة الأيقونات">
+          <Section className="mb-4" title="مكتبة الأيقونات">
             <p className="text-[11px] leading-relaxed text-muted-foreground">
               المكتبةُ المختارة تسري على كلّ رمزٍ في المنصّة — القائمة الجانبية وشريط الهاتف
               ورأس اللوحة معاً. وثلاثُ هندساتٍ لا عشر: خطّيّةٌ ومصمتةٌ وكوفيّة، والمكتباتُ
@@ -2086,7 +2086,7 @@ export default function AppearancePage() {
                 ))}
               </div>
             </Card>
-          </Fold>
+          </Section>
 
           {/* ---------- ٢٠ إطاراً ---------- */}
           <p className="font-display mb-3 font-bold">الإطار ({ICON_FRAMES.length.toLocaleString("ar-EG")})</p>
@@ -2122,7 +2122,7 @@ export default function AppearancePage() {
             })}
           </div>
 
-          <Fold className="mb-4 mt-8" title="٢٠ غلافاً" storageKey="appearance.٢٠ غلافاً">
+          <Section className="mb-4 mt-8" title="٢٠ غلافاً">
             <p className="text-[11px] leading-relaxed text-muted-foreground">
               الإطارُ يحكم اللوحَ تحت الأيقونة، والغلافُ يحكم ما حوله: حلقةٌ تحيطه، أو هالةٌ
               تتسرّب من خلفه، أو نقشٌ يملؤه، أو شارةٌ على حافّته. ومحوران لا يتداخلان فيُركَّب
@@ -2160,9 +2160,9 @@ export default function AppearancePage() {
                 );
               })}
             </div>
-          </Fold>
+          </Section>
 
-          <Fold className="mb-4" title="٤٠ حركة" storageKey="appearance.٤٠ حركة">
+          <Section className="mb-4" title="٤٠ حركة">
             <p className="text-[11px] leading-relaxed text-muted-foreground">
               تُختار واحدةٌ فتسري على أيقونات المنصّة كلِّها — لأنّ الحركة لغةٌ لا زينة، وصفحةٌ كلُّ
               أيقونةٍ فيها تتحرّك حركةً مختلفة تقول ضجيجاً لا معنى. و«عند المرور» تنتظر اليد فتردّ
@@ -2202,7 +2202,7 @@ export default function AppearancePage() {
                 );
               })}
             </div>
-          </Fold>
+          </Section>
         </>
       )}
 
