@@ -9,6 +9,7 @@ export const adminNav: NavItem[] = [
   { href: "/admin/students", label: "الطلاب", icon: "Users" },
   { href: "/admin/grades", label: "الصفوف", icon: "Layers" },
   { href: "/admin/subjects", label: "المواد", icon: "BookOpen" },
+  { href: "/admin/units", label: "الوحدات", icon: "Layers" },
   { href: "/admin/plans", label: "الخطط", icon: "Wallet" },
   { href: "/admin/payments", label: "بوّابة الدفع", icon: "Wallet" },
   { href: "/admin/codes", label: "أكواد التفعيل", icon: "KeyRound" },
@@ -53,7 +54,7 @@ const GROUPS: { id: string; label: string; icon: string; hrefs: string[] }[] = [
     id: "study",
     label: "المحتوى الدراسي",
     icon: "BookOpen",
-    hrefs: ["/admin/grades", "/admin/subjects", "/admin/exams", "/admin/live", "/admin/youtube"],
+    hrefs: ["/admin/grades", "/admin/subjects", "/admin/units", "/admin/exams", "/admin/live", "/admin/youtube"],
   },
   {
     id: "people",

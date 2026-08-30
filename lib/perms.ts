@@ -84,6 +84,8 @@ export function permForPath(href: string): AdminPerm | null {
     "/admin/grades": "subjects",
     "/admin/subjects": "subjects",
     "/admin/courses": "subjects",
+    /* الوحداتُ بابٌ من المنهج — صلاحيتُها صلاحيةُ الكورسات نفسُها. */
+    "/admin/units": "subjects",
     "/admin/plans": "plans",
     "/admin/payments": "payments",
     "/admin/codes": "codes",
