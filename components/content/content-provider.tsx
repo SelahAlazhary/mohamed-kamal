@@ -16,6 +16,7 @@ import type { PublicDB, SiteContent, Theme, Layout, Preset } from "@/lib/types";
 import { defaultContent } from "@/lib/defaults";
 import { brandVars } from "@/lib/brand-theme";
 import { setPref } from "@/lib/consent";
+import { saveStarted, saveSucceeded, saveFailed } from "@/lib/save-state";
 
 /** كلُّ ما قد تكتبه الهوية — يُمسح ما لم يُكتب فلا يبقى أثرُ ثيمٍ سابق. */
 const BRAND_KEYS = [
@@ -209,13 +210,36 @@ export function ContentProvider({
       ...patch,
       ...(patch.content ? { content: mergeContent(prev.content, patch.content) } : {}),
     } as PublicDB) : prev));
-    const res = await fetch("/api/content", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(patch),
-    });
-    if (!res.ok) { await refresh(); return false; }
-    return true;
+    saveStarted();
+    try {
+      const res = await fetch("/api/content", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      });
+      if (!res.ok) {
+        /*
+          الخطأُ يُقرأ من الخادم لا يُخترع: «تعذّر الحفظ» وحدَها لا تدلّ
+          على شيء، و«ليست لك صلاحيةُ هذا القسم» تدلّ على ما يُفعل.
+        */
+        const body = await res.json().catch(() => ({}));
+        saveFailed(
+          body?.error ||
+            (res.status === 403 ? "ليست لك صلاحيةُ تعديل هذا القسم" :
+             res.status === 401 ? "انتهت جلستُك — سجّل الدخول من جديد" :
+             `تعذّر الحفظ (${res.status})`)
+        );
+        /* والتحديثُ المتفائلُ يُلغى: إبقاؤه يُظهر ما لم يُحفظ محفوظاً. */
+        await refresh();
+        return false;
+      }
+      saveSucceeded();
+      return true;
+    } catch {
+      saveFailed("لا اتصال بالخادم — لم يُحفظ التعديل");
+      await refresh();
+      return false;
+    }
   }, [refresh]);
 
   const saveContent = useCallback(

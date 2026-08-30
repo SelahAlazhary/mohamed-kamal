@@ -26,6 +26,7 @@ import { GoldRule } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
 import { navBadges } from "@/lib/admin-insights";
 import { CommandPalette } from "@/components/dashboard/command-palette";
+import { SaveStatus } from "@/components/dashboard/save-status";
 import { groupNav, type NavItem } from "@/lib/dashboard-data";
 import { setPref } from "@/lib/consent";
 
@@ -371,6 +372,11 @@ export function DashboardShell({
           </button>
 
           <div className="tb-actions mr-auto flex items-center gap-2">
+            {/*
+              حالةُ الحفظ — هادئةٌ في النجاح، ولوحُ الفشل يظهر أسفلَ الشاشة.
+              وموضعُها هنا لأنّها تخصّ الشاشةَ كلَّها لا قسماً بعينه.
+            */}
+            <SaveStatus />
             {content.showThemeToggle && (
               <button onClick={toggleView} aria-label="تبديل المظهر" className="btn-foil grid size-11 place-items-center rounded-full text-muted-foreground transition hover:text-accent sm:size-10">
                 {viewLayout === "dark" ? <LibIcon slot="sun" className="size-5" /> : <LibIcon slot="moon" className="size-5" />}

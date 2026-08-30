@@ -997,8 +997,6 @@ export default function CustomizePage() {
           }}
         />
       )}
-
-      <style>{`.inp{width:100%;border-radius:0.9rem;border:1px solid hsl(var(--border));background:hsl(var(--card)/0.6);padding:0.6rem 0.85rem;font-size:0.9rem;outline:none;color:inherit;font-family:inherit}.inp:focus{border-color:hsl(var(--primary)/0.6)}.inp.w-auto{width:auto}.lbl{margin-bottom:0.35rem;display:block;font-size:0.7rem;font-weight:600;color:hsl(var(--muted-foreground))}`}</style>
     </>
   );
 }
