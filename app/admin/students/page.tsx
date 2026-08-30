@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { UserPlus, Search, X, Trash2, BookOpen, Smartphone, ShieldOff, Check, Loader2, KeyRound } from "lucide-react";
 import Link from "next/link";
 import { PageHeader, DataTable, StatusBadge } from "@/components/dashboard/ui";
+import { GradeRequests } from "@/components/dashboard/grade-requests";
 import { isOnline, sinceText } from "@/lib/activity";
 import { Button } from "@/components/ui/primitives";
 import { useContent } from "@/components/content/content-provider";
@@ -44,6 +45,9 @@ export default function StudentsPage() {
     <>
       <PageHeader title="الطلاب" subtitle={`${students.length} حساب طالب · كل حساب مرتبط بجهاز واحد`}
         action={<Button className="px-5 py-2.5" onClick={() => setOpenAdd(true)}><UserPlus className="size-4" /> إضافة طالب</Button>} />
+
+      {/* طلباتُ نقل المرحلة — فوق الجدول، فهي ما ينتظر قراراً */}
+      <GradeRequests />
 
       <div className="mb-4 relative sm:max-w-xs">
         <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />

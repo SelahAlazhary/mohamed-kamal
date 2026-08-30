@@ -35,7 +35,7 @@ let source: "firebase" | "local" = "local";
  * فايربيز تحذف المصفوفات الفارغة، وتُعيد المصفوفة ككائن بمفاتيح رقمية إن كانت مثقوبة.
  * نُعيدها لشكلها الصحيح حتى يبقى باقي التطبيق يتعامل مع مصفوفات دائماً.
  */
-const LIST_KEYS = ["users", "students", "subjects", "grades", "codes", "exams", "live", "tickets", "notifications", "plans"] as const;
+const LIST_KEYS = ["users", "students", "subjects", "grades", "codes", "exams", "live", "tickets", "notifications", "plans", "gradeRequests"] as const;
 
 function toArray(value: unknown): unknown[] {
   if (Array.isArray(value)) return value.filter((v) => v !== null && v !== undefined);

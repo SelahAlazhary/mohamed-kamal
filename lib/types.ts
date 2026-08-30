@@ -552,6 +552,35 @@ export type Subject = {
   materials?: Material[]; // مواد وملفات الكورس (PDF…)
   status: "منشورة" | "مسودّة";
 };
+/**
+ * طلبُ نقلِ مرحلة.
+ * ------------------------------------------------------------------
+ * الطالبُ يُسجَّل في مرحلةٍ ثمّ يترقّى، أو يكتشف أنّه سجّل في الخطأ. وترْكُ
+ * الحقل مفتوحاً له يجعل المرحلةَ بلا معنى: من أراد محتوى الثانوي بدّل
+ * حقلَه وأخذه. فالنقلُ **طلبٌ يُقرّه الأستاذ**، والحقلُ لا يُكتب إلّا من
+ * جهته.
+ *
+ * والرجوعُ إلى المرحلة السابقة طلبٌ كالذهاب — لا فرقَ في المسار: كلاهما
+ * تغييرُ مرحلةٍ يُقرّه من يملك المحتوى.
+ */
+export type GradeRequestStatus = "قيد المراجعة" | "مقبول" | "مرفوض";
+
+export type GradeRequest = {
+  id: string;
+  userId: string;
+  userName: string;
+  /** المرحلةُ وقتَ الطلب — تُحفظ لأنّ حقلَ الطالب يتغيّر بعد القبول. */
+  from: string;
+  to: string;
+  reason?: string;
+  status: GradeRequestStatus;
+  at: string;
+  decidedAt?: string;
+  decidedBy?: string;
+  /** ردُّ الأستاذ عند الرفض — يراه الطالبُ في حسابه. */
+  note?: string;
+};
+
 export type GradeRow = { id: string; name: string; students: number; subjects: number; color: string };
 
 /**
@@ -1071,6 +1100,8 @@ export type DB = {
   students: Student[];
   subjects: Subject[];
   grades: GradeRow[];
+  /** طلباتُ نقل المراحل — تُقرّ من لوحة الطلاب. */
+  gradeRequests?: GradeRequest[];
   codes: Code[];
   exams: Exam[];
   live: Live[];

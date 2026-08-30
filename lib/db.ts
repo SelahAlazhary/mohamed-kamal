@@ -596,6 +596,13 @@ export function getScopedDB(session: Scope): PublicDB {
       students: [],
       integrations: undefined, // التكاملات شأن إداري بحت
       security: undefined,     // سجلّ الأمان للأدمن فقط
+      /*
+        طلباتُ النقل: طلباتُه وحدَه.
+        و`...db` يمرّرها كاملةً لو لم تُذكر هنا — وفيها أسماءُ الطلاب
+        ومراحلُهم وأسبابُهم. وهي أوّلُ ما يُنسى في حقلٍ جديد: يُضاف إلى
+        القاعدة فيخرج مع الحمولة بلا أن يكتبه أحد.
+      */
+      gradeRequests: (db.gradeRequests ?? []).filter((r) => r.userId === me.id),
       users: me ? [toPublicUser(me)] : [],
     };
   }
@@ -622,6 +629,7 @@ export function getScopedDB(session: Scope): PublicDB {
     subjects: db.subjects.filter((s) => s.status === "منشورة").map(stripSubject),
     codes: [],
     exams: [],
+    gradeRequests: [], // شأنُ الطلاب — لا يخرج لمن ليس منهم
     // الزائر يرى البث المجاني وحده (برابطه) ولا شيء غيره
     live: publicLives(db.live),
     tickets: [],

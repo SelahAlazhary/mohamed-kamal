@@ -17,6 +17,7 @@ import {
 import { Card, PageHeader, Medallion, GoldRule } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
 import { activeSubs, daysLeft } from "@/lib/access";
+import { GradeRequestCard } from "@/components/student/grade-request";
 
 const ar = (n: number) => n.toLocaleString("ar-EG");
 
@@ -182,6 +183,15 @@ export default function StudentAccount() {
               </div>
             )}
           </Card>
+
+          {/*
+            طلبُ نقل المرحلة تحت الاشتراكات لا فوق البيانات.
+            صفحةُ الحساب تُقرأ من أعلى: من هو، ثمّ ماذا يملك، ثمّ ما يمكنه
+            أن يطلب. والطلبُ في الأعلى يزاحم ما جاء الطالبُ يراه.
+          */}
+          <div className="mt-6">
+            <GradeRequestCard />
+          </div>
         </motion.div>
       </div>
     </>

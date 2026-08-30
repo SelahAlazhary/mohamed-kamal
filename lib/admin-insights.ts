@@ -252,5 +252,13 @@ export function navBadges(
   ).length;
   if (waiting) out["/admin/support/chat"] = waiting;
 
+  /*
+    طلباتُ نقل المرحلة تُشار في القائمة.
+    وبدونها تبقى داخل صفحة الطلاب لا يعلم بها أحدٌ حتّى يفتحها — والطالبُ
+    ينتظر. والشارةُ تصعد إلى مجموعة «الطلاب والاشتراكات» حين تُطوى.
+  */
+  const moves = (db.gradeRequests ?? []).filter((r) => r.status === "قيد المراجعة").length;
+  if (moves) out["/admin/students"] = moves;
+
   return out;
 }
