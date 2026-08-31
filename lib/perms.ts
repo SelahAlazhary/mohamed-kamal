@@ -140,7 +140,7 @@ export function permForDbKey(key: string): AdminPerm {
  * هذه القائمة تفصل ما يخصّ المظهر فيُفحص بصلاحيته هو.
  */
 const APPEARANCE_KEYS = new Set([
-  "studentSkin", "studentLayout", "studentMobile", "studentDesign",
+  "studentSkin", "studentLayout", "studentMobile", "studentHeader", "studentDesign",
   "sideNav", "dockStyle", "navIcons", "navColors",
   "tileStyle", "tileColors", "tileArt",
   "toolbarStyle", "navbarStyle", "navbarStick", "toolbarStick", "navbarHidden", "toolbarHidden", "appIcon", "appIconImage", "buttonStyle", "glow", "heroShell", "heroShellOpts", "googleMeet", "azhariBackdrop", "artTint", "artDepth", "designColors", "shadowStyle", "ambient", "ambientSpeed", "hero3d", "brandSignature", "signatureImage", "signatureHeight", "signatureInvert", "iconLib", "iconFrame", "iconFrameColors", "iconCover", "iconMotion", "developer", "maintenance", "mobileHome", "motionStyle",

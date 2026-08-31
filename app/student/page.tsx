@@ -122,7 +122,9 @@ export default function StudentHome() {
   );
 
   const railMode = !L.statsInHeader && L.stats === "rail";
-  const showHeader = L.header !== "minimal";
+  /* خيارُ الترويسة يعلو التخطيطَ الجاهز — ومن لم يختر بقي على تخطيطه. */
+  const headerStyle = (content.studentHeader as typeof L.header) || L.header;
+  const showHeader = headerStyle !== "minimal";
   const statsInside = showHeader && L.statsInHeader;
 
   /* هيكل عظمي حتى تكتمل البيانات — بنفس التخطيط المختار فلا تقفز الصفحة
@@ -158,7 +160,7 @@ export default function StudentHome() {
         زخرفتُه مبنيّةٌ وبطاقاتُه تطفو على حافّته — فتُرسم بمكوّنها ولا
         تُقحَم في تفريعات الهيئات الخمس.
       */}
-      {L.header === "azhari" && (
+      {headerStyle === "azhari" && (
         <AzhariStudentHeader
           name={session?.name ?? ""}
           grade={me?.grade}
@@ -170,7 +172,7 @@ export default function StudentHome() {
         />
       )}
 
-      {showHeader && L.header !== "azhari" && (
+      {showHeader && headerStyle !== "azhari" && (
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}

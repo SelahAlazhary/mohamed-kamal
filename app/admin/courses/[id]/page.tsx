@@ -6,6 +6,7 @@ import Image from "next/image";
 import {
   ArrowRight, Plus, Trash2, PlayCircle, Gift, FileText, Upload, ImageIcon,
   ListChecks, ChevronDown, Check, Link2, X, Loader2, Video, Palette, Wallet, Layers,
+  ListVideo,
 } from "lucide-react";
 import { courseUnits, isSplit, withUnits, LEGACY_UNIT_ID } from "@/lib/course-units";
 import { PageHeader, Card } from "@/components/dashboard/ui";
@@ -41,6 +42,13 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
   const coverRef = useRef<HTMLInputElement>(null);
   const [coverUploading, setCoverUploading] = useState(false);
   const [quizFor, setQuizFor] = useState<string | null>(null);
+  /*
+    المادّةُ المفتوحة.
+    عرضُ الموادّ كلِّها بدروسها معاً يجعل الصفحةَ طوماراً: عشرُ موادّ في
+    كلٍّ عشرةُ دروسٍ تعني مئةَ بطاقةٍ في شاشةٍ واحدة. فالموادُّ شبكةٌ
+    تُتصفَّح بالنظر، والدروسُ لا تُفتح إلّا لمن طُلبت مادّتُه.
+  */
+  const [openUnit, setOpenUnit] = useState<string | null>(null);
   /** المادّةُ التي يُضاف إليها الدرسُ الجديد. */
   const [intoUnit, setIntoUnit] = useState<string>("");
   const videoRef = useRef<HTMLInputElement>(null);
@@ -562,14 +570,30 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
           بالنظر لا بالقراءة. فصار لكلّ مادّةٍ غلافٌ ببذرتها — فتُعرف من
           لوحتها قبل اسمها — ودروسُها تحتها بأغلفتها.
         */
-        <div className="grid gap-5">
-          {units.map((unit, ui) => (
+        <div className={openUnit ? "grid gap-5" : "grid gap-4 sm:grid-cols-2 xl:grid-cols-3"}>
+          {units
+            .filter((u) => !openUnit || u.id === openUnit)
+            .map((unit) => {
+              const ui = units.findIndex((x) => x.id === unit.id);
+              return (
             <div key={unit.id} className="overflow-hidden rounded-[1.75rem] border border-border bg-card shadow-bento">
               {/* ---------- ترويسةُ المادّة: غلافٌ واسمٌ وإجراءات ---------- */}
               <div className="flex flex-wrap items-center gap-3 border-b border-border p-3 sm:p-4">
-                <span className="w-24 shrink-0 overflow-hidden rounded-2xl sm:w-28">
+                {/*
+                  الغلافُ هو البابُ حين تكون المادّةُ مغلقة — لا زرٌّ صغيرٌ
+                  بجانبه. أكبرُ ما في البطاقة أولى بأن يكون مقبضَها.
+                */}
+                <button
+                  type="button"
+                  onClick={() => setOpenUnit(openUnit === unit.id ? null : unit.id)}
+                  title={openUnit === unit.id ? "إغلاق المادّة" : "افتح دروس المادّة"}
+                  className="relative w-24 shrink-0 overflow-hidden rounded-2xl sm:w-28"
+                >
                   <CourseArt seed={unit.id} title={unit.title} className="aspect-[16/9] w-full" />
-                </span>
+                  <span className="absolute inset-0 grid place-items-center bg-black/25 text-white transition hover:bg-black/10">
+                    {openUnit === unit.id ? <X className="size-5" /> : <ListVideo className="size-5" />}
+                  </span>
+                </button>
 
                 <div className="min-w-0 flex-1">
                   {/*
@@ -600,7 +624,8 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
                 </div>
               </div>
 
-              {/* ---------- دروسُ المادّة ---------- */}
+              {/* ---------- دروسُ المادّة — للمفتوحة وحدَها ---------- */}
+              {openUnit === unit.id && (
               <div className="p-3 sm:p-4">
                             {(unit.lessons ?? []).length === 0 ? (
                 <p className="py-4 text-center text-xs text-muted-foreground">مادّةٌ فارغة — اختَرها في نموذج الإضافة بالأعلى.</p>
@@ -677,8 +702,10 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
         </div>
               )}
               </div>
+              )}
             </div>
-          ))}
+              );
+            })}
         </div>
       )}
 

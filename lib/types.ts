@@ -261,6 +261,12 @@ export type SiteContent = {
   /** بطاقات المراحل في الصفحة الرئيسية. */
   stages?: StageCard[];
 
+  /**
+   * ترويسةُ بوابة الطالب — تعلو ما في التخطيط الجاهز.
+   * التخطيطاتُ تُركّب الترويسةَ والمؤشّراتِ والبطاقاتِ معاً، فمن أراد
+   * ترويسةً بعينها لزمه تخطيطٌ كامل. وهذا يفرد الترويسةَ وحدَها.
+   */
+  studentHeader?: string;
   studentDesign?: string;
   sideNav?: string;
   dockStyle?: string;
