@@ -378,7 +378,8 @@ export default function StudentHome() {
 
       <div
         className={`course-grid grid gap-4 ${
-          L.cards === "list" ? "grid-cols-1"
+          L.cards === "rows" ? "grid-cols-1 gap-2"
+            : L.cards === "list" ? "grid-cols-1"
             : L.cards === "grid3" ? "sm:grid-cols-2 xl:grid-cols-3"
               : L.cards === "compact" ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
                 : "sm:grid-cols-2"
@@ -387,6 +388,32 @@ export default function StudentHome() {
         {courses.map((c, i) => (
           <motion.div key={c.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
             <Link href={`/student/course/${c.id}`} className="group block">
+              {/*
+                نمطُ «الصفوف»: سطرٌ يُقرأ لا لوحةٌ تُنظر.
+                الأنماطُ الأربعةُ الأخرى تعرض غلافَ الكورس بعرضٍ أوسعَ أو
+                أضيق؛ ومن عنده كورساتٌ كثيرةٌ لا يريد لكلٍّ لوحةً بحجم كفّ.
+                فهنا شارةُ التقدّم وعنوانٌ وخطٌّ رفيع — وتُرى الضعفُ في
+                الشاشة نفسِها.
+              */}
+              {L.cards === "rows" ? (
+                <Card className="course-card relative flex items-center gap-3 overflow-hidden !px-3.5 !py-2.5 transition hover:border-accent/50">
+                  {/* الشارةُ ذهبيّةٌ ونصُّها كحليّ — الذهبُ على الورق لا يُقرأ نصّاً */}
+                  <span className="font-kufi shrink-0 rounded-lg bg-[hsl(var(--gold)/0.3)] px-2 py-1 text-[10px] font-extrabold text-primary [font-variant-numeric:tabular-nums]">
+                    {ar(c.progress)}٪
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="font-display block truncate text-sm font-bold">{c.name}</span>
+                    <span className="mt-1 block h-1 overflow-hidden rounded-full bg-[hsl(var(--gold)/0.22)]">
+                      <span
+                        className="block h-full rounded-full bg-[hsl(var(--primary))]"
+                        style={{ width: `${Math.max(0, Math.min(100, c.progress))}%` }}
+                      />
+                    </span>
+                  </span>
+                  <span className="font-kufi shrink-0 text-[10px] text-muted-foreground">{ar(c.lessons)} درس</span>
+                  <IconArrowLeft className="size-4 shrink-0 text-muted-foreground transition group-hover:text-primary" />
+                </Card>
+              ) : (
               <Card className="course-card relative flex gap-4 overflow-hidden !p-4 transition hover:border-accent/50">
                 {/* لوحة مصغّرة من نفس نظام أغلفة الكورسات */}
                 <span className="relative w-28 shrink-0 overflow-hidden rounded-2xl sm:w-32">
@@ -424,6 +451,7 @@ export default function StudentHome() {
                   </span>
                 </span>
               </Card>
+              )}
             </Link>
           </motion.div>
         ))}

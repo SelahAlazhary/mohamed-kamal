@@ -368,7 +368,13 @@ export type HeaderStyle = "banner" | "compact" | "split" | "stacked" | "minimal"
 /** شكل صفّ المؤشّرات. */
 export type StatsStyle = "row" | "grid" | "inline" | "rail";
 /** شكل بطاقات الكورسات. */
-export type CardsStyle = "list" | "grid2" | "grid3" | "compact";
+/**
+ * شكلُ بطاقات الكورسات.
+ * و«الصفوف» أُضيفت لأنّ الأربعةَ قبلها كلُّها تعرض غلافَ الكورس — بعرضٍ
+ * أوسعَ أو أضيق. ومن عنده كورساتٌ كثيرةٌ لا يريد لكلٍّ لوحةً بحجم كفّ،
+ * بل سطراً يُقرأ: شارةٌ وعنوانٌ وخطُّ تقدّم.
+ */
+export type CardsStyle = "list" | "grid2" | "grid3" | "compact" | "rows";
 
 export type StudentLayout = {
   id: string;
@@ -409,6 +415,13 @@ export const STUDENT_LAYOUTS: StudentLayout[] = [
   lay("stackList", "المتراكب بقائمة", "متراكب والكورسات قائمة", "stacked", "row", "list", false),
   lay("wide", "العريض", "كل شيء بعرض الشاشة الكامل", "banner", "inline", "grid3", true),
   lay("studio", "الاستوديو", "ترحيب منقسم وشريط مؤشّرات وقائمة", "split", "rail", "list", false),
+  /*
+    اللائحة — ترحيبٌ منقسمٌ وحلقةُ تقدّمٍ بجانبه، والكورساتُ صفوفٌ رفيعة.
+    وهي أكثفُ تخطيطٍ في القائمة: تُري ضعفَ ما تُريه الشبكةُ في الشاشة
+    نفسِها، وتصلح لمن كورساتُه كثيرة.
+  */
+  lay("sheet", "اللائحة", "ترحيب منقسم، والكورسات صفوف رفيعة بلا أغلفة", "split", "row", "rows", false),
+  lay("sheetInk", "اللائحة بالمؤشّرات", "اللائحة والمؤشّرات داخل لوح الترحيب", "split", "row", "rows", true),
 ];
 
 export const DEFAULT_LAYOUT = STUDENT_LAYOUTS[0].id;
