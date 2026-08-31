@@ -35,6 +35,7 @@ import { SHADOW_STYLES, findShadow, DEFAULT_SHADOW } from "@/lib/shadow-styles";
 import { TINT_MODES, artFilter } from "@/lib/art-tint";
 import { ART_DEPTHS, depthFilter, depthLit } from "@/lib/art-depth";
 import { PANEL_STYLES, DEFAULT_PANEL_STYLE } from "@/lib/panel-styles";
+import { StatsPlacement } from "@/components/admin/stats-placement";
 import { SHARI_ANIM } from "@/components/brand/shari-art";
 import { LibGlyph } from "@/components/brand/lib-icon";
 import {
@@ -655,6 +656,53 @@ export default function AppearancePage() {
 
       {tab === "design" && (
         <>
+          <Section
+            className="mb-5"
+            title="موضع المؤشّرات"
+            subtitle="بطاقاتُ التقدّم والكورسات والاشتراك — داخل لوح الترحيب أم تحته"
+            group="الألوان"
+          >
+            <div className="grid gap-2.5 sm:grid-cols-3">
+              {([
+                { id: "auto", name: "يتبع التخطيط", hint: "كما يقرّره التخطيطُ المختار" },
+                { id: "in", name: "داخل اللوح", hint: "تُوضع داخل لوح الترحيب نفسِه" },
+                { id: "out", name: "تحت اللوح", hint: "صفٌّ مستقلٌّ أسفلَه" },
+              ] as const).map((o) => {
+                const on = (content.statsInPanel ?? "auto") === o.id;
+                return (
+                  <button
+                    key={o.id}
+                    type="button"
+                    disabled={busy !== null}
+                    onClick={async () => { setBusy(`sip-${o.id}`); await saveContent({ statsInPanel: o.id }); setBusy(null); }}
+                    className={`rounded-2xl border p-3 text-right transition ${
+                      on ? "border-primary bg-primary/[0.06] ring-2 ring-primary/25" : "border-border hover:border-primary/40"
+                    }`}
+                  >
+                    <span className="block text-xs font-bold">{o.name}</span>
+                    <span className="mt-0.5 block text-[10px] leading-relaxed text-muted-foreground">{o.hint}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {/*
+              معاينةٌ تُسحب فيها البطاقةُ إلى موضعها — الأزرارُ فوقها تصف
+              الموضعَ ولا تُريه، وهذه تُريه قبل الحفظ.
+            */}
+            <div className="mt-4 rounded-2xl border border-border p-3">
+              <StatsPlacement
+                value={content.statsInPanel ?? "auto"}
+                busy={busy !== null}
+                onChange={async (v) => { setBusy(`sip-${v}`); await saveContent({ statsInPanel: v }); setBusy(null); }}
+              />
+            </div>
+
+            <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+              وداخلَ اللوح تلتفّ البطاقاتُ في شبكةٍ ولا تُقصّ — اللوحُ يقصّ ما تجاوزه، وصفٌّ
+              ثابتُ العرض داخله يقطع آخرَ بطاقةٍ بلا سبيلٍ إليها.
+            </p>
+          </Section>
+
           {/*
             معالجةُ اللوح — محورٌ ثانٍ فوق «الهيئة».
             الهيئاتُ الاثنتان والعشرون تُبدّل الحافّةَ وحدَها واللوحُ في

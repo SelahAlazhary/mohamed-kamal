@@ -385,3 +385,74 @@
   to { opacity: 1; transform: none; }
 }
 @media (prefers-reduced-motion: reduce) { .sg-open { animation: none; } }
+
+
+/* ============================================================
+   معاينةُ موضع المؤشّرات — تُسحب فيها البطاقة
+   ------------------------------------------------------------
+   مخطّطٌ لا نسخةٌ مصغّرة: مستطيلٌ للوح وثلاثةٌ للبطاقات. ومحاكاةُ الشاشة
+   بدقّةٍ تُوهم بما لا يقع — خطٌّ يختلف، وصورةٌ تنقص، ولونٌ يتبدّل بإعدادٍ
+   آخر.
+   ============================================================ */
+.sp { display: grid; gap: 0.6rem; }
+
+.sp-panel {
+  border-radius: 0.85rem;
+  padding: 0.75rem;
+  background: linear-gradient(158deg, hsl(var(--primary)) 0%, hsl(var(--glow) / .85) 130%);
+}
+.sp-panel-head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; }
+.sp-ava { width: 1.9rem; height: 1.9rem; border-radius: 999px; background: hsl(0 0% 100% / .3); flex: none; }
+.sp-lines { display: grid; gap: 0.3rem; flex: 1 1 auto; }
+.sp-l1 { display: block; height: 0.4rem; width: 45%; border-radius: 999px; background: hsl(0 0% 100% / .5); }
+.sp-l2 { display: block; height: 0.55rem; width: 70%; border-radius: 999px; background: hsl(0 0% 100% / .8); }
+
+/* موضعُ الإفلات */
+.sp-zone {
+  display: block; width: 100%;
+  min-height: 3.4rem;
+  border: 1.5px dashed hsl(var(--border));
+  border-radius: 0.7rem;
+  padding: 0.45rem;
+  background: hsl(var(--card) / .5);
+  transition: border-color .12s, background-color .12s;
+}
+.sp-panel .sp-zone { border-color: hsl(0 0% 100% / .35); background: hsl(0 0% 100% / .08); }
+.sp-zone:hover:not(:disabled) { border-color: hsl(var(--primary) / .55); }
+.sp-panel .sp-zone:hover:not(:disabled) { border-color: hsl(0 0% 100% / .7); }
+.sp-zone.is-over { border-style: solid; border-color: hsl(var(--gold)); background: hsl(var(--gold) / .16); }
+.sp-zone.is-here { border-style: solid; border-color: transparent; background: transparent; padding: 0; }
+
+.sp-hint {
+  display: flex; align-items: center; justify-content: center; gap: 0.35rem;
+  min-height: 2.5rem;
+  font-size: 0.68rem; font-weight: 700;
+  color: hsl(var(--muted-foreground));
+}
+.sp-panel .sp-hint { color: hsl(0 0% 100% / .75); }
+
+/* البطاقةُ المسحوبة */
+.sp-chip {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.55rem 0.6rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.6rem;
+  background: hsl(var(--card));
+  cursor: grab;
+  box-shadow: 0 1px 2px rgb(16 24 40 / .06);
+  transition: box-shadow .12s, opacity .12s;
+}
+.sp-chip:active { cursor: grabbing; }
+.sp-chip.is-drag { opacity: .45; }
+.sp-chip-t { flex: 1 1 auto; min-width: 0; font-size: 0.72rem; font-weight: 800; }
+.sp-chip-m { display: flex; gap: 0.25rem; flex: none; }
+.sp-chip-m i {
+  display: block; width: 1.1rem; height: 1.1rem;
+  border-radius: 0.25rem;
+  background: hsl(var(--gold) / .35);
+}
+
+.sp-rest { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; opacity: .5; }
+.sp-rest span { height: 1.6rem; border-radius: 0.45rem; background: hsl(var(--muted)); }
+
+.sp-note { font-size: 0.68rem; line-height: 1.6; color: hsl(var(--muted-foreground)); }

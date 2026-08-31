@@ -368,6 +368,11 @@ export type SiteContent = {
    * الهيئةُ تُبدّل الحافّة، وهذه تُبدّل السطحَ والتخطيطَ وثقلَ الخطّ.
    */
   studentPanel?: string;
+  /**
+   * موضعُ المؤشّرات: داخل لوح الترحيب أم تحته.
+   * `auto` = يتبع التخطيطَ المختار، و«داخل»/«تحت» يعلوان عليه.
+   */
+  statsInPanel?: "auto" | "in" | "out";
   shadowStyle?: string;
   ambient?: string;
   ambientSpeed?: string;

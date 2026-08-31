@@ -125,7 +125,16 @@ export default function StudentHome() {
   /* خيارُ الترويسة يعلو التخطيطَ الجاهز — ومن لم يختر بقي على تخطيطه. */
   const headerStyle = (content.studentHeader as typeof L.header) || L.header;
   const showHeader = headerStyle !== "minimal";
-  const statsInside = showHeader && L.statsInHeader;
+  /*
+    موضعُ المؤشّرات — خيارٌ صريحٌ يعلو التخطيط.
+    كان يتبع التخطيطَ الجاهز وحدَه، فمن أراد المؤشّراتِ داخل اللوح لزمه
+    أن يُبدّل التخطيطَ كلَّه من أجلها — ويتغيّر معه ما لم يُرد تغييرَه.
+  */
+  const statsInside =
+    showHeader &&
+    (content.statsInPanel === "in" ? true
+      : content.statsInPanel === "out" ? false
+        : L.statsInHeader);
 
   /* هيكل عظمي حتى تكتمل البيانات — بنفس التخطيط المختار فلا تقفز الصفحة
      عند وصولها. (db قد يكون فارغاً لحظة الانتقال أو بعد تحديث المحتوى.) */
