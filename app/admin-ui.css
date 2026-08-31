@@ -28,22 +28,75 @@
   color: hsl(var(--foreground));
 }
 
+/* سطرُ التحكّم فوق الشبكة */
+.sg-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+.sg-bar-t { font-size: 0.7rem; font-weight: 700; color: hsl(var(--muted-foreground)); }
+.sg-bar-b {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  margin-inline-start: auto;
+  border: 1px solid hsl(var(--border)); border-radius: 0.5rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.68rem; font-weight: 700; color: hsl(var(--primary));
+  transition: border-color .12s;
+}
+.sg-bar-b:hover { border-color: hsl(var(--primary) / .5); }
+.sg-bar-h {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  margin-inline-start: auto;
+  font-size: 0.66rem; color: hsl(var(--muted-foreground) / .8);
+}
+
+/* البطاقة — لوحٌ فيه مربّعٌ ومساحةُ ضغط */
 .sg-card {
   position: relative;
   display: flex;
-  align-items: flex-start;
-  gap: 0.7rem;
+  align-items: stretch;
+  gap: 0.5rem;
   padding: 0.9rem;
   text-align: right;
   border: 1px solid hsl(var(--border));
   border-radius: 0.85rem;
   background: hsl(var(--card));
-  transition: border-color .14s, box-shadow .14s, transform .14s;
+  transition: border-color .14s, box-shadow .14s, transform .14s, opacity .14s;
 }
 .sg-card:hover {
   border-color: hsl(var(--primary) / .45);
   box-shadow: 0 1px 2px rgb(16 24 40 / .05), 0 10px 24px -14px rgb(16 24 40 / .4);
   transform: translateY(-1px);
+}
+.sg-card.is-on { border-color: hsl(var(--primary) / .55); box-shadow: 0 0 0 2px hsl(var(--primary) / .12); }
+/*
+  المخفيُّ يبهت ولا يختفي: بطاقتُه هي البابُ الوحيدُ لإعادته، فلو غابت
+  لَما وُجد سبيلٌ إليه.
+*/
+.sg-card.is-off { opacity: .55; background: hsl(var(--muted) / .35); }
+.sg-card.is-off:hover { opacity: .8; }
+
+/* المربّعُ داخل البطاقة */
+.sg-card-c { position: relative; display: grid; place-items: start center; flex: none; padding-top: 0.15rem; cursor: pointer; }
+.sg-card-c input { position: absolute; opacity: 0; width: 1.05rem; height: 1.05rem; margin: 0; cursor: pointer; }
+.sg-card-cb {
+  display: grid; place-items: center;
+  width: 1.05rem; height: 1.05rem;
+  border: 1.5px solid hsl(var(--border)); border-radius: 0.35rem;
+  background: hsl(var(--background));
+  color: transparent;
+  transition: background-color .12s, border-color .12s, color .12s;
+}
+.sg-card-c input:checked + .sg-card-cb {
+  background: hsl(var(--primary)); border-color: hsl(var(--primary)); color: #fff;
+}
+.sg-card-c input:focus-visible + .sg-card-cb { box-shadow: 0 0 0 3px hsl(var(--primary) / .25); }
+.sg-card-c:hover .sg-card-cb { border-color: hsl(var(--primary) / .6); }
+
+/* مساحةُ الضغط — تملأ ما بقي */
+.sg-card-hit {
+  display: flex; align-items: flex-start; gap: 0.7rem;
+  flex: 1 1 auto; min-width: 0;
+  text-align: right;
 }
 .sg-card-i {
   display: grid;

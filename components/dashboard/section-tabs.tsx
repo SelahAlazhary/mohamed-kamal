@@ -42,6 +42,9 @@ import {
   createContext, useCallback, useContext, useEffect, useMemo, useState,
   type ReactNode,
 } from "react";
+import { usePathname } from "next/navigation";
+import { Check, Eye, EyeOff } from "lucide-react";
+import { getPref, setPref } from "@/lib/consent";
 
 type Entry = {
   id: string;
@@ -60,6 +63,9 @@ type Ctx = {
   close: () => void;
   /** تُعرض شبكةٌ فعلاً؟ — دون ثلاثة أقسامٍ تبقى في مكانها. */
   gridded: boolean;
+  /** المعروضةُ الآن — والمربّعُ في البطاقة يُدخل ويُخرج منها. */
+  shown: Set<string>;
+  toggleShown: (id: string) => void;
 };
 
 const SectionTabsCtx = createContext<Ctx | null>(null);
@@ -122,7 +128,14 @@ export function useSectionTab(e: Entry) {
   */
   if (!ctx || local) return { hidden: false, open: false, close: () => {} };
   return {
-    hidden: false,
+    /*
+      **والإخفاءُ باختيار الأستاذ لا بقرار البناء.**
+      كان كلُّ قسمٍ يُخفى إلّا المضغوط، فيرى الشاشةَ فارغةً تحت البطاقات
+      ويُسأل عن شاشته في كلّ زيارة. وصار الكلُّ معروضاً، ومربّعُ البطاقة
+      يُخرج ما لا يحتاجه هو — فالشاشةُ تقصر بقراره لا بقرارنا، وتبقى على
+      ما اختار في زيارته القادمة.
+    */
+    hidden: ctx.gridded && !ctx.shown.has(id),
     /** المقفوزُ إليه يُبرَز لحظةً ليُعرف أين وقعت العين. */
     open: ctx.gridded && ctx.active === id,
     close: ctx.close,
@@ -130,8 +143,35 @@ export function useSectionTab(e: Entry) {
 }
 
 export function SectionTabs({ children }: { children: ReactNode }) {
+  const path = usePathname();
   const [items, setItems] = useState<Entry[]>([]);
   const [active, setActive] = useState<string | null>(null);
+  /*
+    `null` = لم يُقرأ المحفوظُ بعد، فالكلُّ معروض. وقراءةُ التخزين في
+    مُهيّئ الحالة تُخرج على الخادم غيرَ ما تُخرج في المتصفّح فتشتكي React
+    من اختلاف الترطيب.
+  */
+  const [hiddenIds, setHiddenIds] = useState<string[] | null>(null);
+
+  const key = `mk.sections.${path}`;
+  useEffect(() => {
+    const raw = getPref(key);
+    try { setHiddenIds(raw ? (JSON.parse(raw) as string[]) : []); } catch { setHiddenIds([]); }
+  }, [key]);
+
+  const toggleShown = useCallback((id: string) => {
+    setHiddenIds((prev) => {
+      const cur = prev ?? [];
+      const next = cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id];
+      setPref(key, JSON.stringify(next));
+      return next;
+    });
+  }, [key]);
+
+  const shown = useMemo(() => {
+    const off = new Set(hiddenIds ?? []);
+    return new Set(items.filter((i) => !off.has(i.id)).map((i) => i.id));
+  }, [items, hiddenIds]);
 
   const register = useCallback((e: Entry) => {
     setItems((prev) => {
@@ -171,8 +211,8 @@ export function SectionTabs({ children }: { children: ReactNode }) {
   }, [items]);
 
   const ctx = useMemo<Ctx>(
-    () => ({ register, unregister, active, close, gridded }),
-    [register, unregister, active, close, gridded]
+    () => ({ register, unregister, active, close, gridded, shown, toggleShown }),
+    [register, unregister, active, close, gridded, shown, toggleShown]
   );
 
   /*
@@ -180,34 +220,60 @@ export function SectionTabs({ children }: { children: ReactNode }) {
     التبويبُ الذي لا يُطفأ يُجبر على فتح غيره للخروج منه — والأستاذُ قد
     يريد الشبكةَ وحدَها ليرى ما في الشاشة كلِّه.
   */
-  const card = (i: Entry) => (
-    <button
-      key={i.id}
-      type="button"
-      onClick={() => {
-        setActive(i.id);
-        /*
-          القفزُ بعد الرسم: القسمُ موجودٌ أصلاً فلا انتظارَ لظهوره، لكنّ
-          `setActive` يُعيد الرسمَ فيُؤجَّل القفزُ إلى ما بعده كي يقع على
-          موضعٍ مستقرّ.
-        */
-        requestAnimationFrame(() => {
-          document.getElementById(`sec-${i.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
-        });
-      }}
-      aria-pressed={active === i.id}
-      className={`sg-card ${i.alert ? "is-alert" : ""} ${active === i.id ? "is-on" : ""}`}
-    >
-      {i.icon && <span className="sg-card-i">{i.icon}</span>}
-      <span className="min-w-0 flex-1">
-        <span className="sg-card-t">{i.title}</span>
-        {i.subtitle && <span className="sg-card-h">{i.subtitle}</span>}
-      </span>
-      {i.count !== undefined && i.count > 0 && (
-        <span className="sg-card-n">{i.count.toLocaleString("ar-EG")}</span>
-      )}
-    </button>
-  );
+  /*
+    البطاقةُ لوحٌ لا زرّ.
+    ------------------------------------------------------------------
+    كانت `<button>` واحدة. ووضعُ مربّع اختيارٍ داخلها غيرُ صحيح: عنصرٌ
+    تفاعليٌّ داخل عنصرٍ تفاعليّ — يُبطله المتصفّحُ أحياناً، ولا يبلغه
+    مستعملُ لوحة المفاتيح، ويضغط أحدُهما فيقع الآخر.
+
+    فصارت لوحاً فيه شيئان: مربّعٌ يُظهر القسمَ ويُخفيه، ومساحةٌ تُضغط
+    فتقفز إليه. ولكلٍّ حدُّه في الشجرة.
+  */
+  const card = (i: Entry) => {
+    const on = shown.has(i.id);
+    return (
+      <div key={i.id} className={`sg-card ${i.alert ? "is-alert" : ""} ${active === i.id ? "is-on" : ""} ${on ? "" : "is-off"}`}>
+        <label className="sg-card-c" title={on ? "إخفاء هذا القسم من الشاشة" : "إظهاره"}>
+          <input
+            type="checkbox"
+            checked={on}
+            onChange={() => toggleShown(i.id)}
+            aria-label={`إظهار ${i.title}`}
+          />
+          <span className="sg-card-cb" aria-hidden="true"><Check className="size-3" /></span>
+        </label>
+
+        <button
+          type="button"
+          onClick={() => {
+            /* المخفيُّ يُظهَر أوّلاً — القفزُ إلى ما لا يُرى لا يفعل شيئاً */
+            if (!on) toggleShown(i.id);
+            setActive(i.id);
+            /*
+              القفزُ بعد الرسم: القسمُ موجودٌ أصلاً فلا انتظارَ لظهوره، لكنّ
+              `setActive` يُعيد الرسمَ فيُؤجَّل القفزُ إلى ما بعده كي يقع على
+              موضعٍ مستقرّ.
+            */
+            requestAnimationFrame(() => {
+              document.getElementById(`sec-${i.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+            });
+          }}
+          aria-pressed={active === i.id}
+          className="sg-card-hit"
+        >
+          {i.icon && <span className="sg-card-i">{i.icon}</span>}
+          <span className="min-w-0 flex-1">
+            <span className="sg-card-t">{i.title}</span>
+            {i.subtitle && <span className="sg-card-h">{i.subtitle}</span>}
+          </span>
+          {i.count !== undefined && i.count > 0 && (
+            <span className="sg-card-n">{i.count.toLocaleString("ar-EG")}</span>
+          )}
+        </button>
+      </div>
+    );
+  };
 
   const grouped = groups.length >= 2 && items.every((i) => i.group);
 
@@ -219,6 +285,25 @@ export function SectionTabs({ children }: { children: ReactNode }) {
       */}
       {gridded && (
         <div className="mb-4">
+          {/*
+            سطرٌ يقول كم يُعرض من كم، ويُعيد الكلَّ بضغطة.
+            ومن أخفى أقساماً ثمّ نسي، رأى العددَ فعرف أنّ الشاشةَ ناقصةٌ
+            بقراره لا بعطل.
+          */}
+          <div className="sg-bar">
+            <span className="sg-bar-t">
+              {shown.size === items.length
+                ? `${items.length.toLocaleString("ar-EG")} أقسام في هذه الشاشة`
+                : `يُعرض ${shown.size.toLocaleString("ar-EG")} من ${items.length.toLocaleString("ar-EG")} — والباقي مخفيٌّ باختيارك`}
+            </span>
+            {shown.size < items.length ? (
+              <button type="button" onClick={() => { setHiddenIds([]); setPref(key, "[]"); }} className="sg-bar-b">
+                <Eye className="size-3.5" /> أظهر الكلّ
+              </button>
+            ) : (
+              <span className="sg-bar-h"><EyeOff className="size-3.5" /> أزِل علامةَ أيّ قسمٍ لإخفائه</span>
+            )}
+          </div>
           {grouped
             ? groups.map((g) => (
                 <div key={g} className="sg-group">

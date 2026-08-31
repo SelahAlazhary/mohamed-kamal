@@ -34,6 +34,7 @@ import { AMBIENTS, AMBIENT_SPEEDS, findAmbient, DEFAULT_AMBIENT } from "@/lib/am
 import { SHADOW_STYLES, findShadow, DEFAULT_SHADOW } from "@/lib/shadow-styles";
 import { TINT_MODES, artFilter } from "@/lib/art-tint";
 import { ART_DEPTHS, depthFilter, depthLit } from "@/lib/art-depth";
+import { PANEL_STYLES, DEFAULT_PANEL_STYLE } from "@/lib/panel-styles";
 import { SHARI_ANIM } from "@/components/brand/shari-art";
 import { LibGlyph } from "@/components/brand/lib-icon";
 import {
@@ -654,6 +655,43 @@ export default function AppearancePage() {
 
       {tab === "design" && (
         <>
+          {/*
+            معالجةُ اللوح — محورٌ ثانٍ فوق «الهيئة».
+            الهيئاتُ الاثنتان والعشرون تُبدّل الحافّةَ وحدَها واللوحُ في
+            جميعها كتلةٌ كحليّة، فمن بدّل بينها لم يرَ فرقاً يُذكر. وهذه
+            تُبدّل ما يُرى فعلاً: السطحَ والتخطيطَ وثقلَ الخطّ وموضعَ الحدّ.
+          */}
+          <Section
+            className="mb-5"
+            title="معالجة لوح الترحيب"
+            subtitle="السطحُ والتخطيط — غيرُ «الهيئة» التي تُبدّل الحافّةَ وحدَها"
+            group="الألوان"
+          >
+            <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+              {PANEL_STYLES.map((p) => {
+                const on = (content.studentPanel ?? DEFAULT_PANEL_STYLE) === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    disabled={busy !== null}
+                    onClick={async () => { setBusy(`pnl-${p.id}`); await saveContent({ studentPanel: p.id }); setBusy(null); }}
+                    className={`rounded-2xl border p-3 text-right transition ${
+                      on ? "border-primary bg-primary/[0.06] ring-2 ring-primary/25" : "border-border hover:border-primary/40"
+                    }`}
+                  >
+                    {/* معاينةٌ صغيرةٌ تُري المعالجةَ لا اسمَها */}
+                    <span className={`pnl-${p.id} mb-2 block`}>
+                      <span className="student-header block h-11 rounded-xl bg-gradient-to-bl from-[hsl(var(--primary))] to-[hsl(var(--glow))]" />
+                    </span>
+                    <span className="block text-xs font-bold">{p.name}</span>
+                    <span className="mt-0.5 block text-[10px] leading-relaxed text-muted-foreground">{p.hint}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </Section>
+
           <Section className="mb-5" title="ألوان الهيئة" group="الألوان">
             <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
               لوحُ الترحيب والبطاقات في بوابة الطالب يأخذان لونَهما من الهوية. ومن أرادهما

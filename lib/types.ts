@@ -363,6 +363,11 @@ export type SiteContent = {
   /** عمقُ الرسوم (lib/art-depth.ts) — بَثقٌ وإضاءةٌ تجعلها مجسَّمة. */
   artDepth?: string;
   designColors?: { panel?: string; panel2?: string; panelText?: string; tile?: string; edge?: string };
+  /**
+   * معالجةُ لوح الترحيب (lib/panel-styles.ts) — محورٌ ثانٍ فوق «الهيئة».
+   * الهيئةُ تُبدّل الحافّة، وهذه تُبدّل السطحَ والتخطيطَ وثقلَ الخطّ.
+   */
+  studentPanel?: string;
   shadowStyle?: string;
   ambient?: string;
   ambientSpeed?: string;

@@ -1,0 +1,153 @@
+/* ============================================================
+   معالجاتُ لوح الترحيب — ثمانٍ
+   ------------------------------------------------------------
+   الهيئاتُ الاثنتان والعشرون تُبدّل الحافّةَ وحدَها، واللوحُ في جميعها
+   كتلةٌ كحليّة. وهذه تُبدّل ما يُرى فعلاً: السطحَ، والتخطيط، وثقلَ الخطّ،
+   وموضعَ الحدّ.
+
+   ولا لونَ جديد: كلُّها من كحليّ الهوية وذهبِها وورقِها.
+
+   والمحدِّدُ مركّبٌ بلا فراغ على الجذر ثمّ سليلٌ: `.pnl-x .student-header`.
+   والقوّةُ تكفي لتغلب `.btn-glow` المكتوبَ في طبقة `components` — فالطبقةُ
+   المكتوبةُ خارجَ الطبقات تسبق المكتوبةَ داخلها في التتالي.
+   ============================================================ */
+
+/* ــ ١) الحبر — الأصلُ، لا شيءَ يُكتب فيبقى كما هو ــ */
+
+/* ــ ٢) الورق ــ */
+.pnl-paper .student-header {
+  background-image: none !important;
+  background-color: hsl(var(--card));
+  color: hsl(var(--foreground));
+  box-shadow: inset 0 0 0 1px hsl(var(--gold) / 0.5), 0 1px 2px rgb(16 24 40 / 0.05);
+}
+.pnl-paper .student-header h1,
+.pnl-paper .student-header p,
+.pnl-paper .student-header span { color: inherit; }
+.pnl-paper .student-header .text-white\/85,
+.pnl-paper .student-header .student-header-extra { color: hsl(var(--muted-foreground)) !important; }
+
+/* ــ ٣) الحدُّ الجانبيّ ــ */
+.pnl-rule .student-header {
+  background-image: none !important;
+  background-color: transparent;
+  color: hsl(var(--foreground));
+  box-shadow: none;
+  border-inline-start: 4px solid hsl(var(--gold));
+  border-radius: 0 !important;
+  clip-path: none !important;
+  padding-inline-start: 1.25rem;
+}
+.pnl-rule .student-header h1,
+.pnl-rule .student-header p,
+.pnl-rule .student-header span { color: inherit; }
+.pnl-rule .student-header .text-white\/85,
+.pnl-rule .student-header .student-header-extra { color: hsl(var(--muted-foreground)) !important; }
+
+/* ــ ٤) المقسوم ــ */
+@media (min-width: 768px) {
+  .pnl-split .student-header > * {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  /* الفاصلُ ذهبيٌّ شعرة — يفصل ولا يثقل */
+  .pnl-split .student-header > * > :last-child {
+    border-inline-start: 1px solid hsl(var(--gold) / 0.45);
+    padding-inline-start: 1.5rem;
+  }
+}
+
+/* ــ ٥) المؤطَّر ــ */
+.pnl-frame .student-header {
+  background-image:
+    linear-gradient(hsl(var(--card)), hsl(var(--card))),
+    linear-gradient(158deg, hsl(var(--primary)) 0%, hsl(var(--glow) / 0.9) 130%) !important;
+  background-origin: content-box, padding-box;
+  background-clip: content-box, padding-box;
+  padding: 0.7rem;
+  color: hsl(var(--foreground));
+}
+.pnl-frame .student-header > * { padding: 1.25rem; }
+.pnl-frame .student-header h1,
+.pnl-frame .student-header p,
+.pnl-frame .student-header span { color: inherit; }
+.pnl-frame .student-header .text-white\/85,
+.pnl-frame .student-header .student-header-extra { color: hsl(var(--muted-foreground)) !important; }
+
+/* ــ ٦) الشريط ــ */
+.pnl-band .student-header { position: relative; padding-top: 2.6rem !important; }
+.pnl-band .student-header::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: 1.9rem;
+  background: linear-gradient(to left, hsl(var(--gold)), hsl(var(--gold) / 0.55));
+}
+
+/* ــ ٧) المجرَّد ــ */
+.pnl-bare .student-header {
+  background-image: none !important;
+  background-color: transparent;
+  color: hsl(var(--foreground));
+  box-shadow: none;
+  border: 0;
+  border-radius: 0 !important;
+  clip-path: none !important;
+  padding-inline: 0 !important;
+  padding-block: 0.25rem 1.1rem !important;
+  border-bottom: 2px solid hsl(var(--gold) / 0.55);
+}
+.pnl-bare .student-header h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); }
+.pnl-bare .student-header h1,
+.pnl-bare .student-header p,
+.pnl-bare .student-header span { color: inherit; }
+.pnl-bare .student-header .text-white\/85,
+.pnl-bare .student-header .student-header-extra { color: hsl(var(--muted-foreground)) !important; }
+
+/* ــ ٨) المزدوج ــ */
+.pnl-duo .student-header {
+  background-image: linear-gradient(
+    to bottom,
+    hsl(var(--primary)) 0%,
+    hsl(var(--primary)) 58%,
+    hsl(var(--gold)) 58%,
+    hsl(var(--gold)) 100%
+  ) !important;
+}
+/* النصفُ الأسفلُ ذهبٌ فاتح، فنصُّه كحليٌّ لا أبيض — وإلّا لم يُقرأ */
+.pnl-duo .student-header .student-header-extra,
+.pnl-duo .student-header .text-white\/85 { color: hsl(var(--primary)) !important; }
+
+
+/* ــ ٩) المتوسّط — إعادةُ ترتيبٍ لا إعادةُ تلوين ــ */
+.pnl-center .student-header > * {
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center;
+}
+/* الحلقةُ تصعد فوق الاسم: `order` يُعيد الترتيبَ بلا لمس الشجرة */
+.pnl-center .student-header > * > :last-child { order: -1; }
+.pnl-center .student-header > * > :first-child { width: 100%; }
+
+/* ــ ١٠) السطر — لوحٌ بارتفاع سطر ــ */
+.pnl-bar .student-header {
+  padding-block: 0.7rem !important;
+}
+.pnl-bar .student-header > * { gap: 0.9rem !important; }
+.pnl-bar .student-header h1 { margin-top: 0 !important; font-size: 1.15rem !important; }
+/*
+  ما لا يسع السطرَ يُخفى: خطُّ الزخرفة، والمرحلة، والشمسةُ الكبيرة.
+  والإخفاءُ هنا صوابٌ لأنّ المعالجةَ اسمُها «السطر» — من اختارها طلب
+  القِصر، ولا يُقال له إنّها لم تقصر.
+*/
+.pnl-bar .student-header .student-header-extra { display: none; }
+.pnl-bar .student-header > * > :first-child > svg { display: none; }
+.pnl-bar .student-header > :first-child,
+.pnl-bar .student-header > :nth-child(2) { display: none; }
+.pnl-bar .student-header > * > :last-child {
+  width: 2.6rem !important;
+  height: 2.6rem !important;
+}
