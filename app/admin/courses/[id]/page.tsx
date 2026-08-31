@@ -592,40 +592,74 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
                             {(unit.lessons ?? []).length === 0 ? (
                 <p className="py-4 text-center text-xs text-muted-foreground">مادّةٌ فارغة — اختَرها في نموذج الإضافة بالأعلى.</p>
               ) : (
-        <div className="space-y-2">
+        /*
+          الدروسُ بطاقاتٌ بأغلفتها لا صفوفَ قائمة.
+          الدرسُ ليس سطرَ نصّ: له غلافٌ يراه الطالبُ في بوابته، ومدّةٌ
+          واختبارٌ ومرفقات. والصفُّ يُخفي الغلافَ كلَّه — وهو أوّلُ ما
+          يميّز درساً عن درس. والغلافُ هنا `CourseArt` ببذرة الدرس، فلكلّ
+          درسٍ لوحتُه ولا تتشابه.
+        */
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {(unit.lessons ?? []).map((v, i) => (
-            <Card key={v.id} className="!p-3">
-              <div className="flex items-center gap-3">
-                <div className="flex flex-col text-muted-foreground">
-                  <button onClick={() => move(unit.id, i, -1)} className="hover:text-primary disabled:opacity-30" disabled={i === 0}>▲</button>
-                  <button onClick={() => move(unit.id, i, 1)} className="hover:text-primary disabled:opacity-30" disabled={i === (unit.lessons ?? []).length - 1}>▼</button>
-                </div>
-                <span className="grid size-9 place-items-center rounded-2xl bg-primary/12 text-primary"><PlayCircle className="size-5" /></span>
-                <div className="min-w-0 flex-1">
-                  <p className="flex items-center gap-2 font-semibold">{i + 1}. {v.title} {v.isFree && <Gift className="size-3.5 text-emerald-500" />}</p>
-                  <p className="truncate text-[11px] text-muted-foreground" dir="ltr">{v.url}</p>
-                </div>
-                {v.duration && <span className="text-xs text-muted-foreground">{v.duration}</span>}
-                <button onClick={() => setQuizFor(quizFor === v.id ? null : v.id)} title="اختبار الدرس"
-                  className={`inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs font-bold transition ${
-                    v.quiz?.enabled ? "border-emerald-500/40 text-emerald-500" : "border-border text-muted-foreground hover:border-primary hover:text-primary"
-                  }`}>
-                  <ListChecks className="size-4" />
-                  {v.quiz?.enabled ? `اختبار (${v.quiz.questions.length})` : "اختبار"}
-                  <ChevronDown className={`size-3 transition ${quizFor === v.id ? "rotate-180" : ""}`} />
-                </button>
-                {units.length > 1 && (
-                  <select value={unit.id} onChange={(e) => moveLessonTo(v.id, e.target.value)} title="نقل إلى مادّة"
-                    className="rounded-full border border-border bg-card/60 px-2.5 py-1.5 text-xs font-bold outline-none focus:border-primary/50">
-                    {units.map((u) => <option key={u.id} value={u.id}>{u.title}</option>)}
-                  </select>
-                )}
-                <button onClick={() => remove(v.id)} title="حذف" className="grid size-8 place-items-center rounded-full border border-border text-rose-500 transition hover:border-rose-500"><Trash2 className="size-4" /></button>
+            <div key={v.id} className="flex flex-col overflow-hidden rounded-3xl border border-border bg-card transition hover:border-primary/40">
+              <div className="relative">
+                <CourseArt seed={v.id} title={v.title} className="aspect-[16/9] w-full" />
+                <span className="absolute inset-0 grid place-items-center bg-black/25 text-white transition hover:bg-black/10">
+                  <PlayCircle className="size-8 drop-shadow" />
+                </span>
+                <span className="absolute right-2 top-2 flex items-center gap-1.5">
+                  {v.isFree && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                      <Gift className="size-3" /> مجاني
+                    </span>
+                  )}
+                  {v.duration && (
+                    <span className="rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white">{v.duration}</span>
+                  )}
+                </span>
+                {/* الترتيبُ يُبدَّل من الغلاف — أكثرُ ما يُفعل بالدرس بعد إضافته */}
+                <span className="absolute bottom-2 right-2 flex overflow-hidden rounded-full border border-white/25 bg-black/55 text-white">
+                  <button onClick={() => move(unit.id, i, -1)} disabled={i === 0} title="أعلى"
+                    className="px-2 py-0.5 text-[11px] transition hover:bg-white/15 disabled:opacity-30">▲</button>
+                  <button onClick={() => move(unit.id, i, 1)} disabled={i === (unit.lessons ?? []).length - 1} title="أسفل"
+                    className="px-2 py-0.5 text-[11px] transition hover:bg-white/15 disabled:opacity-30">▼</button>
+                </span>
               </div>
-              {quizFor === v.id && (
-                <QuizEditor lesson={v} onChange={(q) => setQuiz(v.id, q)} results={quizStats(v.id)} />
-              )}
-            </Card>
+
+              <div className="flex flex-1 flex-col gap-2.5 p-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold">
+                    {(i + 1).toLocaleString("ar-EG")}. {v.title}
+                  </p>
+                  <p className="mt-0.5 truncate text-[10px] text-muted-foreground" dir="ltr">{v.url}</p>
+                </div>
+
+                <div className="mt-auto flex flex-wrap items-center gap-1.5">
+                  <button onClick={() => setQuizFor(quizFor === v.id ? null : v.id)} title="اختبار الدرس"
+                    className={`inline-flex flex-1 items-center justify-center gap-1 rounded-2xl border px-2.5 py-1.5 text-[11px] font-bold transition ${
+                      v.quiz?.enabled ? "border-emerald-500/40 text-emerald-500" : "border-border text-muted-foreground hover:border-primary hover:text-primary"
+                    }`}>
+                    <ListChecks className="size-3.5" />
+                    {v.quiz?.enabled ? `اختبار (${v.quiz.questions.length.toLocaleString("ar-EG")})` : "اختبار"}
+                    <ChevronDown className={`size-3 transition ${quizFor === v.id ? "rotate-180" : ""}`} />
+                  </button>
+                  {units.length > 1 && (
+                    <select value={unit.id} onChange={(e) => moveLessonTo(v.id, e.target.value)} title="نقل إلى مادّة"
+                      className="max-w-[7.5rem] rounded-2xl border border-border bg-card/60 px-2 py-1.5 text-[11px] font-bold outline-none focus:border-primary/50">
+                      {units.map((u) => <option key={u.id} value={u.id}>{u.title}</option>)}
+                    </select>
+                  )}
+                  <button onClick={() => remove(v.id)} title="حذف"
+                    className="grid size-8 shrink-0 place-items-center rounded-2xl border border-border text-rose-500 transition hover:border-rose-500">
+                    <Trash2 className="size-4" />
+                  </button>
+                </div>
+
+                {quizFor === v.id && (
+                  <QuizEditor lesson={v} onChange={(q) => setQuiz(v.id, q)} results={quizStats(v.id)} />
+                )}
+              </div>
+            </div>
           ))}
         </div>
               )}

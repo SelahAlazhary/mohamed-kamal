@@ -32,6 +32,7 @@ import { subjectActive, activeSubs, daysLeft } from "@/lib/access";
 import { MotionMark } from "@/components/brand/motion-mark";
 import { ShariMotion } from "@/components/brand/shari-motion";
 import { ShariVector } from "@/components/brand/shari-vector";
+import { AzhariStudentHeader } from "@/components/student/azhari-header";
 
 const ar = (n: number) => n.toLocaleString("ar-EG");
 
@@ -152,7 +153,24 @@ export default function StudentHome() {
         </div>
       )}
 
-      {showHeader && (
+      {/*
+        الهيئةُ الأزهرية لوحٌ قائمٌ بذاته لا تنويعةَ حشوٍ على اللوح العامّ:
+        زخرفتُه مبنيّةٌ وبطاقاتُه تطفو على حافّته — فتُرسم بمكوّنها ولا
+        تُقحَم في تفريعات الهيئات الخمس.
+      */}
+      {L.header === "azhari" && (
+        <AzhariStudentHeader
+          name={session?.name ?? ""}
+          grade={me?.grade}
+          female={fem}
+          progress={avg}
+          courses={courses.length}
+          daysLeft={permanent ? null : (expiring?.left ?? null)}
+          active={subs.length > 0}
+        />
+      )}
+
+      {showHeader && L.header !== "azhari" && (
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}

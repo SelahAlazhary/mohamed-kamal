@@ -363,7 +363,8 @@ export function skinVars(s: StudentSkin): React.CSSProperties {
 /* ------------------------------------------------------------------ */
 
 /** شكل لوح الترحيب. */
-export type HeaderStyle = "banner" | "compact" | "split" | "stacked" | "minimal";
+/** «azhari» لوحٌ كحليٌّ بزخرفةٍ هندسيةٍ وبطاقاتٍ تطفو على حافّته. */
+export type HeaderStyle = "banner" | "compact" | "split" | "stacked" | "minimal" | "azhari";
 /** شكل صفّ المؤشّرات. */
 export type StatsStyle = "row" | "grid" | "inline" | "rail";
 /** شكل بطاقات الكورسات. */

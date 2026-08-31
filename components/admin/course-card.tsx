@@ -6,28 +6,21 @@
  * كان الجدولُ يعرض الكورساتِ صفوفاً: اسمٌ ورقمٌ وحالة. وهذا يصلح لبياناتٍ
  * متجانسةٍ تُقارَن عموداً بعمود — ولا يصلح لكورس: الكورسُ **غلافٌ
  * ودروس**، وكلاهما لا يدخل خانةً في جدول. فصار بطاقةً: الغلافُ كما يراه
- * الطالبُ فعلاً، وتحته دروسُه بأغلفتها.
+ * الطالبُ فعلاً، وتحته ما يُقرأ بلمحة.
  *
  * **والغلافُ يُرسم بـ`CourseArt` نفسِه** الذي يرسمه في بوابة الطالب — لا
  * بصورةٍ مصغّرةٍ تُحاكيه. فما يراه الأستاذُ هنا هو ما يراه الطالبُ هناك،
  * ولا يفاجئه فرقٌ بعد النشر.
  *
- * **والدروسُ تُطوى.** كورسٌ فيه أربعون درساً يُغرق الشاشة، فتُعرض أوائلُها
- * ويُفتح الباقي بضغطة — والعددُ ظاهرٌ دائماً فلا يُظنّ أنّها كلُّها.
+ * **والدروسُ ليست هنا.** موضعُها صفحتُها — فيها تُدار وتُرتَّب وتُختبر،
+ * وهنا يكفي عددُها وبابُ الدخول إليها.
  */
 
-import { useState } from "react";
 import Link from "next/link";
-import {
-  ListVideo, Trash2, ToggleLeft, ToggleRight, Users, Wallet,
-  ChevronDown, PlayCircle, Lock, Paperclip,
-} from "lucide-react";
+import { ListVideo, Trash2, ToggleLeft, ToggleRight, Users, Wallet } from "lucide-react";
 import { CourseArt } from "@/components/brand/course-art";
 import { StatusBadge } from "@/components/dashboard/ui";
 import type { Subject, SitePlan } from "@/lib/types";
-
-/** كم درساً يظهر قبل الطيّ. */
-const PEEK = 4;
 
 export function AdminCourseCard({
   s,
@@ -46,10 +39,7 @@ export function AdminCourseCard({
   onTerm: (t: 1 | 2) => void;
   onTrack: (t: string) => void;
 }) {
-  const [open, setOpen] = useState(false);
   const lessons = s.videos ?? [];
-  const shown = open ? lessons : lessons.slice(0, PEEK);
-  const rest = lessons.length - shown.length;
 
   return (
     <div className="group flex flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-bento transition hover:border-primary/40">
@@ -122,55 +112,12 @@ export function AdminCourseCard({
           )}
         </div>
 
-        {/* ---------- الدروس بأغلفتها ---------- */}
-        {lessons.length > 0 ? (
-          <ul className="mt-1 grid gap-1.5 border-t border-border pt-3">
-            {shown.map((v, i) => (
-              <li key={v.id} className="flex items-center gap-2.5 rounded-2xl p-1 transition hover:bg-muted/60">
-                {/*
-                  غلافُ الدرس مصغَّراً — وهو `CourseArt` نفسُه ببذرة الدرس،
-                  فلكلّ درسٍ لوحتُه ولا تتشابه الدروسُ في قائمةٍ واحدة.
-                */}
-                <span className="relative w-16 shrink-0 overflow-hidden rounded-xl">
-                  <CourseArt seed={v.id} title={v.title} className="aspect-[16/9] w-full" />
-                  <span className="absolute inset-0 grid place-items-center bg-black/25 text-white">
-                    {v.isFree ? <PlayCircle className="size-4" /> : <Lock className="size-3.5 opacity-90" />}
-                  </span>
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[11px] font-semibold">
-                    {(i + 1).toLocaleString("ar-EG")}. {v.title}
-                  </span>
-                  <span className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground">
-                    {v.duration ? <span>{v.duration}</span> : null}
-                    {v.isFree ? <span className="font-bold text-emerald-600">مجاني</span> : null}
-                    {v.materials?.length ? (
-                      <span className="inline-flex items-center gap-0.5">
-                        <Paperclip className="size-2.5" /> {v.materials.length.toLocaleString("ar-EG")}
-                      </span>
-                    ) : null}
-                  </span>
-                </span>
-              </li>
-            ))}
-
-            {rest > 0 && (
-              <li>
-                <button
-                  type="button"
-                  onClick={() => setOpen(true)}
-                  className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-bold text-primary transition hover:underline"
-                >
-                  <ChevronDown className="size-3.5" /> وبقيّةُ الدروس ({rest.toLocaleString("ar-EG")})
-                </button>
-              </li>
-            )}
-          </ul>
-        ) : (
-          <p className="mt-1 rounded-2xl border border-dashed border-border p-3 text-center text-[11px] text-muted-foreground">
-            لا دروسَ بعد — أضِفها من «إدارة الدروس».
-          </p>
-        )}
+        {/*
+          الدروسُ لا تُعرض هنا.
+          كانت تُعرض بأغلفتها في البطاقة، فصارت البطاقةُ صفحتين: كورسٌ
+          ثمّ دروسُه. وموضعُ الدروس صفحتُها — فيها تُدار وتُرتَّب وتُختبر،
+          وهنا يكفي عددُها وبابُ الدخول إليها.
+        */}
 
         {/* ---------- الإجراءات ---------- */}
         <div className="mt-auto flex items-center gap-1.5 border-t border-border pt-3">

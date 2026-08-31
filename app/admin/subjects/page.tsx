@@ -159,6 +159,14 @@ export default function SubjectsPage() {
 
   const inTermCount = (t: 1 | 2) => subjects.filter((s) => (s.term ?? 1) === t).length;
 
+  /*
+    الفصلُ المعروض.
+    كانت الكورساتُ تُعرض بفصليها معاً في لوحين متتابعين، فيُمرَّر نصفُ
+    الشاشة للوصول إلى الفصل الثاني. والأستاذُ يعمل في فصلٍ واحدٍ في
+    الجلسة الواحدة — فيُختار، ويبقى «الاثنان» لمن أراد النظرةَ الشاملة.
+  */
+  const [termView, setTermView] = useState<1 | 2 | "all">(1);
+
   return (
     <>
       <PageBar
@@ -167,6 +175,45 @@ export default function SubjectsPage() {
         action={<Button className="px-5 py-2.5" onClick={() => setAdding((v) => !v)}><Plus className="size-4" /> إضافة كورس</Button>}
         search={{ value: q, onChange: setQ, placeholder: "ابحث باسم الكورس أو الصف" }}
       />
+
+      {/* ---------- مبدِّلُ الفصل ---------- */}
+      <div className="mb-5 flex flex-wrap items-center gap-2">
+        <div className="relative inline-flex rounded-[1.35rem] border border-border bg-card p-1 shadow-sm">
+          {([
+            { id: 1 as const, label: "الفصل الأول" },
+            { id: 2 as const, label: "الفصل الثاني" },
+            { id: "all" as const, label: "الاثنان" },
+          ]).map((t) => {
+            const on = termView === t.id;
+            const n = t.id === "all" ? subjects.length : inTermCount(t.id);
+            return (
+              <button
+                key={String(t.id)}
+                type="button"
+                onClick={() => setTermView(t.id)}
+                aria-pressed={on}
+                className={`relative inline-flex items-center gap-2 rounded-[1.05rem] px-4 py-2.5 text-xs font-bold transition ${
+                  on ? "btn-glow text-white shadow-bento" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {t.label}
+                <span
+                  className={`grid min-w-[1.4rem] place-items-center rounded-full px-1.5 py-0.5 text-[10px] font-extrabold ${
+                    on ? "bg-white/22 text-white" : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {n.toLocaleString("ar-EG")}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {q.trim() && (
+          <span className="text-[11px] text-muted-foreground">
+            البحثُ يتجاوز الفصلَ المختار — يبحث في الكورسات كلِّها.
+          </span>
+        )}
+      </div>
 
       {adding && (
         <div className="glass mb-4 space-y-5 rounded-3xl p-5">
@@ -279,7 +326,7 @@ export default function SubjectsPage() {
               : rows(found)
           ) : (
             <div className="space-y-3">
-              {TERMS.map((t) => {
+              {TERMS.filter((t) => termView === "all" || termView === t.id).map((t) => {
                 const inTerm = subjects.filter((s) => (s.term ?? 1) === t.id);
                 const byGrade = Array.from(new Set(inTerm.map((s) => s.grade || "كل الصفوف")))
                   .sort((a, b) => gradeOrder(a) - gradeOrder(b));
