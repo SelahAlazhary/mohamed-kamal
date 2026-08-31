@@ -169,6 +169,7 @@ export default function StudentHome() {
           courses={courses.length}
           daysLeft={permanent ? null : (expiring?.left ?? null)}
           active={subs.length > 0}
+          opts={content.azHead}
         />
       )}
 

@@ -273,6 +273,17 @@ export type SiteContent = {
   /** تصميمُ قائمة اللوحة — مستقلٌّ عن قائمة الطالب. */
   adminSideNav?: string;
   studentHeader?: string;
+  /**
+   * ضبطُ لوح ترحيب الطالب (الهيئة الأزهرية).
+   * ------------------------------------------------------------------
+   * كان اللوحُ مقاساتٍ مكتوبةً في الشيفرة: من أراد اسماً أكبرَ أو بطاقةً
+   * أقلَّ انتظر تعديلاً. وهو أوّلُ ما يراه الطالبُ في كلّ زيارة — فأولى
+   * ما يُملَك.
+   *
+   * **والغيابُ يعني الأصل**: قاعدةٌ لم تُضبط بعد تعمل كما كانت، ولا
+   * يُطفأ شيءٌ لمجرّد أنّ الحقلَ لم يُكتب.
+   */
+  azHead?: AzHeadOptions;
   studentDesign?: string;
   sideNav?: string;
   dockStyle?: string;
@@ -619,6 +630,38 @@ export type Unit = {
   lessons: Lesson[];
   /** ملفّاتُ الوحدة — تُضاف إلى ملفّات الكورس ولا تُلغيها. */
   materials?: Material[];
+};
+
+/** ضبطُ لوح ترحيب الطالب — كلُّه اختياريّ، والغيابُ هو الأصل. */
+export type AzHeadOptions = {
+  /** معرّفُ التصميم — انظر `AZ_HEAD_STYLES`. */
+  style?: string;
+  /** ألوانٌ تسبق التصميم: من ضبط لوناً أراده هو. */
+  panelColor?: string;
+  accentColor?: string;
+  inkColor?: string;
+  /** إخفاءُ اللوح كلِّه. */
+  off?: boolean;
+  /** إخفاءُ بطاقةٍ بعينها. */
+  hideProgress?: boolean;
+  hideCourses?: boolean;
+  hideSub?: boolean;
+  /** إخفاءُ أشرطة النسبة أسفل الأرقام. */
+  hideBars?: boolean;
+  /** إخفاءُ الزخرفة الهندسيّة في خلفيّة اللوح. */
+  hideOrnament?: boolean;
+  /** إخفاءُ صورة الحرف الأوّل. */
+  hideAvatar?: boolean;
+  /** إخفاءُ الصفّ الدراسيّ تحت الاسم. */
+  hideGrade?: boolean;
+  /** مقاساتٌ بالبكسل — تُحقن متغيّراتِ CSS. */
+  nameSize?: number;   // اسمُ الطالب
+  valueSize?: number;  // الرقمُ في البطاقة
+  titleSize?: number;  // عنوانُ البطاقة
+  noteSize?: number;   // سطرُ الحال
+  avatarSize?: number; // قطرُ الصورة
+  /** انحناءُ حوافّ اللوح والبطاقات. */
+  radius?: number;
 };
 
 export type Subject = {

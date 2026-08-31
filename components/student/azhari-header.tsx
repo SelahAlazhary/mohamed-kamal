@@ -18,6 +18,8 @@
  */
 
 import { useMemo, type ReactNode } from "react";
+import type { AzHeadOptions } from "@/lib/types";
+import { findAzHead, azPad, azShadow } from "@/lib/az-head-styles";
 
 /** رقمٌ بالعربية — للنصّ الجاري. */
 const ar = (n: number) => n.toLocaleString("ar-EG");
@@ -161,6 +163,7 @@ export function AzhariStudentHeader({
   courses,
   daysLeft,
   active,
+  opts,
 }: {
   name: string;
   grade?: string;
@@ -173,7 +176,43 @@ export function AzhariStudentHeader({
   daysLeft: number | null;
   /** هل الاشتراكُ ساري. */
   active: boolean;
+  /** ضبطُ اللوح من اللوحة — والغيابُ هو الأصل. */
+  opts?: AzHeadOptions;
 }) {
+  /*
+    المقاساتُ متغيّراتُ CSS لا أصنافُ Tailwind.
+    الأستاذُ يختار رقماً بين حدّين، وأصنافُ Tailwind مجموعةٌ مغلقة —
+    فلا تُبنى منها قيمةٌ حرّة. والمتغيّرُ يقبل أيَّ رقمٍ ويُورَث للأبناء.
+  */
+  const o = opts ?? {};
+  const st = findAzHead(o.style);
+  const pad = azPad(st.pad);
+
+  /*
+    الألوانُ ترتّبها الأولويّة: ضبطُ الأستاذ، ثمّ ما يميّز التصميمَ، ثمّ
+    متغيّراتُ العلامة. فمن لم يضبط شيئاً تبع هويّةَ منصّته، ومن اختار
+    تصميماً ملوّناً أخذ لونَه، ومن ضبط بيده غلب الاثنين.
+  */
+  const accent = o.accentColor || st.accent || "hsl(var(--gold))";
+  const panelBg = o.panelColor || st.panelColor || "hsl(217 48% 13%)";
+  const cardBg =
+    st.panel === "glass" ? "hsl(0 0% 100% / 0.08)"
+    : st.panel === "outline" ? "transparent"
+    : st.panel === "paper" ? "hsl(0 0% 100%)"
+    : "hsl(217 48% 15%)";
+  const ink = o.inkColor || (st.ink === "dark" ? "hsl(220 30% 14%)" : "#fff");
+
+  const vars = {
+    "--az-accent": accent,
+    "--az-ink": ink,
+    "--az-name": `${o.nameSize ?? 36}px`,
+    "--az-value": `${o.valueSize ?? 44}px`,
+    "--az-title": `${o.titleSize ?? 14}px`,
+    "--az-note": `${o.noteSize ?? 13}px`,
+    "--az-avatar": `${o.avatarSize ?? 72}px`,
+    "--az-radius": `${o.radius ?? st.radius}px`,
+    "--az-lift": `${pad.lift}px`,
+  } as React.CSSProperties;
   /*
     بطاقةُ الرقم: عنوانٌ فوق، ثمّ الرقمُ كبيراً ومعه وحدتُه، ثمّ سطرُ حال.
     ------------------------------------------------------------------
@@ -189,7 +228,7 @@ export function AzhariStudentHeader({
     والأرقامُ جدوليّةٌ (`tabular-nums`) فلا يتراقص عرضُ البطاقة كلّما
     تغيّر الرقم.
   */
-  const cards = [
+  const allCards = [
     {
       key: "progress",
       art: <Ring value={progress} size={48} />,
@@ -231,14 +270,35 @@ export function AzhariStudentHeader({
     },
   ];
 
+  /* ما أُخفي لا يُرسم — ولا يُترك مكانُه فارغاً، فالشبكةُ تتوزّع على الباقي */
+  const cards = allCards.filter((c) =>
+    c.key === "progress" ? !o.hideProgress : c.key === "courses" ? !o.hideCourses : !o.hideSub
+  );
+
+  if (o.off) return null;
+
   return (
     /* الحشوُ السفليّ يترك مكانَ نصف البطاقة الطافية — لا تغطّي ما بعدها */
-    <div className="az-head relative mb-6 [--az-lift:4rem]">
-      <div className="relative overflow-hidden rounded-[2rem] bg-[hsl(217_48%_13%)] pb-[calc(var(--az-lift)+1.25rem)] pt-9 shadow-bento">
+    <div className="az-head relative mb-6" style={vars}>
+      <div
+        style={{
+          borderRadius: "calc(var(--az-radius) + 4px)",
+          background: st.panel === "outline" ? "transparent" : panelBg,
+          border: st.panel === "outline" ? "1px solid color-mix(in srgb, var(--az-accent) 45%, transparent)" : undefined,
+          backdropFilter: st.panel === "glass" ? "blur(14px)" : undefined,
+          paddingTop: pad.top,
+          color: ink,
+        }}
+        className="relative overflow-hidden pb-[calc(var(--az-lift)+1.25rem)] shadow-bento">
         {/* الزخرفةُ الهندسية — من الطرف المقابل للنصّ */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-[62%] opacity-70">
-          <GirihField className="size-full" />
-        </div>
+        {!o.hideOrnament && st.orn !== "off" && (
+          <div
+            className="pointer-events-none absolute inset-y-0 left-0 w-[62%]"
+            style={{ opacity: st.orn === "faint" ? 0.28 : 0.7 }}
+          >
+            <GirihField className="size-full" />
+          </div>
+        )}
         {/* تدرّجٌ يُعمّق اللوح ويُبقي النصَّ مقروءاً */}
         <div
           className="pointer-events-none absolute inset-0"
@@ -258,15 +318,20 @@ export function AzhariStudentHeader({
           فتلقى الوجهَ ثمّ تقرأ صاحبَه — كما في كلّ بطاقةِ تعريف.
         */}
         <div className="relative flex items-center gap-4 px-6 sm:px-9">
-          <span className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-full border-2 border-[hsl(var(--gold)/0.5)] bg-white/10 sm:size-[4.5rem]">
+          {!o.hideAvatar && (
+          <span
+            style={{ width: "var(--az-avatar)", height: "var(--az-avatar)", borderColor: "color-mix(in srgb, var(--az-accent) 55%, transparent)" }}
+            className="grid shrink-0 place-items-center overflow-hidden rounded-full border-2 bg-white/10"
+          >
             {/* لا صورةَ للطالب في نموذج الحساب — فأوّلُ حرفٍ من اسمه */}
-            <span className="font-display text-2xl font-bold text-[hsl(var(--gold))] sm:text-3xl">{name.slice(0, 1)}</span>
+            <span className="font-display text-2xl font-bold sm:text-3xl" style={{ color: "var(--az-accent)" }}>{name.slice(0, 1)}</span>
           </span>
+          )}
           <div className="min-w-0 text-start">
-            <p className="font-kufi text-[13px] font-bold text-white/70">أهلاً {female ? "بكِ" : "بك"}،</p>
-            <h1 className="font-display mt-1.5 truncate text-[1.75rem] font-extrabold leading-tight text-white sm:text-[2.25rem]">{name}</h1>
-            {grade && (
-              <p className="font-kufi mt-2 text-[15px] font-bold text-[hsl(var(--gold))]">{grade}</p>
+            <p className="font-kufi text-[13px] font-bold" style={{ color: "color-mix(in srgb, var(--az-ink) 70%, transparent)" }}>أهلاً {female ? "بكِ" : "بك"}،</p>
+            <h1 className="font-display mt-1.5 truncate font-extrabold leading-tight text-white" style={{ fontSize: "var(--az-name)", color: "var(--az-ink)" }}>{name}</h1>
+            {grade && !o.hideGrade && (
+              <p className="font-kufi mt-2 text-[15px] font-bold" style={{ color: "var(--az-accent)" }}>{grade}</p>
             )}
           </div>
         </div>
@@ -283,11 +348,26 @@ export function AzhariStudentHeader({
         والفاصلُ بينها أكبر. والعنوانُ صار ١٣px بتباعدٍ خفيفٍ في الحروف —
         وهو ما يميّز لوحَ المؤشّرات المهنيَّ من صفٍّ من الصناديق.
       */}
-      <div className="relative -mt-[var(--az-lift)] grid gap-4 px-3 sm:grid-cols-3 sm:px-6">
+      <div
+        className={`relative grid gap-4 px-3 sm:grid-cols-3 sm:px-6 ${
+          st.cards === "float"
+            ? "-mt-[var(--az-lift)]"
+            : st.cards === "inside"
+            ? "-mt-[calc(var(--az-lift)+1rem)]"
+            : "-mt-3 gap-0 sm:gap-0"
+        }`}
+      >
         {cards.map((c) => (
           <div
             key={c.key}
-            className="group rounded-[1.75rem] border border-[hsl(var(--gold)/0.3)] bg-[hsl(217_48%_15%)] px-5 py-5 shadow-[0_22px_46px_-24px_rgba(0,0,0,.85)] transition duration-300 hover:border-[hsl(var(--gold)/0.55)]"
+            style={{
+              borderRadius: st.cards === "strip" ? 0 : "var(--az-radius)",
+              background: cardBg,
+              borderColor: "color-mix(in srgb, var(--az-accent) 32%, transparent)",
+              boxShadow: azShadow(st.shadow, "color-mix(in srgb, var(--az-accent) 55%, transparent)"),
+              color: ink,
+            }}
+            className="group border px-5 py-5 transition duration-300"
           >
             {/*
               الرسمُ والعنوانُ يبدآن من جهةٍ واحدة — اليمين.
@@ -302,8 +382,8 @@ export function AzhariStudentHeader({
             <div className="mb-4 flex items-center gap-3">
               <span className="shrink-0 transition duration-300 group-hover:scale-105">{c.art}</span>
               <span
-                className="font-kufi min-w-0 flex-1 text-[14px] font-bold leading-snug text-white/75"
-                style={{ letterSpacing: "0.01em" }}
+                className="font-kufi min-w-0 flex-1 font-bold leading-snug"
+                style={{ letterSpacing: "0.01em", fontSize: "var(--az-title)", color: "color-mix(in srgb, var(--az-ink) 75%, transparent)" }}
               >
                 {c.title}
               </span>
@@ -311,12 +391,12 @@ export function AzhariStudentHeader({
 
             <p className="flex items-baseline gap-2">
               <span
-                className="font-display text-[2.5rem] font-extrabold leading-[0.95] text-white sm:text-[2.75rem]"
-                style={{ fontVariantNumeric: "tabular-nums" }}
+                className="font-display font-extrabold leading-[0.95]"
+                style={{ fontVariantNumeric: "tabular-nums", fontSize: "var(--az-value)", color: "var(--az-ink)" }}
               >
                 {c.value}
               </span>
-              <span className="font-kufi truncate text-[15px] font-bold text-[hsl(var(--gold))]">
+              <span className="font-kufi truncate text-[15px] font-bold" style={{ color: "var(--az-accent)" }}>
                 {c.unit}
               </span>
             </p>
@@ -327,14 +407,16 @@ export function AzhariStudentHeader({
               أن تُقرأ. وما لا نسبةَ له يأخذ خطّاً ذهبيّاً ساكناً — فتستوي
               البطاقاتُ الثلاثُ ارتفاعاً ولا يتعرّج الصفّ.
             */}
+            {!o.hideBars && (
             <span className="mt-4 block h-1.5 overflow-hidden rounded-full bg-white/10">
               <span
-                className="block h-full rounded-full bg-[hsl(var(--gold))] transition-[width] duration-700"
-                style={{ width: c.bar === null ? "100%" : `${Math.max(3, Math.min(100, c.bar))}%`, opacity: c.bar === null ? 0.35 : 1 }}
+                className="block h-full rounded-full transition-[width] duration-700"
+                style={{ width: c.bar === null ? "100%" : `${Math.max(3, Math.min(100, c.bar))}%`, opacity: c.bar === null ? 0.35 : 1, background: "var(--az-accent)" }}
               />
             </span>
+            )}
 
-            <p className="font-kufi mt-3 truncate text-[13px] leading-relaxed text-white/65">{c.note}</p>
+            <p className="font-kufi mt-3 truncate leading-relaxed" style={{ fontSize: "var(--az-note)", color: "color-mix(in srgb, var(--az-ink) 62%, transparent)" }}>{c.note}</p>
           </div>
         ))}
       </div>

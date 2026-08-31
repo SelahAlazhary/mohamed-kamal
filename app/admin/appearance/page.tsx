@@ -7,6 +7,7 @@
  * الأدمن هنا هو ما سيراه الطالب فعلاً — لا مربّعات ألوان مجرّدة.
  * الاختيار يُحفظ فوراً ويسري على كل الطلاب.
  */
+import { AzHeadPanel } from "@/components/admin/az-head-panel";
 import { useState } from "react";
 import { Check, Loader2, Palette, LayoutGrid, Home, Smartphone, Shapes, RotateCcw, PanelRight, Menu, LayoutPanelTop, PanelTop, Wallet, Sparkles, ImagePlus, LayoutList, MessageCircleQuestion, Megaphone, PanelBottom } from "lucide-react";
 import { PageHeader, Card } from "@/components/dashboard/ui";
@@ -961,6 +962,15 @@ export default function AppearancePage() {
             );
           })}
         </div>
+      )}
+
+      {/*
+        لوحُ ترحيب الطالب — تحكّمٌ كاملٌ في لسانه.
+        وُضع في «المظهر» لا في صفحةٍ مستقلّة: هو مظهرٌ خالصٌ لا بيانات،
+        ومن جاء يضبط شكلَ البوّابة يجده حيث يبحث.
+      */}
+      {tab === "side" && (
+        <AzHeadPanel value={content.azHead} onChange={(next) => { void saveContent({ azHead: next }); }} />
       )}
 
       {tab === "side" && (
