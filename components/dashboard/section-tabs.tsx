@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * شبكةُ الأقسام — بطاقاتٌ تُفتح نوافذَ.
+ * شبكةُ الأقسام — تبويباتٌ تفتح تحتها.
  * ------------------------------------------------------------------
  * مرّ التقسيمُ بثلاث صور، وكلُّ واحدةٍ حلّت مشكلةً وأورثت أخرى:
  *
@@ -17,9 +17,14 @@
  * كلُّه بنظرةٍ واحدة (لا يُخفى شيء)، في مساحةٍ لا تطول (البطاقاتُ صفوفٌ لا
  * عمود)، وبأسماءٍ كاملةٍ لا شاراتٍ مقتضبة.
  *
- * **والضغطُ يفتح نافذةً للقسم وحدَه**: مساحةٌ واسعةٌ لا يزاحمها شيء، ولا
- * تمريرَ في صفحةٍ طويلة. والإغلاقُ يُعيد إلى الشبكة، فالانتقالُ بين قسمين
- * ضغطتان لا بحثٌ في عمود.
+ * **والضغطُ يفتح القسمَ تحت الشبكة لا في نافذةٍ عائمة.** والنافذةُ كانت
+ * تحلّ مشكلةً وتُورث ثلاثاً: تحجب الشبكةَ فلا يُرى أين أنت منها، وتقفل
+ * تمريرَ الصفحة فيُحبَس المحتوى في صندوقٍ داخل صندوق، وتُبعد المتنَ عن
+ * سياقه فلا يُقارَن قسمٌ بجاره.
+ *
+ * فصارت الشبكةُ **شريطَ تبويباتٍ يبقى في مكانه**، والقسمُ يُفتح تحته
+ * مباشرةً: تُرى البطاقةُ المختارةُ مضاءةً فوق متنها، ويُنتقل إلى غيرها
+ * بضغطةٍ واحدةٍ بلا إغلاق.
  *
  * ------------------------------------------------------------------
  * **والقسمُ يبقى مركَّباً وإن لم يُعرض** (`hidden`): نزعُه من الشجرة يُفقد
@@ -37,7 +42,6 @@ import {
   createContext, useCallback, useContext, useEffect, useMemo, useState,
   type ReactNode,
 } from "react";
-import { X } from "lucide-react";
 
 type Entry = {
   id: string;
@@ -80,10 +84,11 @@ export function useSectionTab(e: Entry) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reg, unreg, id, title, subtitle, group, alert, count]);
 
-  if (!ctx) return { hidden: false, inModal: false, close: () => {} };
+  if (!ctx) return { hidden: false, open: false, close: () => {} };
   return {
     hidden: ctx.gridded && ctx.active !== id,
-    inModal: ctx.gridded && ctx.active === id,
+    /** مفتوحٌ تحت الشبكة — يُبرَز ويُعطى زرَّ طيّ. */
+    open: ctx.gridded && ctx.active === id,
     close: ctx.close,
   };
 }
@@ -123,14 +128,6 @@ export function SectionTabs({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("keydown", k);
   }, [active]);
 
-  /* الصفحةُ لا تتمرّر خلف النافذة — وإلّا ضاع موضعُ الشبكة عند الإغلاق */
-  useEffect(() => {
-    if (!active) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
-  }, [active]);
-
   const groups = useMemo(() => {
     const out: string[] = [];
     items.forEach((i) => { if (i.group && !out.includes(i.group)) out.push(i.group); });
@@ -142,8 +139,19 @@ export function SectionTabs({ children }: { children: ReactNode }) {
     [register, unregister, active, close, gridded]
   );
 
+  /*
+    الضغطُ على المفتوح يُغلقه.
+    التبويبُ الذي لا يُطفأ يُجبر على فتح غيره للخروج منه — والأستاذُ قد
+    يريد الشبكةَ وحدَها ليرى ما في الشاشة كلِّه.
+  */
   const card = (i: Entry) => (
-    <button key={i.id} type="button" onClick={() => setActive(i.id)} className={`sg-card ${i.alert ? "is-alert" : ""}`}>
+    <button
+      key={i.id}
+      type="button"
+      onClick={() => setActive((cur) => (cur === i.id ? null : i.id))}
+      aria-pressed={active === i.id}
+      className={`sg-card ${i.alert ? "is-alert" : ""} ${active === i.id ? "is-on" : ""}`}
+    >
       {i.icon && <span className="sg-card-i">{i.icon}</span>}
       <span className="min-w-0 flex-1">
         <span className="sg-card-t">{i.title}</span>
@@ -178,39 +186,5 @@ export function SectionTabs({ children }: { children: ReactNode }) {
 
       {children}
     </SectionTabsCtx.Provider>
-  );
-}
-
-/** غلافُ النافذة — يستعمله `Section` حين يكون هو المفتوح. */
-export function SectionModal({
-  title, subtitle, icon, actions, onClose, children,
-}: {
-  title: ReactNode;
-  subtitle?: ReactNode;
-  icon?: ReactNode;
-  actions?: ReactNode;
-  onClose: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <div
-      className="lm-scrim"
-      role="dialog"
-      aria-label={typeof title === "string" ? title : "قسم"}
-      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div className="lm">
-        <header className="lm-head">
-          {icon && <span className="sg-card-i">{icon}</span>}
-          <div className="min-w-0 flex-1">
-            <h2 className="lm-title">{title}</h2>
-            {subtitle && <p className="lm-sub">{subtitle}</p>}
-          </div>
-          {actions}
-          <button onClick={onClose} className="lm-x" aria-label="إغلاق"><X className="size-4" /></button>
-        </header>
-        <div className="lm-body">{children}</div>
-      </div>
-    </div>
   );
 }

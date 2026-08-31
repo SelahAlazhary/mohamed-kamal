@@ -287,3 +287,48 @@
 .lm-save:disabled { opacity: .45; }
 .lm-state { margin-inline-start: auto; font-size: 0.68rem; color: hsl(var(--muted-foreground)); }
 .lm-state.is-dirty { color: hsl(38 78% 40%); font-weight: 700; }
+
+/* ============================================================
+   البطاقةُ تبويبٌ — حالةٌ نشطةٌ تُرى
+   ------------------------------------------------------------
+   كانت البطاقةُ تفتح نافذةً فلا تحتاج إشارةً إلى أنّها المختارة: النافذةُ
+   تُغطّي كلَّ شيءٍ فلا لبس. وحين صار المتنُ يُفتح تحت الشبكة لزم أن
+   تُضاء البطاقة — وإلّا لم يُعرف أيُّ متنٍ هذا الذي تحتها.
+   ============================================================ */
+.sg-card.is-on {
+  border-color: var(--brand-primary, hsl(var(--primary)));
+  background: linear-gradient(180deg, hsl(var(--primary) / 0.07), hsl(var(--card)));
+  box-shadow: 0 0 0 1px var(--brand-primary, hsl(var(--primary))),
+    0 10px 26px -16px hsl(var(--primary) / 0.7);
+}
+.sg-card.is-on .sg-card-i {
+  background: var(--brand-primary, hsl(var(--primary)));
+  color: hsl(var(--primary-foreground));
+}
+.sg-card.is-on .sg-card-t { color: var(--brand-primary, hsl(var(--primary))); }
+
+/* سهمٌ يصل البطاقةَ بمتنها — يقول «هذا الذي تحت» بلا كلمة */
+.sg-card.is-on::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 50%;
+  bottom: -0.55rem;
+  width: 0.9rem;
+  height: 0.9rem;
+  transform: translateX(50%) rotate(45deg);
+  background: hsl(var(--card));
+  border-inline-end: 1px solid var(--brand-primary, hsl(var(--primary)));
+  border-block-end: 1px solid var(--brand-primary, hsl(var(--primary)));
+}
+
+/* متنُ التبويب المفتوح */
+.sg-open {
+  box-shadow: 0 1px 2px hsl(var(--foreground) / 0.05),
+    0 18px 40px -28px hsl(var(--primary) / 0.75);
+  animation: sg-open-in 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes sg-open-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) { .sg-open { animation: none; } }

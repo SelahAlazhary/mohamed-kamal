@@ -22,7 +22,7 @@
  */
 
 import { useId, type ReactNode } from "react";
-import { useSectionTab, SectionModal } from "./section-tabs";
+import { useSectionTab } from "./section-tabs";
 
 export function Section({
   title,
@@ -58,7 +58,7 @@ export function Section({
   */
   const uid = useId();
   const label = typeof title === "string" ? title : "قسم";
-  const { hidden, inModal, close } = useSectionTab({
+  const { hidden, open, close } = useSectionTab({
     id: uid,
     title: label,
     subtitle: typeof subtitle === "string" ? subtitle : undefined,
@@ -72,19 +72,16 @@ export function Section({
     حقوله وترجعه فارغاً عند العودة إليه — وهو أسوأُ ما يقع في نموذجٍ طويل.
   */
 
-  /* المفتوحُ في الشبكة يرسم نفسَه نافذةً — والمتنُ واحدٌ في الحالين. */
-  if (inModal) {
-    return (
-      <SectionModal title={title} subtitle={subtitle} icon={icon} actions={actions} onClose={close}>
-        {children}
-      </SectionModal>
-    );
-  }
-
   return (
     <section
       hidden={hidden}
-      className={`glass scroll-mt-28 overflow-hidden rounded-[1.5rem] border border-border/70 ${hidden ? "hidden" : ""} ${className}`}
+      /*
+        المفتوحُ من الشبكة يُبرَز بحلقةٍ وظلّ — فيُعرف أنّه متنُ التبويب
+        المضاء لا قسمٌ عاديٌّ وقع تحته.
+      */
+      className={`glass scroll-mt-28 overflow-hidden rounded-[1.5rem] border transition-shadow duration-200 ${
+        open ? "sg-open border-primary/45" : "border-border/70"
+      } ${hidden ? "hidden" : ""} ${className}`}
     >
       <header
         className={`relative flex flex-wrap items-center gap-3.5 border-b px-5 py-4 ${
