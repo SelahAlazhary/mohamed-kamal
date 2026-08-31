@@ -6,6 +6,7 @@ import {
   defaultCodes, defaultExams, defaultLive, defaultTickets, defaultNotifications,
 } from "./defaults";
 import { seedUsers } from "./seed-admin";
+import { bunnyConfigured, signBunnyUrl } from "./bunny";
 import { courseActive, lessonActive, planExpiry, planTargets, eligibleFor, liveVisible, publicLives } from "./access";
 import { resolvePlan } from "./plans";
 import { allLessons, courseUnits, findLesson, isSplit, lessonCount } from "./course-units";
@@ -230,13 +231,43 @@ export function publicIntegrations(db: DB): PublicIntegrations {
     youtubeApiKey: Boolean(process.env.YOUTUBE_API_KEY || db.integrations?.youtubeApiKey),
     push: pushConfigured(),
     databases: (db.integrations?.databases ?? []).length,
+    /* المفتاحُ لا يخرج — وجودُه فقط، والمكتبةُ والمهلةُ ليستا سرّاً. */
+    bunny: {
+      configured: bunnyConfigured(),
+      libraryId: db.integrations?.bunny?.libraryId,
+      ttl: db.integrations?.bunny?.ttl,
+    },
   };
 }
 
 /** نسخة عامة بدون بيانات سرّية (كلمات مرور/رموز تكاملات) — تُرسل للواجهة. */
 export function getPublicDB(): PublicDB {
   const db = getDB();
-  return { ...db, users: db.users.map(toPublicUser), integrations: publicIntegrations(db) };
+  /*
+    روابطُ Bunny تُوقَّع قبل خروجها.
+    ------------------------------------------------------------------
+    هذا هو الموضعُ الوحيدُ الذي تخرج منه روابطُ الدروس إلى المتصفّح، فهو
+    موضعُ التوقيع. وتوقيعُها هنا يجعل كلَّ رابطٍ يصل الطالبَ منتهيَ
+    الصلاحية بعد ساعات — فما نُسخ منه مات، ولا يُشارَك.
+
+    ولا يُنسخ الكائنُ إلّا إن كان المفتاحُ مضبوطاً: بلا مفتاحٍ لا فائدةَ
+    من مرورٍ على المنهج كلِّه في كلّ طلب.
+  */
+  const pub = { ...db, users: db.users.map(toPublicUser), integrations: publicIntegrations(db) };
+  if (!bunnyConfigured()) return pub;
+
+  pub.subjects = pub.subjects.map((c) => ({
+    ...c,
+    videos: (c.videos ?? []).map(signLesson),
+    units: (c.units ?? []).map((u) => ({ ...u, lessons: (u.lessons ?? []).map(signLesson) })),
+  }));
+  return pub;
+}
+
+/** درسٌ برابطٍ موقَّع — وما ليس Bunny يعود كما هو. */
+function signLesson<T extends { url: string }>(l: T): T {
+  const url = signBunnyUrl(l.url);
+  return url === l.url ? l : { ...l, url };
 }
 
 /* ---------- المستخدمون ---------- */

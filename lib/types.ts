@@ -1010,6 +1010,20 @@ export type Integrations = {
   telegram?: TelegramIntegration;
   /** سلسلةُ قواعد البيانات — تُنسخ في كلٍّ منها فتعرف أخواتِها. */
   databases?: DbNode[];
+  /**
+   * Bunny Stream — مفتاحُ التوقيع سرٌّ لا يُرسل للواجهة إطلاقاً.
+   * به تُوقَّع روابطُ التشغيل فتنتهي بعد دقائق، فالمنسوخُ منها يموت.
+   */
+  bunny?: BunnyIntegration;
+};
+
+export type BunnyIntegration = {
+  /** `Token Authentication Key` من لوحة Bunny — سرٌّ يبقى على الخادم. */
+  tokenKey?: string;
+  /** معرّفُ المكتبة الافتراضيّ — ليس سرّاً، يظهر في الرابط نفسِه. */
+  libraryId?: string;
+  /** عمرُ الرابط بالثواني (٦٠–٢١٦٠٠). القصيرُ أأمن، والطويلُ يحتمل درساً كاملاً. */
+  ttl?: number;
 };
 /** ما يُسمح بإرساله للواجهة عن التكاملات (بلا أي رموز). */
 export type PublicIntegrations = {
@@ -1022,6 +1036,8 @@ export type PublicIntegrations = {
   telegram?: { configured: boolean; enabled: boolean; chatId?: string; username?: string; webhookSetAt?: string };
   /** عدد قواعد البيانات المضبوطة — بلا عناوين ولا اعتمادات. */
   databases?: number;
+  /** حالةُ Bunny — وجودُ المفتاح لا قيمتُه، والمكتبةُ ليست سرّاً. */
+  bunny?: { configured: boolean; libraryId?: string; ttl?: number };
 };
 
 /* ---------- قناة يوتيوب ---------- */

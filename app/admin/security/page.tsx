@@ -81,6 +81,9 @@ export default function SecurityPage() {
         </div>
       )}
 
+      {/* ---------- حمايةُ الفيديو ---------- */}
+      <BunnyCard />
+
       {/* حظر يدوي */}
       <Card className="mb-6">
         <div className="flex flex-wrap items-end gap-3">
@@ -156,5 +159,142 @@ export default function SecurityPage() {
         </DataTable>
       )}
     </>
+  );
+}
+
+
+/**
+ * حمايةُ فيديوهات Bunny.
+ * ------------------------------------------------------------------
+ * رابطُ التشغيل اليوم ثابتٌ ومكشوف: من نسخه من مصدر الصفحة أعطاه من
+ * شاء، ويعمل من أيّ مكانٍ إلى الأبد بلا حسابٍ ولا اشتراك. وكلُّ حراسةٍ
+ * في المنصّة لا تمسّه بشيء — هذه أخطرُ ثغرةٍ فيها، وأوسعُها التفافاً.
+ *
+ * والتوقيعُ يُنهيها: الرابطُ يحمل بصمةً وتاريخَ انتهاء، فالمنسوخُ يموت.
+ *
+ * **والمفتاحُ يُكتب ولا يُقرأ.** الخادمُ يقول «مضبوطٌ» ولا يقول ما هو،
+ * فلو سُرقت جلسةُ مشرفٍ لم يُسرق معها مفتاحُ المكتبة.
+ */
+function BunnyCard() {
+  const [st, setSt] = useState<{ configured: boolean; keyFromEnv: boolean; libraryId: string | null; ttl: number } | null>(null);
+  const [key, setKey] = useState("");
+  const [lib, setLib] = useState("");
+  const [ttl, setTtl] = useState(14400);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    const r = await fetch("/api/bunny").then((x) => x.json()).catch(() => null);
+    if (!r || r.error) return;
+    setSt(r);
+    setLib(r.libraryId ?? "");
+    setTtl(r.ttl ?? 14400);
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const save = async (clearKey = false) => {
+    setBusy(true);
+    setMsg(null);
+    const r = await fetch("/api/bunny", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ tokenKey: key, libraryId: lib, ttl, clearKey }),
+    }).then((x) => x.json()).catch(() => null);
+    setBusy(false);
+    if (!r || r.error) { setMsg(r?.error ?? "تعذّر الحفظ"); return; }
+    setKey("");
+    setMsg(clearKey ? "مُسح المفتاح — عادت الروابطُ مكشوفة." : "حُفظ. الروابطُ تُوقَّع من الآن.");
+    void load();
+  };
+
+  return (
+    <Card className="mb-6">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-display font-bold">حماية فيديوهات Bunny</p>
+          <p className="text-[11px] leading-relaxed text-muted-foreground">
+            بلا توقيعٍ يعمل رابطُ الفيديو لمن نسخه، من أيّ مكانٍ وإلى الأبد. وبالتوقيع
+            ينتهي بعد ساعات — فالمنسوخُ يموت ولا يُشارَك.
+          </p>
+        </div>
+        <span
+          className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-bold ${
+            st?.configured ? "bg-emerald-500/15 text-emerald-600" : "bg-amber-500/15 text-amber-600"
+          }`}
+        >
+          {st?.configured ? "التوقيع مُفعَّل" : "غير مفعَّل — الروابط مكشوفة"}
+        </span>
+      </div>
+
+      {st?.keyFromEnv && (
+        <p className="mb-3 rounded-xl border border-border px-3 py-2 text-[11px] text-muted-foreground">
+          المفتاحُ مضبوطٌ من متغيّرات البيئة (<code dir="ltr">BUNNY_TOKEN_KEY</code>) — وهو يسبق ما يُكتب هنا.
+        </p>
+      )}
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        <label className="sm:col-span-2">
+          <span className="mb-1 block text-xs font-semibold text-muted-foreground">
+            Token Authentication Key {st?.configured && "— مضبوطٌ الآن، اكتب مفتاحاً جديداً لتبديله"}
+          </span>
+          {/*
+            `type="password"` كي لا يظهر المفتاحُ على شاشةٍ قد تُصوَّر،
+            و`autoComplete="off"` كي لا يحفظه المتصفّح في خانةِ كلمات المرور.
+          */}
+          <input
+            type="password"
+            autoComplete="off"
+            dir="ltr"
+            className="inp text-right"
+            value={key}
+            onChange={(e) => setKey(e.target.value)}
+            placeholder={st?.configured ? "••••••••••••••••" : "الصق المفتاح من لوحة Bunny"}
+          />
+        </label>
+
+        <label>
+          <span className="mb-1 block text-xs font-semibold text-muted-foreground">معرّف المكتبة</span>
+          <input dir="ltr" className="inp text-right" value={lib} onChange={(e) => setLib(e.target.value)} placeholder="718182" />
+        </label>
+
+        <label>
+          <span className="mb-1 block text-xs font-semibold text-muted-foreground">عمر الرابط (بالثواني)</span>
+          <input
+            type="number"
+            min={60}
+            max={21600}
+            className="inp"
+            value={ttl}
+            onChange={(e) => setTtl(Number(e.target.value))}
+          />
+          <span className="mt-1 block text-[10px] leading-relaxed text-muted-foreground">
+            القصيرُ أأمن، والطويلُ يحتمل درساً كاملاً بلا انقطاع. ‏٤ ساعاتٍ = ١٤٤٠٠.
+          </span>
+        </label>
+
+        <div className="flex items-end gap-2 sm:col-span-3">
+          <Button className="px-5 py-2.5" onClick={() => void save(false)} disabled={busy}>
+            حفظ
+          </Button>
+          {st?.configured && !st.keyFromEnv && (
+            <button
+              type="button"
+              onClick={() => void save(true)}
+              disabled={busy}
+              className="rounded-2xl border border-rose-500/40 px-4 py-2.5 text-xs font-bold text-rose-600 transition hover:bg-rose-500/10 disabled:opacity-60"
+            >
+              مسح المفتاح
+            </button>
+          )}
+          {msg && <span className="text-[11px] font-semibold text-muted-foreground">{msg}</span>}
+        </div>
+      </div>
+
+      <p className="mt-3 rounded-xl border border-dashed border-border px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
+        بعد الحفظ، ارجع إلى لوحة Bunny ← <span dir="ltr">Stream → مكتبتك → Security</span> وشغّل
+        <span dir="ltr"> Embed view token authentication</span>. ولا تشغّله قبل الحفظ — يتوقّف التشغيل.
+      </p>
+    </Card>
   );
 }
