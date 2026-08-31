@@ -35,6 +35,16 @@
   --gold-deep: 32 68% 40%;
   --gold-light: 44 88% 66%;
 
+  /*
+    أسماءٌ مستعارةٌ للهوية.
+    `--brand-*` يقولها المصمّم، و`--primary`/`--gold` تقولهما المنصّة —
+    فتتبدّل الثانيةُ ولا يتبدّل ما يكتبه أحد. وهي مشتقّةٌ لا مثبّتة،
+    فتتبع الثيمَ في الفاتح والداكن وعند تبديل الهوية من اللوحة.
+  */
+  --brand-primary: hsl(var(--primary));
+  --brand-accent: hsl(var(--gold));
+  --brand-bg: hsl(var(--background));
+
   --font-sans: "IBM Plex Sans Arabic", system-ui, sans-serif;
   --font-display: "Lalezar", "IBM Plex Sans Arabic", sans-serif;
   --font-kufi: var(--font-display), var(--font-sans);
@@ -4641,17 +4651,42 @@ body {
 .ad-root nav[aria-label="أقسام الصفحة"] { top: 0; }
 
 /* ــ شريطُ الصفحة وشاراتُ الحالات ــ */
+/*
+  شريطُ الصفحة — لوحٌ منحدرُ الحواف لا شريطٌ ممتدٌّ بخطٍّ تحته.
+  ------------------------------------------------------------------
+  كان يلتصق بحوافّ الشاشة ويفصله خطٌّ سفليٌّ واحد — فيبدو حدَّ جدولٍ لا
+  ترويسةَ قسم. فصار لوحاً له استدارةٌ واسعةٌ وهامشٌ عن الحوافّ، وخيطٌ
+  ذهبيٌّ في أعلاه كتذهيب حاشية المخطوط.
+
+  وبقي لاصقاً عند التمرير — الجدولُ يطول، وزرُّ الإضافة في أعلى الصفحة
+  يعني أنّ من وصل آخرَها يصعد ليضيف.
+*/
 .ad-bar {
   position: sticky;
-  top: 0;
+  top: 0.5rem;
   z-index: 35;
-  margin: -1rem -0.9rem 1rem;
-  padding: 0.9rem;
-  background: hsl(var(--background) / .92);
-  border-bottom: 1px solid var(--ad-line, hsl(var(--border)));
-  backdrop-filter: blur(8px);
+  margin: 0 0 1.15rem;
+  padding: 1rem 1.15rem;
+  border-radius: 1.75rem;
+  background:
+    linear-gradient(180deg, hsl(var(--card) / .96), hsl(var(--background) / .92));
+  border: 1px solid var(--ad-line, hsl(var(--border)));
+  box-shadow: 0 1px 2px hsl(var(--foreground) / .04), 0 16px 34px -26px hsl(var(--foreground) / .35);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  overflow: hidden;
 }
-@media (min-width: 640px) { .ad-bar { margin: -1.25rem -1.25rem 1.25rem; padding: 1.1rem 1.25rem; } }
+/* خيطُ التذهيب في الأعلى — يتلاشى نحو الطرفين فلا يبدو حدّاً مقصوصاً */
+.ad-bar::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, hsl(var(--gold) / .85), transparent);
+}
+@media (min-width: 640px) {
+  .ad-bar { margin: 0 0 1.35rem; padding: 1.2rem 1.5rem; border-radius: 2rem; }
+}
 
 .ad-bar-row { display: flex; align-items: flex-start; gap: 1rem; }
 .ad-bar-title { font-size: 1.15rem; font-weight: 800; line-height: 1.25; }
@@ -4671,6 +4706,11 @@ body {
   transition: border-color .12s, box-shadow .12s;
 }
 .ad-bar-input:focus { border-color: hsl(var(--primary) / .5); box-shadow: 0 0 0 2px hsl(var(--primary) / .12); }
+/* الحقلُ والأزرارُ كبسولاتٌ تتبع استدارةَ اللوح — الزاويةُ الحادّة داخل
+   لوحٍ منحدرٍ تنقض انحدارَه. */
+.ad-bar-input { border-radius: 999px; padding-block: 0.62rem; }
+.ad-bar-filter, .ad-bar-reset { border-radius: 999px; }
+.ad-bar-panel { border-radius: 1.35rem; }
 .ad-bar-clear {
   position: absolute; inset-inline-start: 0.4rem; top: 50%; transform: translateY(-50%);
   display: grid; place-items: center; width: 1.35rem; height: 1.35rem;
