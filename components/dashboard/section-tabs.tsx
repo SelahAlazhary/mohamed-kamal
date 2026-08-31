@@ -64,10 +64,31 @@ type Ctx = {
 
 const SectionTabsCtx = createContext<Ctx | null>(null);
 
+/**
+ * نطاقٌ محلّيّ — ما وقع فيه فليس قسمَ صفحة.
+ * ------------------------------------------------------------------
+ * الشبكةُ فهرسُ أقسامِ الصفحة. وقد يُستعمل `Section` داخل لوحِ تحريرٍ أو
+ * بطاقةٍ ليُعنون جزءاً منها، فيسجّل نفسَه في الفهرس بلا وجهِ حقّ: تظهر
+ * بطاقتُه فوقُ في غير موضعها، ويختفي متنُه لأنّه ليس القسمَ المفتوح —
+ * فيرى الأستاذُ لوحاً بترويسةٍ وذيلٍ بلا حشو.
+ *
+ * والثابتُ في هذا البناء أنّ `Card` يحمل المحتوى و`Section` يحمل الـ
+ * `Card`. فقسمٌ داخل بطاقةٍ — أو داخل قسمٍ — مقلوبُ الترتيب، وهو لوحٌ
+ * محلّيٌّ قطعاً. فيُرسم في مكانه كاملاً ولا يُفهرَس.
+ *
+ * وهذا حارسٌ لا اتّفاق: لا يلزم كاتبَ صفحةٍ أن يتذكّره.
+ */
+const LocalCtx = createContext(false);
+
+export function SectionLocal({ children }: { children: ReactNode }) {
+  return <LocalCtx.Provider value={true}>{children}</LocalCtx.Provider>;
+}
+
 export function useSectionTab(e: Entry) {
   const ctx = useContext(SectionTabsCtx);
-  const reg = ctx?.register;
-  const unreg = ctx?.unregister;
+  const local = useContext(LocalCtx);
+  const reg = local ? undefined : ctx?.register;
+  const unreg = local ? undefined : ctx?.unregister;
   const { id, title, subtitle, group, alert, count, icon } = e;
 
   /*
@@ -84,7 +105,7 @@ export function useSectionTab(e: Entry) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reg, unreg, id, title, subtitle, group, alert, count]);
 
-  if (!ctx) return { hidden: false, open: false, close: () => {} };
+  if (!ctx || local) return { hidden: false, open: false, close: () => {} };
   return {
     hidden: ctx.gridded && ctx.active !== id,
     /** مفتوحٌ تحت الشبكة — يُبرَز ويُعطى زرَّ طيّ. */

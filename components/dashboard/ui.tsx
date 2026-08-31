@@ -7,6 +7,7 @@
  * والمخطّطات، وزخارف الزوايا. لا حدود CSS مزخرفة ولا صور نقطية.
  * الألوان كلّها من الثيم، والحركة تتوقّف مع prefers-reduced-motion.
  */
+import { SectionLocal } from "./section-tabs";
 import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import { useUid } from "@/components/brand/use-uid";
@@ -264,7 +265,12 @@ export function PageHeader({
 
 /** بطاقة عامة. */
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`glass rounded-3xl p-5 shadow-bento ${className}`}>{children}</div>;
+  /* ما في البطاقة محتوًى لا قسمُ صفحة — انظر `SectionLocal`. */
+  return (
+    <div className={`glass rounded-3xl p-5 shadow-bento ${className}`}>
+      <SectionLocal>{children}</SectionLocal>
+    </div>
+  );
 }
 
 /** شارة حالة ملوّنة. */

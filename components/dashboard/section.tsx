@@ -22,7 +22,7 @@
  */
 
 import { useId, type ReactNode } from "react";
-import { useSectionTab } from "./section-tabs";
+import { useSectionTab, SectionLocal } from "./section-tabs";
 
 export function Section({
   title,
@@ -112,7 +112,10 @@ export function Section({
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
       </header>
 
-      <div className="p-5 sm:p-6">{children}</div>
+      {/* ما في القسم محتواه لا أقساماً أخرى للفهرس — انظر `SectionLocal`. */}
+      <div className="p-5 sm:p-6">
+        <SectionLocal>{children}</SectionLocal>
+      </div>
     </section>
   );
 }
