@@ -173,7 +173,7 @@ export function Donut({
       </svg>
       <span className="absolute text-center leading-none">
         <span className="font-display block text-lg font-bold">{pct.toLocaleString("ar-EG")}٪</span>
-        {label && <span className="font-kufi mt-1 block text-[9px] text-muted-foreground">{label}</span>}
+        {label && <span className="font-kufi mt-1 block text-[11px] text-muted-foreground">{label}</span>}
       </span>
     </span>
   );

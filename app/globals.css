@@ -947,8 +947,21 @@ body {
 .sn-active-underline aside .sn-mark,
 .sn-active-dot aside .sn-mark { background-color: var(--nav-active, hsl(var(--gold))); }
 
+/* ============================================================
+   حبرُ الرابط النشط — لا يأخذ لونَ التظليل
+   ------------------------------------------------------------
+   كان `--nav-active` يخدم شيئين لا يجتمعان: **أرضاً بشفافيّة ١٦٪**
+   في `.sn-mark`، و**حبراً معتماً** في نصّ الرابط. ولونٌ يصلح تظليلاً
+   خفيفاً لا يصلح حبراً: الذهبيُّ `#e0991f` على لوحٍ فاتحٍ يعطي
+   **٢٫٤:١** — ودون ٤٫٥:١ لا يمرّ WCAG AA، فأكثرُ روابط البوّابة
+   استعمالاً كان أقلَّها قراءةً.
+
+   فانفصل الدوران: الذهبيُّ يُظلِّل ويُحيط — وهو أثرُ الهويّة الظاهر —
+   والحبرُ من `--primary` فيقرأ. والأستاذُ إن أراد لوناً للحبر بعينه
+   قاله في `--nav-active-ink` وحدَه، فلا يُفسد اختيارُ التظليلِ القراءةَ.
+   ============================================================ */
 .student-skin aside a.text-primary,
-.student-skin aside a.text-primary span { color: var(--nav-active, hsl(var(--gold))); }
+.student-skin aside a.text-primary span { color: var(--nav-active-ink, hsl(var(--primary))); }
 
 /* ---------- أسلوب الأيقونات ---------- */
 .ic-line aside .sn-icon svg { stroke-width: 1.4; fill: none; }

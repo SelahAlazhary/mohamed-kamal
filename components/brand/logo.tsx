@@ -219,7 +219,7 @@ export function BrandLockup({
           </span>
           )}
           {subtitle && !sigImage && (
-            <span className="font-kufi mt-1.5 text-[9px] tracking-[0.14em] text-muted-foreground">
+            <span className="font-kufi mt-1.5 text-[11px] tracking-[0.14em] text-muted-foreground">
               {subtitle}
             </span>
           )}

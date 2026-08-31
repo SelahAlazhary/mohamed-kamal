@@ -173,7 +173,7 @@ export function PayGate({
                       </span>
                       <span className="shrink-0 text-left">
                         {p.badge && (
-                          <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[9px] font-bold text-white">
+                          <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[11px] font-bold text-white">
                             <IconSparkle className="size-2.5" /> {p.badge}
                           </span>
                         )}
@@ -185,7 +185,7 @@ export function PayGate({
                             {priced.original.toLocaleString("ar-EG")}
                           </span>
                         )}
-                        <span className="block text-[9px] text-muted-foreground">ج.م</span>
+                        <span className="block text-[11px] text-muted-foreground">ج.م</span>
                       </span>
                     </button>
                   );
@@ -573,7 +573,7 @@ function RecentList({ list }: { list: PayRequest[] }) {
               </span>
             </span>
             <span className="shrink-0 text-left">
-              <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${
+              <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
                 r.status === "approved" ? "bg-emerald-500/15 text-emerald-600"
                   : r.status === "rejected" ? "bg-rose-500/15 text-rose-500"
                     : "bg-amber-500/15 text-amber-600"

@@ -45,7 +45,7 @@ export default function AnalyticsPage() {
             {enrollTrend.map((v, i) => (
               <div key={i} className="flex flex-1 flex-col items-center justify-end gap-2">
                 <div className="w-full rounded-t-lg bg-gradient-to-t from-primary/40 to-primary" style={{ height: `${(v / maxTrend) * 100}%` }} />
-                <span className="text-[9px] text-muted-foreground">{i + 1}</span>
+                <span className="text-[11px] text-muted-foreground">{i + 1}</span>
               </div>
             ))}
           </div>

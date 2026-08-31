@@ -22,7 +22,8 @@
 
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { Lesson, Material, Quiz } from "@/lib/types";
+import type { Lesson, Quiz } from "@/lib/types";
+import { LessonManager } from "./lesson-manager";
 
 export type CurriculumUnit = { id: string; title: string; lessons?: Lesson[] };
 
@@ -45,8 +46,8 @@ type Props = {
   onRemoveLesson: (lid: string) => void;
   onSetQuiz: (lid: string, quiz: Quiz | undefined) => void;
 
-  /** محرّرُ الأسئلة — تملكه الصفحةُ فلا يُنسخ هنا. */
-  renderQuiz: (lesson: Lesson) => ReactNode;
+  /** إحصاءُ محاولات الواجب — يُعرض في لسانه إن وُجد. */
+  quizResults?: (lid: string) => { attempts: number; avg: number; passed: number };
   /** نموذجُ إضافة درسٍ إلى وحدةٍ بعينها. */
   renderAddLesson: (unitId: string) => ReactNode;
   /** لسانُ «الإعدادات» — ملفّاتُ الكورس وما إليها. */
@@ -253,7 +254,7 @@ export function Curriculum({
   onDuplicateLesson,
   onRemoveLesson,
   onSetQuiz,
-  renderQuiz,
+  quizResults,
   renderAddLesson,
   renderSettings,
 }: Props) {
@@ -487,140 +488,27 @@ export function Curriculum({
     );
   };
 
-  /* ---------------- محرّرُ الدرس ---------------- */
+  /* ---------------- لوحُ إدارة الدرس ---------------- */
 
+  /*
+    المحرّرُ لم يعد هنا.
+    ------------------------------------------------------------------
+    كان عموداً واحداً: العنوانُ والرابطُ والمدّةُ والمرفقاتُ والأسئلةُ فوق
+    بعضها. وهي أعمالٌ أربعةٌ لا عملٌ واحد — من جاء ليكتب سؤالاً مرّ على
+    حقول الفيديو. فصار `LessonManager` بألسنته الأربعة، والشجرةُ تكتفي
+    بأن تفتحه في موضع الدرس.
+  */
   const lessonEditor = (u: CurriculumUnit, l: Lesson) => (
-    <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label>
-          <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">عنوان الدرس</span>
-          <input
-            className="inp"
-            value={l.title}
-            onChange={(e) => onPatchLesson(l.id, { title: e.target.value })}
-          />
-        </label>
-        <label>
-          <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">رابط الفيديو</span>
-          <input
-            dir="ltr"
-            className="inp text-right"
-            value={l.url}
-            onChange={(e) => onPatchLesson(l.id, { url: e.target.value })}
-          />
-        </label>
-        <label>
-          <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">المدّة</span>
-          <input
-            className="inp"
-            value={l.duration ?? ""}
-            placeholder="١٢:٤٥"
-            onChange={(e) => onPatchLesson(l.id, { duration: e.target.value || undefined })}
-          />
-        </label>
-        <label>
-          <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">الوحدة</span>
-          {/*
-            نقلُ الدرس إلى وحدةٍ أخرى باختيارٍ لا بسحبٍ وحدَه: السحبُ لا
-            يعمل بلوحة المفاتيح، ولا يصلح لوحدةٍ مطويّةٍ بعيدةٍ عن الشاشة.
-          */}
-          <select
-            className="inp"
-            value={u.id}
-            onChange={(e) => {
-              if (e.target.value !== u.id) onMoveLessonTo(l.id, e.target.value);
-            }}
-          >
-            {units.map((x) => (
-              <option key={x.id} value={x.id}>
-                {x.title}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-
-      <label className="inline-flex items-center gap-2 rounded-2xl border border-border px-3 py-2 text-[11px] font-bold">
-        <input
-          type="checkbox"
-          checked={!!l.isFree}
-          onChange={(e) => onPatchLesson(l.id, { isFree: e.target.checked })}
-          className="size-4 accent-[var(--brand-primary)]"
-        />
-        درسٌ مجانيّ للمعاينة
-      </label>
-
-      {materials(l)}
-
-      <div>
-        <p className="mb-2 text-[11px] font-bold text-muted-foreground">الأسئلة على الدرس</p>
-        {renderQuiz(l)}
-        {l.quiz && (
-          <button
-            type="button"
-            onClick={() => onSetQuiz(l.id, undefined)}
-            className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-bold text-rose-500 transition hover:underline"
-          >
-            <ITrash className="size-3.5" />
-            إزالة الأسئلة من هذا الدرس
-          </button>
-        )}
-      </div>
-    </div>
+    <LessonManager
+      lesson={l}
+      units={units.map((x) => ({ id: x.id, title: x.title }))}
+      unitId={u.id}
+      onPatch={(patch) => onPatchLesson(l.id, patch)}
+      onMoveTo={(uid) => onMoveLessonTo(l.id, uid)}
+      onSetQuiz={(q) => onSetQuiz(l.id, q)}
+      results={quizResults?.(l.id)}
+    />
   );
-
-  /* ---------------- مرفقاتُ الدرس ---------------- */
-
-  const materials = (l: Lesson) => {
-    const list = l.materials ?? [];
-    const set = (next: Material[]) => onPatchLesson(l.id, { materials: next.length ? next : undefined });
-
-    return (
-      <div>
-        <div className="mb-2 flex items-center justify-between gap-2">
-          <p className="text-[11px] font-bold text-muted-foreground">مرفقات الدرس</p>
-          <button
-            type="button"
-            onClick={() => set([...list, { id: `M-${Date.now()}`, title: "", url: "" }])}
-            style={{ color: "var(--brand-primary)" }}
-            className="inline-flex items-center gap-1 text-[11px] font-bold transition hover:underline"
-          >
-            <IPlus className="size-3.5" />
-            إضافة مرفق
-          </button>
-        </div>
-
-        {list.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-border px-3 py-2.5 text-[11px] text-muted-foreground">
-            لا مرفقاتٍ لهذا الدرس — المذكّرةُ أو الملزمةُ تُضاف هنا فتظهر تحته للطالب.
-          </p>
-        ) : (
-          <ul className="space-y-2">
-            {list.map((m, k) => (
-              <li key={m.id} className="flex items-center gap-2">
-                <input
-                  className="inp flex-1"
-                  placeholder="اسم المرفق"
-                  value={m.title}
-                  onChange={(e) => set(list.map((v, j) => (j === k ? { ...v, title: e.target.value } : v)))}
-                />
-                <input
-                  dir="ltr"
-                  className="inp flex-[2] text-right"
-                  placeholder="https://…"
-                  value={m.url}
-                  onChange={(e) => set(list.map((v, j) => (j === k ? { ...v, url: e.target.value } : v)))}
-                />
-                <IconBtn title="حذف المرفق" danger onClick={() => set(list.filter((_, j) => j !== k))}>
-                  <ITrash className="size-4" />
-                </IconBtn>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    );
-  };
 
   /* ---------------- وحدةٌ واحدة ---------------- */
 

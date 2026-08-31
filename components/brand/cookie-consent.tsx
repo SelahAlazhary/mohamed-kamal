@@ -95,7 +95,7 @@ export function CookieConsent() {
                 {ITEMS.map((it) => (
                   <li key={it.name} className="text-[11px] leading-relaxed">
                     <span className="font-bold">{it.name}</span>
-                    <span className={`mx-1.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
+                    <span className={`mx-1.5 rounded-full px-1.5 py-0.5 text-[11px] font-bold ${
                       it.need === "اختياريّة"
                         ? "bg-[hsl(var(--gold)/0.22)] text-primary"
                         : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"

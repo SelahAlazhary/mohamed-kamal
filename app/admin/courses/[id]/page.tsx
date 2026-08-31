@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/primitives";
 import { useContent } from "@/components/content/content-provider";
 import { CourseArt, COVER_PATTERNS } from "@/components/brand/course-art";
 import { CoverTextEditor } from "@/components/admin/cover-text-editor";
-import { QuizEditor } from "@/components/admin/quiz-editor";
 import { CoverStickersEditor } from "@/components/admin/cover-stickers-editor";
 import type { Lesson, Material, Subject, Quiz, QuizQuestion, ImageFit, CoverPattern, CoverText, CoverSticker, Unit } from "@/lib/types";
 import { mediaSrc } from "@/lib/media";
@@ -345,7 +344,7 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
         onDuplicateLesson={duplicateLesson}
         onRemoveLesson={remove}
         onSetQuiz={setQuiz}
-        renderQuiz={(l) => <QuizEditor lesson={l} onChange={(q) => setQuiz(l.id, q)} results={quizStats(l.id)} />}
+        quizResults={quizStats}
         renderSettings={
           <>
             {/* عنوانُ اللسان — كان ترويسةَ قسمٍ مستقلٍّ قبل الدمج */}
@@ -453,7 +452,7 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
                       type="button"
                       onClick={() => setCoverColor("")}
                       title="ألوان الثيم"
-                      className={`grid size-8 place-items-center rounded-xl border text-[9px] font-bold transition ${
+                      className={`grid size-8 place-items-center rounded-xl border text-[11px] font-bold transition ${
                         !subject.coverColor ? "border-primary ring-2 ring-primary/30" : "border-border hover:border-primary/50"
                       }`}
                       style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))", color: "#fff" }}

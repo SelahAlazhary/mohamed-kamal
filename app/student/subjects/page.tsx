@@ -60,7 +60,7 @@ function PlanCard({ plan, subjectName, termEnd, href }: { plan: SitePlan; subjec
         )}
         <p className="text-[10px] text-muted-foreground">ج.م</p>
         {priced.active && (
-          <p className="mt-1 rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[9px] font-bold text-emerald-600">-{priced.percent}٪</p>
+          <p className="mt-1 rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[11px] font-bold text-emerald-600">-{priced.percent}٪</p>
         )}
       </div>
     </a>

@@ -422,7 +422,7 @@ export function DashboardShell({
                     <span className="relative z-10 max-w-full truncate">{item.label}</span>
                   </Link>
                   {badges[item.href] ? (
-                    <span className="absolute right-1 top-0 grid min-w-4 place-items-center rounded-full bg-rose-500 px-1 text-[9px] font-extrabold text-white">
+                    <span className="absolute right-1 top-0 grid min-w-4 place-items-center rounded-full bg-rose-500 px-1 text-[11px] font-extrabold text-white">
                       {badges[item.href].toLocaleString("ar-EG")}
                     </span>
                   ) : null}
