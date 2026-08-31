@@ -352,23 +352,29 @@ export function DashboardShell({
           <button
             type="button"
             onClick={() => window.dispatchEvent(new Event("open-command-palette"))}
-            className="tb-search btn-foil relative hidden w-full max-w-sm flex-1 items-center gap-2 rounded-full border-0 py-2.5 pe-10 ps-3 text-right text-sm text-muted-foreground outline-none transition hover:text-foreground focus:ring-2 focus:ring-accent/40 sm:flex"
+            className="tb-search btn-foil hidden h-10 w-full max-w-sm flex-1 items-center gap-2.5 rounded-full border-0 px-4 text-right text-sm text-muted-foreground outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-accent/40 sm:flex"
           >
             {/*
-              الأيقونةُ في الطرف المنطقيّ لا في `right` الثابت: الصفحةُ
-              من اليمين لليسار، و`right` يصيبها هنا ويُخطئها في أيّ سياقٍ
-              يُقلب. و`end` تتبع الاتجاه في الحالين.
+              الأيقونةُ في مجرى الصفّ لا مُطلَقةً فوقه.
+              كانت `absolute` بحشوةٍ تُترك لها في الطرف — وهي هشّة: أيُّ
+              تغييرٍ في الحشوة يُزيحها فوق النصّ أو يترك فراغاً. والصفُّ
+              يضع كلَّ شيءٍ بقياسه ويتبع الاتجاهَ وحدَه.
+
+              وارتفاعٌ مصرَّحٌ به (`h-10`) لا حشوةٌ رأسيّة: الزرُّ يجاور
+              أزراراً دائريّةً بقياسٍ ثابت، والحشوةُ تجعل ارتفاعَه يتبع
+              محتواه فيختلف عنها بضعةَ بكسلاتٍ تُرى.
             */}
-            <span className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2"><LibIcon slot="search" className="size-4" /></span>
-            {/*
-              النصُّ يُقصّ والمفتاحُ لا ينكسر.
-              كان كلاهما بلا قيد، فيضغط المفتاحُ على النصّ في العرض الضيّق
-              وينكسر «Ctrl K» سطرين داخل إطارٍ ارتفاعُه سطرٌ واحد.
-            */}
+            <LibIcon slot="search" className="size-4 shrink-0 opacity-70" />
             <span className="min-w-0 flex-1 truncate">بحث سريع…</span>
-            <kbd className="hidden shrink-0 whitespace-nowrap rounded border border-border px-1.5 py-0.5 font-sans text-[10px] leading-none lg:block">
-              Ctrl K
-            </kbd>
+            {/*
+              ولا اختصارَ للطالب: لوحةُ الأوامر تنفعه، وإظهارُ «Ctrl K»
+              له زخرفةٌ لا يستعملها — وأكثرُ الطلاب على الجوّال أصلاً.
+            */}
+            {role === "admin" && (
+              <kbd className="hidden shrink-0 whitespace-nowrap rounded-md border border-border px-1.5 py-0.5 font-sans text-[10px] leading-none opacity-70 lg:block">
+                Ctrl K
+              </kbd>
+            )}
           </button>
 
           <div className="tb-actions mr-auto flex items-center gap-2">

@@ -83,13 +83,25 @@ export default function StudentHome() {
                   : "sm:grid-cols-3"                                // صفّ متساوٍ
           }`}
         >
-          <StatTile index={0} ring={avg} label="متوسّط تقدّمك" icon={<ShariMotion id="capStarsAnim" size={74} />} className={tileCls} shape={shapeStyle(D.tile)} tone={statsTone} />
+          {/*
+            الرسومُ من مجموعة `ShariVector` لا من الصور المتتبَّعة.
+            ------------------------------------------------------------
+            المتتبَّعةُ رسومٌ نقطيّةٌ حُوِّلت إلى متّجهات: خطوطُها من التتبّع
+            لا من يد مصمّم، فتُقرأ خشنةً في الأحجام الصغيرة. وهذه مسارات
+            Lottie من الرسم الذي أرسله الأستاذُ نفسُه — منحنياتٌ محكمةٌ،
+            وثلاثُ نبراتٍ من الهوية، وحركةُ SMIL داخل الملفّ تعمل قبل
+            ترطيب React ولا تُحسب في حزمة الجافاسكربت.
+
+            والاختيارُ بالمعنى: الإجازةُ والختمُ للتقدّم، والمصحفُ والكتابةُ
+            للكورسات، والشمسةُ للاشتراك.
+          */}
+          <StatTile index={0} ring={avg} label="متوسّط تقدّمك" icon={<ShariVector id="ijazah" size={74} />} className={tileCls} shape={shapeStyle(D.tile)} tone={statsTone} />
           <StatTile
             index={1}
             value={ar(courses.length)}
             unit={courses.length === 1 ? "كورس" : "كورسات"}
             label="كورساتك"
-            icon={<ShariMotion id="booksCapAnim" size={74} />}
+            icon={<ShariVector id="quranWrite" size={74} />}
             className={tileCls}
             shape={shapeStyle(D.tile)}
             tone={statsTone}
@@ -97,7 +109,7 @@ export default function StudentHome() {
           {/* الاشتراك الساري — يعرض ما تبقّى حتى الانتهاء */}
           <StatTile
             index={2}
-            icon={<ShariMotion id="capBookAnim" size={74} />}
+            icon={<ShariVector id="rosette" size={74} />}
             badge={subs.length > 1 ? `${ar(subs.length)} اشتراكات` : undefined}
             value={
               subs.length === 0 ? "—" : permanent && !expiring ? "دائم" : ar(expiring?.left ?? 0)

@@ -234,46 +234,35 @@ export function StatTile({
 
         {/* النصّ — يملأ ما بقي فلا يبقى فراغٌ في البطاقة العريضة */}
         <div className="tile-body relative min-w-0 flex-1">
-          {ring !== undefined ? (
-            <p
-              className={`tile-text font-display leading-none ${
-                ink ? "text-[hsl(var(--primary-foreground))]" : "text-foreground"
-              }`}
-            >
-              {/*
-                الرقمُ بأرقامٍ جدوليّة: أرقامُ العرض متفاوتةُ العرض،
-                فيرقص العدّادُ يميناً ويساراً كلّما تغيّر رقمُه.
-                والجدوليّةُ تُساوي عروضَها فيثبت مكانُه.
-              */}
-              <span className="text-[2.6rem] font-bold [font-variant-numeric:tabular-nums] tracking-tight">
-                {pct.toLocaleString("ar-EG")}
-              </span>
-              <span className="font-kufi ms-1 align-super text-lg font-bold opacity-60">٪</span>
-            </p>
-          ) : (
-            <p
-              className={`tile-text font-display flex items-baseline gap-1.5 leading-none ${
-                ink ? "text-[hsl(var(--primary-foreground))]" : "text-foreground"
-              }`}
-            >
-              <span className="text-[2.6rem] font-bold [font-variant-numeric:tabular-nums] tracking-tight">{value}</span>
-              {unit && (
-                <span
-                  className={`font-kufi text-base font-bold ${
-                    ink ? "text-[hsl(var(--primary-foreground)/0.7)]" : "text-muted-foreground"
-                  }`}
-                >
-                  {unit}
-                </span>
-              )}
-            </p>
-          )}
+          {/*
+            الرقمُ فوق والنصُّ تحته — لا بجانبه.
+            ------------------------------------------------------------
+            كان الرقمُ والوحدةُ في صفٍّ واحد ثمّ العنوانُ تحتهما. وهو يصلح
+            لبطاقةٍ عريضة؛ فإذا ضاقت — عمودٌ واحدٌ أو ثلاثةُ أعمدةٍ على شاشةٍ
+            متوسّطة — التفّ الصفُّ وركب العنوانُ الرقمَ، وصار الاثنان كتلةً
+            لا تُقرأ. وهو ما في اللقطة.
+
+            والترتيبُ الرأسيُّ لا يلتفّ أصلاً: رقمٌ في سطرٍ، ووصفُه تحته.
+            فيُقرأ في كلّ عرضٍ بلا استثناء.
+
+            **والمقاسُ من عرض البطاقة لا من الشاشة** (`cqw`): البطاقةُ
+            نفسُها تُعرض في عمودٍ وفي عمودين وفي ثلاثة، والقياسُ بالشاشة
+            يُعطيها الحجمَ نفسَه في الثلاثة — فيفيض في الضيّق.
+          */}
+          <p className={`tile-num font-display ${ink ? "text-[hsl(var(--primary-foreground))]" : "text-foreground"}`}>
+            <span className="tile-num-v">
+              {ring !== undefined ? pct.toLocaleString("ar-EG") : value}
+            </span>
+            {ring !== undefined && <span className="tile-num-u">٪</span>}
+          </p>
 
           <p
-            className={`tile-text font-kufi mt-2 text-[1.02rem] font-bold leading-snug ${
+            className={`tile-text font-kufi tile-label ${
               ink ? "text-[hsl(var(--primary-foreground)/0.8)]" : "text-muted-foreground"
             }`}
           >
+            {/* الوحدةُ تصف الرقمَ فتسبق العنوان، وتُخفَّف لتُقرأ ثانيةً لا أوّلاً */}
+            {unit && <span className="tile-unit">{unit}</span>}
             {label}
           </p>
 

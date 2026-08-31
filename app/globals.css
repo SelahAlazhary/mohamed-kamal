@@ -4899,3 +4899,64 @@ body {
 */
 .student-skin .btn-glow,
 .student-skin button.btn-glow { padding-block: 0.7rem; }
+
+
+/* ============================================================
+   نصُّ بطاقة المؤشّر — يُقاس بعرض البطاقة لا بعرض الشاشة
+   ------------------------------------------------------------
+   البطاقةُ نفسُها تُعرض في عمودٍ واحد، وفي عمودين، وفي ثلاثة، وفي شريطٍ
+   رأسيّ. والقياسُ بالشاشة (`sm:` و`lg:`) يُعطيها الحجمَ نفسَه في الأربعة
+   — فرقمٌ بحجم ٢٫٦rem يليق بعمودين ويفيض في عمودٍ ضيّق، فيركبه العنوانُ
+   ويصير الاثنان كتلةً لا تُقرأ.
+
+   و`cqw` تقيس **عرضَ البطاقة**: يصغر الرقمُ حيث تضيق ويكبر حيث تتّسع،
+   بلا نقاطِ انكسارٍ تُخمَّن.
+   ============================================================ */
+.stat-tile { container-type: inline-size; }
+
+.tile-num {
+  display: flex;
+  align-items: baseline;
+  gap: 0.15rem;
+  line-height: 1;
+}
+.tile-num-v {
+  font-size: clamp(1.5rem, 16cqw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.tile-num-u {
+  font-size: clamp(0.75rem, 6cqw, 1.125rem);
+  font-weight: 700;
+  opacity: 0.6;
+  align-self: flex-start;
+  margin-top: 0.15em;
+}
+
+.tile-label {
+  margin-top: 0.45rem;
+  font-size: clamp(0.72rem, 5cqw, 1.02rem);
+  font-weight: 700;
+  line-height: 1.4;
+  /* سطران على الأكثر — والثالثُ يُطيل البطاقةَ ويُخلّ بصفّها */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+/* الوحدةُ تصف الرقمَ فتسبق العنوان، وتُخفَّف لتُقرأ ثانيةً لا أوّلاً */
+.tile-unit { opacity: 0.75; }
+.tile-unit::after { content: " · "; opacity: 0.5; }
+
+/*
+  والصورةُ تصغر مع البطاقة كذلك.
+  كانت مقاساً ثابتاً (6.6rem للمقعد و74px للرسم) — يليق بالعريضة ويخنق
+  الضيّقة، فتتجاوز الحلقةُ حدَّها ويركبها النصّ.
+*/
+@container (max-width: 15rem) {
+  .stat-tile .tile-head > span:first-child { width: 4.6rem !important; height: 4.6rem !important; }
+  .stat-tile .tile-badge { width: 3.4rem !important; height: 3.4rem !important; }
+  .stat-tile .tile-badge img,
+  .stat-tile .tile-badge svg { width: 100% !important; height: 100% !important; }
+}
