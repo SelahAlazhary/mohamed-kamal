@@ -75,6 +75,7 @@ export function Section({
 
   return (
     <section
+      id={`sec-${uid}`}
       hidden={hidden}
       /*
         المفتوحُ من الشبكة يُبرَز بحلقةٍ وظلّ — فيُعرف أنّه متنُ التبويب

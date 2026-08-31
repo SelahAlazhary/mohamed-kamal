@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { courseUnits, isSplit, withUnits, LEGACY_UNIT_ID } from "@/lib/course-units";
 import { PageHeader, Card } from "@/components/dashboard/ui";
+import { Collapse } from "@/components/dashboard/collapse";
 import { Curriculum } from "@/components/admin/curriculum";
 import { Button } from "@/components/ui/primitives";
 import { useContent } from "@/components/content/content-provider";
@@ -288,6 +289,139 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
       <PageHeader title={`دروس: ${subject.name}`} subtitle={`${videos.length} درس · السعر ${subject.price.toLocaleString("ar-EG")} ج.م`} />
 
       {/*
+        المحتوى والمنهج — على متن الصفحة لا في بطاقةِ شبكةٍ تُضغط.
+        كانت ثلاثَ بطاقاتٍ في الشبكة: «إضافة درس» و«موادّ الكورس ودروسها»
+        و«ملفّات الكورس». فمن فتح الصفحةَ رأى تحت العنوان فراغاً، وعليه
+        أن يخمّن أيَّ بطاقةٍ يضغط ليرى منهجَ كورسه. والمنهجُ هو الصفحةُ
+        نفسُها لا بابٌ منها.
+
+        فصار يُرسم مباشرةً: يُفتح الكورسُ فيُرى بناؤه. وما بقي في الشبكة
+        إعداداتٌ تُزار حين تُراد — الغلافُ والسعرُ ونصُّ الغلاف.
+      */}
+      <div className="mb-6">
+        <div className="mb-4 flex items-center gap-2.5">
+          <span
+            style={{ color: "var(--brand-primary)", background: "color-mix(in srgb, var(--brand-primary) 9%, transparent)" }}
+            className="grid size-9 shrink-0 place-items-center rounded-2xl"
+          >
+            <Layers className="size-4" />
+          </span>
+          <div className="min-w-0">
+            <h2 className="font-display text-lg font-extrabold leading-tight">المحتوى والمنهج</h2>
+            <p className="text-[12px] leading-relaxed text-muted-foreground">
+              الكورسُ ← وحدة ← دروس. قسّم المنهجَ أبواباً فيقرأ الطالبُ منهجاً لا قائمةَ فيديوهات.
+            </p>
+          </div>
+        </div>
+
+
+      {/*
+        محتوى الكورس — ثلاثةُ مستوياتٍ في مكانٍ واحد.
+        الموادُّ ← دروسُ مادّة ← تعديلُ درس، والانتقالُ يستبدل المتنَ في
+        موضعه. والمكوّنُ حرٌّ من تفاصيل هذه الصفحة: يأخذ ما يُغيّر
+        (`on…`) وما يُرسَم (`render…`)، فيصلح لأيّ شاشةٍ أخرى بلا تعديل.
+      */}
+      <Curriculum
+        courseName={subject.name}
+        units={units}
+        onAddUnit={addUnit}
+        onRenameUnit={renameUnit}
+        onRemoveUnit={removeUnit}
+        onReorderUnit={reorderUnit}
+        onReorderLesson={reorderLesson}
+        onMoveLessonTo={moveLessonTo}
+        onPatchLesson={patchLesson}
+        onDuplicateLesson={duplicateLesson}
+        onRemoveLesson={remove}
+        onSetQuiz={setQuiz}
+        renderQuiz={(l) => <QuizEditor lesson={l} onChange={(q) => setQuiz(l.id, q)} results={quizStats(l.id)} />}
+        renderSettings={
+          <>
+            {/* عنوانُ اللسان — كان ترويسةَ قسمٍ مستقلٍّ قبل الدمج */}
+            <div className="mb-4">
+              <p className="font-display text-[15px] font-extrabold">ملفّات الكورس</p>
+              <p className="text-[12px] text-muted-foreground">
+                مذكّراتٌ وملازمُ PDF يفتحها الطالبُ مع الدروس
+              </p>
+            </div>
+          <div>
+            <Card className="mb-4">
+              <div className="flex flex-wrap items-end gap-3">
+                <label className="min-w-40 flex-1"><span className="mb-1 block text-xs font-semibold text-muted-foreground">عنوان الملف</span>
+                  <input value={mat.title} onChange={(e) => setMat({ ...mat, title: e.target.value })} className="inp" placeholder="مثال: مذكّرة النحو" />
+                </label>
+                <label className="min-w-56 flex-[2]"><span className="mb-1 block text-xs font-semibold text-muted-foreground">رابط الملف</span>
+                  <input value={mat.url} onChange={(e) => setMat({ ...mat, url: e.target.value })} onKeyDown={(e) => e.key === "Enter" && addMaterial()} dir="ltr" className="inp text-right" placeholder="https://drive.google.com/… أو رابط PDF مباشر" />
+                </label>
+                <Button className="px-5 py-2.5" onClick={addMaterial}><Link2 className="size-4" /> إضافة بالرابط</Button>
+                <input ref={matRef} type="file" hidden onChange={async (e) => {
+                  const file = e.target.files?.[0]; if (!file) return;
+                  setUploading("material");
+                  const url = await uploadImage(file);
+                  setUploading(null);
+                  if (url) persistMats([...materials, { id: `M-${Date.now()}`, title: mat.title.trim() || file.name, url }]);
+                  setMat({ title: "", url: "" });
+                  if (matRef.current) matRef.current.value = "";
+                }} />
+                <Button variant="outline" className="px-5 py-2.5" onClick={() => matRef.current?.click()} disabled={uploading === "material"}>
+                  {uploading === "material" ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+                  {driveOn ? "رفع إلى Drive" : "رفع ملف"}
+                </Button>
+              </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                أضِف الملف برابط خارجي، أو ارفعه {driveOn ? "إلى Google Drive الحساب المربوط" : "إلى خادم المنصّة"}.
+              </p>
+            </Card>
+            {materials.length > 0 && (
+              <div className="space-y-2">
+                {materials.map((m) => (
+                  <Card key={m.id} className="!p-3">
+                    <div className="flex items-center gap-3">
+                      <span className="grid size-9 place-items-center rounded-2xl bg-primary/12 text-primary"><FileText className="size-5" /></span>
+                      <a href={m.url} target="_blank" rel="noreferrer" className="min-w-0 flex-1 truncate font-semibold hover:text-primary">{m.title}</a>
+                      <button onClick={() => removeMaterial(m.id)} title="حذف" className="grid size-8 place-items-center rounded-full border border-border text-rose-500 transition hover:border-rose-500"><Trash2 className="size-4" /></button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+          </>
+        }
+        renderAddLesson={(uid) => (
+          <Card className="!p-3">
+            <div className="flex flex-wrap items-end gap-2.5">
+              <label className="min-w-40 flex-1">
+                <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">عنوان الدرس</span>
+                <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="inp" placeholder="مثال: الباب الأول — التعريف والدليل" />
+              </label>
+              <label className="min-w-56 flex-[2]">
+                <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">رابط الفيديو</span>
+                <input value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} dir="ltr" className="inp text-right" placeholder="https://…" />
+              </label>
+              <label className="min-w-24">
+                <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">المدّة</span>
+                <input value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} className="inp" placeholder="١٢:٤٥" />
+              </label>
+              <label className="flex items-center gap-2 rounded-2xl border border-border px-3 py-2.5 text-[11px] font-bold">
+                <input type="checkbox" checked={form.isFree} onChange={(e) => setForm({ ...form, isFree: e.target.checked })} className="size-4 accent-[hsl(var(--primary))]" />
+                مجانيّ
+              </label>
+              {/*
+                المادّةُ تُؤخذ من المستوى المفتوح لا من قائمةٍ تُختار: من
+                فتح مادّةً ثمّ أضاف درساً يريده فيها، وسؤالُه ثانيةً عبثٌ.
+              */}
+              <Button className="px-5 py-2.5" onClick={() => { setIntoUnit(uid); add(); }}>
+                <Plus className="size-4" /> إضافة درس
+              </Button>
+            </div>
+          </Card>
+        )}
+      />
+
+      </div>
+
+      {/*
         التصميمُ مفصولٌ عن العمل.
         غلافُ الكورس ونصُّه وصورُه تُضبط مرّةً عند إنشائه ثمّ لا تُمسّ؛
         وإضافةُ الدروس وترتيبُها عملٌ يوميّ. وجمعُهما في عمودٍ واحدٍ
@@ -295,8 +429,20 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
         فيها درساً. فالتصميمُ مطويٌّ والعملُ مفتوح.
       */}
       <p className="font-kufi mb-2 mt-2 text-[11px] font-bold text-muted-foreground">تصميم البطاقة</p>
+      {/*
+        المظهرُ لوحٌ واحدٌ مطويّ.
+        كان ثلاثةَ أقسامٍ مفتوحةٍ يبلغ طولُها ألفاً وتسعمئةِ بكسل، تسبق
+        المنهجَ كلَّها. والغلافُ ونصُّه وملصقاتُه تُضبط مرّةً عند إنشاء
+        الكورس ثمّ لا تُمسّ شهراً — والدروسُ تُضاف كلَّ أسبوع.
+      */}
+      <Section
+        className="mb-6"
+        title="مظهر بطاقة الكورس"
+        subtitle="الغلافُ ونصُّه وملصقاتُه — تُضبط مرّةً ثمّ تُترك"
+        icon={<Palette className="size-4" />}
+      >
       {/* غلاف الكورس */}
-      <Section className="mb-6" title="غلاف الكورس" subtitle="الصورةُ التي تُرى على بطاقة الكورس" icon={<ImageIcon className="size-4" />}>
+      <Collapse className="mb-3" title="غلاف الكورس" subtitle="الصورةُ التي تُرى على بطاقة الكورس" icon={<ImageIcon className="size-4" />} storageKey="crs-cover">
         <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
           مقاس البطاقة ثابت ولا يتمدّد. عند التكبير ١٠٠٪ تظهر صورتك <b>كاملة</b>؛ ولو أردت ملء الإطار
           كبّرها وحرّكها بنفسك — ما يخرج عن الإطار يُقصّ بإرادتك أنت لا تلقائياً.
@@ -441,25 +587,27 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
             </div>
           )}
         </div>
-      </Section>
+      </Collapse>
 
       {/* نصّ على الغلاف */}
-      <Section className="mb-6" title="نصّ الغلاف" subtitle="كلمةٌ تُكتب فوق الصورة وتُحرَّك بالسحب" icon={<Palette className="size-4" />}>
+      <Collapse className="mb-3" title="نصّ الغلاف" subtitle="كلمةٌ تُكتب فوق الصورة وتُحرَّك بالسحب" icon={<Palette className="size-4" />} storageKey="crs-text">
         <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
           اكتب نصّاً يظهر فوق لوحة الغلاف، ثم اسحبه بالماوس إلى مكانه. الموضع يُحفظ بالنسبة
           المئوية فيبقى في مكانه على بطاقة الطالب الصغيرة وعلى المعاينة الكبيرة سواء.
         </p>
         <CoverTextEditor subject={subject} onChange={setCoverText} />
-      </Section>
+      </Collapse>
 
       {/* صور على الغلاف */}
-      <Section className="mb-6" title="ملصقات الغلاف" subtitle="صورٌ صغيرةٌ تُلصق فوق الغلاف" icon={<ImageIcon className="size-4" />}>
+      <Collapse className="mb-3" title="ملصقات الغلاف" subtitle="صورٌ صغيرةٌ تُلصق فوق الغلاف" icon={<ImageIcon className="size-4" />} storageKey="crs-stickers">
         <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
           ارفع صورة — تُفتح أداة القصّ وإزالة الخلفية أولاً — ثم اسحبها بالماوس إلى مكانها
           واضبط حجمها ودورانها وشفافيتها. الصور تُرسم تحت نصّ الغلاف ليبقى النصّ فوقها.
         </p>
         <CoverStickersEditor subject={subject} onChange={setCoverStickers} />
+      </Collapse>
       </Section>
+
 
       {/* أسعار الكورس */}
       {/*
@@ -545,174 +693,6 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
             <Wallet className="size-4" /> افتح بوّابة الدفع
           </Link>
         </div>
-      </Section>
-
-      {/* إضافة درس */}
-      <Section className="mb-6" title="إضافة درس" subtitle="عنوانُ الدرس ورابطُه والمادّةُ التي يقع فيها" icon={<Plus className="size-4" />}>
-        <div className="grid gap-3 sm:grid-cols-6">
-          <label className="sm:col-span-2"><span className="mb-1 block text-xs font-semibold text-muted-foreground">عنوان الدرس</span>
-            <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="inp" placeholder="مثال: مقدّمة في علوم القرآن" />
-          </label>
-          <label className="sm:col-span-3"><span className="mb-1 block text-xs font-semibold text-muted-foreground">رابط الفيديو</span>
-            <div className="flex gap-2">
-              <input value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} dir="ltr" className="inp text-right" placeholder="YouTube / Google Drive / Bunny / mp4" />
-              <input ref={videoRef} type="file" accept="video/*" hidden onChange={async (e) => {
-                const file = e.target.files?.[0]; if (!file) return;
-                setUploading("video");
-                const url = await uploadImage(file);
-                setUploading(null);
-                if (url) setForm((f) => ({ ...f, url, title: f.title || file.name.replace(/\.[^.]+$/, "") }));
-                if (videoRef.current) videoRef.current.value = "";
-              }} />
-              <button type="button" onClick={() => videoRef.current?.click()} disabled={uploading === "video"}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-2xl border border-primary/40 px-3 text-xs font-bold text-primary transition hover:bg-primary/10 disabled:opacity-60">
-                {uploading === "video" ? <Loader2 className="size-4 animate-spin" /> : <Video className="size-4" />}
-                {driveOn ? "رفع إلى Drive" : "رفع"}
-              </button>
-            </div>
-            <span className="mt-1 block text-[11px] text-muted-foreground">
-              الصق رابطاً جاهزاً، أو ارفع الملف {driveOn ? "ليُخزَّن في Google Drive الحساب المربوط ويُملأ الرابط تلقائياً" : "ليُحفظ على الخادم"}.
-            </span>
-          </label>
-          <label><span className="mb-1 block text-xs font-semibold text-muted-foreground">المدة</span>
-            <input value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} className="inp" placeholder="١٢:٣٠" />
-          </label>
-          {/*
-            المادّةُ المقصودة — تظهر حين تكون هناك موادٌّ يُختار بينها.
-            وواحدةٌ لا اختيارَ فيها، فإظهارُ قائمةٍ بخيارٍ واحدٍ حشو.
-          */}
-          {units.length > 1 && (
-            <label className="sm:col-span-5"><span className="mb-1 block text-xs font-semibold text-muted-foreground">تُضاف إلى مادّة</span>
-              <select value={units.some((u) => u.id === intoUnit) ? intoUnit : units[units.length - 1].id}
-                onChange={(e) => setIntoUnit(e.target.value)} className="inp">
-                {units.map((u) => <option key={u.id} value={u.id}>{u.title}</option>)}
-              </select>
-            </label>
-          )}
-          <label className="flex items-center gap-2 sm:col-span-5">
-            <input type="checkbox" checked={form.isFree} onChange={(e) => setForm({ ...form, isFree: e.target.checked })} className="size-4 accent-[hsl(var(--primary))]" />
-            <span className="text-sm text-muted-foreground">درس تجريبي مجاني (يظهر لغير المشتركين)</span>
-          </label>
-          <div className="flex items-end">
-            <Button className="w-full px-5 py-2.5" onClick={add}><Plus className="size-4" /> إضافة</Button>
-          </div>
-        </div>
-      </Section>
-
-      {/* ---------- الموادّ ودروسُها ---------- */}
-      <Section
-        className="mb-6"
-        title="موادّ الكورس ودروسُها"
-        subtitle="المسار: الكورس ← مادّة ← دروس. قسّم المنهجَ أبواباً فيقرأ الطالبُ منهجاً لا قائمةَ فيديوهات."
-        icon={<Layers className="size-4" />}
-        count={units.length}
-        actions={<Button className="px-4 py-2 text-xs" onClick={addUnit}>+ إضافة مادّة</Button>}
-      >
-
-      {/*
-        محتوى الكورس — ثلاثةُ مستوياتٍ في مكانٍ واحد.
-        الموادُّ ← دروسُ مادّة ← تعديلُ درس، والانتقالُ يستبدل المتنَ في
-        موضعه. والمكوّنُ حرٌّ من تفاصيل هذه الصفحة: يأخذ ما يُغيّر
-        (`on…`) وما يُرسَم (`render…`)، فيصلح لأيّ شاشةٍ أخرى بلا تعديل.
-      */}
-      <Curriculum
-        courseName={subject.name}
-        units={units}
-        onAddUnit={addUnit}
-        onRenameUnit={renameUnit}
-        onRemoveUnit={removeUnit}
-        onReorderUnit={reorderUnit}
-        onReorderLesson={reorderLesson}
-        onMoveLessonTo={moveLessonTo}
-        onPatchLesson={patchLesson}
-        onDuplicateLesson={duplicateLesson}
-        onRemoveLesson={remove}
-        onSetQuiz={setQuiz}
-        renderQuiz={(l) => <QuizEditor lesson={l} onChange={(q) => setQuiz(l.id, q)} results={quizStats(l.id)} />}
-        renderSettings={
-          <>
-            {/* عنوانُ اللسان — كان ترويسةَ قسمٍ مستقلٍّ قبل الدمج */}
-            <div className="mb-4">
-              <p className="font-display text-[15px] font-extrabold">ملفّات الكورس</p>
-              <p className="text-[12px] text-muted-foreground">
-                مذكّراتٌ وملازمُ PDF يفتحها الطالبُ مع الدروس
-              </p>
-            </div>
-          <div>
-            <Card className="mb-4">
-              <div className="flex flex-wrap items-end gap-3">
-                <label className="min-w-40 flex-1"><span className="mb-1 block text-xs font-semibold text-muted-foreground">عنوان الملف</span>
-                  <input value={mat.title} onChange={(e) => setMat({ ...mat, title: e.target.value })} className="inp" placeholder="مثال: مذكّرة النحو" />
-                </label>
-                <label className="min-w-56 flex-[2]"><span className="mb-1 block text-xs font-semibold text-muted-foreground">رابط الملف</span>
-                  <input value={mat.url} onChange={(e) => setMat({ ...mat, url: e.target.value })} onKeyDown={(e) => e.key === "Enter" && addMaterial()} dir="ltr" className="inp text-right" placeholder="https://drive.google.com/… أو رابط PDF مباشر" />
-                </label>
-                <Button className="px-5 py-2.5" onClick={addMaterial}><Link2 className="size-4" /> إضافة بالرابط</Button>
-                <input ref={matRef} type="file" hidden onChange={async (e) => {
-                  const file = e.target.files?.[0]; if (!file) return;
-                  setUploading("material");
-                  const url = await uploadImage(file);
-                  setUploading(null);
-                  if (url) persistMats([...materials, { id: `M-${Date.now()}`, title: mat.title.trim() || file.name, url }]);
-                  setMat({ title: "", url: "" });
-                  if (matRef.current) matRef.current.value = "";
-                }} />
-                <Button variant="outline" className="px-5 py-2.5" onClick={() => matRef.current?.click()} disabled={uploading === "material"}>
-                  {uploading === "material" ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
-                  {driveOn ? "رفع إلى Drive" : "رفع ملف"}
-                </Button>
-              </div>
-              <p className="mt-2 text-[11px] text-muted-foreground">
-                أضِف الملف برابط خارجي، أو ارفعه {driveOn ? "إلى Google Drive الحساب المربوط" : "إلى خادم المنصّة"}.
-              </p>
-            </Card>
-            {materials.length > 0 && (
-              <div className="space-y-2">
-                {materials.map((m) => (
-                  <Card key={m.id} className="!p-3">
-                    <div className="flex items-center gap-3">
-                      <span className="grid size-9 place-items-center rounded-2xl bg-primary/12 text-primary"><FileText className="size-5" /></span>
-                      <a href={m.url} target="_blank" rel="noreferrer" className="min-w-0 flex-1 truncate font-semibold hover:text-primary">{m.title}</a>
-                      <button onClick={() => removeMaterial(m.id)} title="حذف" className="grid size-8 place-items-center rounded-full border border-border text-rose-500 transition hover:border-rose-500"><Trash2 className="size-4" /></button>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-          </>
-        }
-        renderAddLesson={(uid) => (
-          <Card className="!p-3">
-            <div className="flex flex-wrap items-end gap-2.5">
-              <label className="min-w-40 flex-1">
-                <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">عنوان الدرس</span>
-                <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="inp" placeholder="مثال: الباب الأول — التعريف والدليل" />
-              </label>
-              <label className="min-w-56 flex-[2]">
-                <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">رابط الفيديو</span>
-                <input value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} dir="ltr" className="inp text-right" placeholder="https://…" />
-              </label>
-              <label className="min-w-24">
-                <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">المدّة</span>
-                <input value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} className="inp" placeholder="١٢:٤٥" />
-              </label>
-              <label className="flex items-center gap-2 rounded-2xl border border-border px-3 py-2.5 text-[11px] font-bold">
-                <input type="checkbox" checked={form.isFree} onChange={(e) => setForm({ ...form, isFree: e.target.checked })} className="size-4 accent-[hsl(var(--primary))]" />
-                مجانيّ
-              </label>
-              {/*
-                المادّةُ تُؤخذ من المستوى المفتوح لا من قائمةٍ تُختار: من
-                فتح مادّةً ثمّ أضاف درساً يريده فيها، وسؤالُه ثانيةً عبثٌ.
-              */}
-              <Button className="px-5 py-2.5" onClick={() => { setIntoUnit(uid); add(); }}>
-                <Plus className="size-4" /> إضافة درس
-              </Button>
-            </div>
-          </Card>
-        )}
-      />
-
       </Section>
 
     </>

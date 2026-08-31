@@ -105,10 +105,25 @@ export function useSectionTab(e: Entry) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reg, unreg, id, title, subtitle, group, alert, count]);
 
+  /*
+    **لا قسمَ يُخفى.**
+    ------------------------------------------------------------------
+    كانت الشبكةُ بوّابةً: `hidden` لكلّ قسمٍ إلّا المضغوط. فمن فتح شاشةً
+    رأى بطاقاتٍ وفراغاً تحتها، وعليه أن يُخمّن أيَّ بطاقةٍ فيها ما يريد
+    — ثمّ يضغط ويقرأ ويرجع ويضغط غيرَها. وهو يعرف شاشتَه ولا يريد أن
+    يُسأل عنها في كلّ زيارة.
+
+    والثمنُ الذي دُفع أكبرُ من الفائدة: من نظر إلى الشاشة ظنّ أقسامَها
+    ضاعت — وهو ظنٌّ صحيحٌ ممّا يرى، فالمحتوى ليس هناك حقّاً.
+
+    فصارت الشبكةُ **دليلاً**: كلُّ قسمٍ مرسومٌ في مكانه دائماً، والبطاقةُ
+    تُقفز إليه وتُبرزه. يُقرأ الكلُّ بالتمرير — وهو أسرعُ من الضغط —
+    ويُوصَل إلى البعيد بضغطةٍ واحدة.
+  */
   if (!ctx || local) return { hidden: false, open: false, close: () => {} };
   return {
-    hidden: ctx.gridded && ctx.active !== id,
-    /** مفتوحٌ تحت الشبكة — يُبرَز ويُعطى زرَّ طيّ. */
+    hidden: false,
+    /** المقفوزُ إليه يُبرَز لحظةً ليُعرف أين وقعت العين. */
     open: ctx.gridded && ctx.active === id,
     close: ctx.close,
   };
@@ -169,7 +184,17 @@ export function SectionTabs({ children }: { children: ReactNode }) {
     <button
       key={i.id}
       type="button"
-      onClick={() => setActive((cur) => (cur === i.id ? null : i.id))}
+      onClick={() => {
+        setActive(i.id);
+        /*
+          القفزُ بعد الرسم: القسمُ موجودٌ أصلاً فلا انتظارَ لظهوره، لكنّ
+          `setActive` يُعيد الرسمَ فيُؤجَّل القفزُ إلى ما بعده كي يقع على
+          موضعٍ مستقرّ.
+        */
+        requestAnimationFrame(() => {
+          document.getElementById(`sec-${i.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }}
       aria-pressed={active === i.id}
       className={`sg-card ${i.alert ? "is-alert" : ""} ${active === i.id ? "is-on" : ""}`}
     >
