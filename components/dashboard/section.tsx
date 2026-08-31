@@ -23,6 +23,7 @@
 
 import { useId, type ReactNode } from "react";
 import { useSectionTab, SectionLocal } from "./section-tabs";
+import { ErrorBoundary } from "./error-boundary";
 
 export function Section({
   title,
@@ -112,9 +113,15 @@ export function Section({
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
       </header>
 
-      {/* ما في القسم محتواه لا أقساماً أخرى للفهرس — انظر `SectionLocal`. */}
+      {/*
+        ما في القسم محتواه لا أقساماً أخرى للفهرس — انظر `SectionLocal`.
+        وهو محاطٌ بحدِّ خطأ: عطبُ قسمٍ يُحاصَر فيه وتبقى الشاشةُ تعمل،
+        ولا يُترك المشرفُ أمام صفحةٍ بيضاء لا يعرف أيَّ جزءٍ منها عطِب.
+      */}
       <div className="p-5 sm:p-6">
-        <SectionLocal>{children}</SectionLocal>
+        <ErrorBoundary label={typeof title === "string" ? title : undefined}>
+          <SectionLocal>{children}</SectionLocal>
+        </ErrorBoundary>
       </div>
     </section>
   );

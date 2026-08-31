@@ -22,7 +22,13 @@ export type SaveState =
   | { kind: "idle" }
   | { kind: "saving" }
   | { kind: "saved"; at: number }
-  | { kind: "error"; message: string; at: number };
+  /**
+   * `title` عنوانُ اللوح. اللوحُ نفسُه يخدم الحفظَ وغيرَه — ومنذ صار
+   * `ErrorWatch` يبثّ فيه الإخفاقاتِ الصامتة لم يعد كلُّ خطأٍ حفظاً،
+   * وقولُ «لم يُحفظ التعديل» لعطبِ عمليّةٍ أخرى يوجّه القارئَ إلى
+   * الموضع الخطأ. فالافتراضُ للحفظ، ومن أراد غيرَه سمّاه.
+   */
+  | { kind: "error"; message: string; title?: string; at: number };
 
 type Listener = (s: SaveState) => void;
 
@@ -51,8 +57,8 @@ export function saveSucceeded() {
   emit({ kind: "saved", at: Date.now() });
 }
 
-export function saveFailed(message: string) {
-  emit({ kind: "error", message, at: Date.now() });
+export function saveFailed(message: string, title?: string) {
+  emit({ kind: "error", message, title, at: Date.now() });
 }
 
 /** يُطفأ الإبلاغُ الهادئ بعد حين — والخطأُ لا يُطفأ إلّا بقراءته. */

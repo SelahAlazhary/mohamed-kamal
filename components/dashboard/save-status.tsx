@@ -41,9 +41,10 @@ export function SaveStatus() {
         <div className="flex max-w-lg items-start gap-3 rounded-2xl border border-rose-500/40 bg-rose-500/[0.12] px-4 py-3 shadow-[0_8px_28px_-12px_rgba(16,24,40,.35)] backdrop-blur-xl">
           <AlertTriangle className="mt-0.5 size-4 shrink-0 text-rose-600 dark:text-rose-400" />
           <div className="min-w-0">
-            <p className="text-xs font-extrabold text-rose-700 dark:text-rose-400">لم يُحفظ التعديل</p>
+            <p className="text-xs font-extrabold text-rose-700 dark:text-rose-400">{s.title ?? "لم يُحفظ التعديل"}</p>
             <p className="mt-0.5 text-[11px] leading-relaxed text-rose-700/85 dark:text-rose-300/85">
-              {s.message} — أعد المحاولة، والحقلُ عاد إلى قيمته المحفوظة.
+              {s.message}
+              {s.title ? " — أعد المحاولة." : " — أعد المحاولة، والحقلُ عاد إلى قيمته المحفوظة."}
             </p>
           </div>
           <button

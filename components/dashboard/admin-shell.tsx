@@ -37,6 +37,7 @@ import { groupNav, type NavItem } from "@/lib/dashboard-data";
 import { navBadges } from "@/lib/admin-insights";
 import { CommandPalette } from "@/components/dashboard/command-palette";
 import { SaveStatus } from "@/components/dashboard/save-status";
+import { ErrorWatch } from "@/components/dashboard/error-watch";
 import { SectionTabs } from "@/components/dashboard/section-tabs";
 
 const SLOTS: Record<string, IconSlot> = {
@@ -200,6 +201,8 @@ export function AdminShell({
 
           <div className="ad-top-actions">
             <SaveStatus />
+            {/* الإخفاقُ الصامتُ يصير مسموعاً — انظر `ErrorWatch`. */}
+            <ErrorWatch />
             <button
               type="button"
               onClick={() => window.dispatchEvent(new Event("open-command-palette"))}
