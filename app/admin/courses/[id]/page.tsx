@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { courseUnits, isSplit, withUnits, LEGACY_UNIT_ID } from "@/lib/course-units";
 import { PageHeader, Card } from "@/components/dashboard/ui";
-import { CourseContent } from "@/components/admin/course-content";
+import { Curriculum } from "@/components/admin/curriculum";
 import { Button } from "@/components/ui/primitives";
 import { useContent } from "@/components/content/content-provider";
 import { CourseArt, COVER_PATTERNS } from "@/components/brand/course-art";
@@ -166,13 +166,6 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
     const at = Math.max(0, i - 1);
     persistUnits(rest.map((u, k) => (k === at ? { ...u, lessons: [...(u.lessons ?? []), ...keep] } : u)));
   };
-  const moveUnit = (i: number, dir: -1 | 1) => {
-    const j = i + dir;
-    if (j < 0 || j >= units.length) return;
-    const arr = [...units];
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-    persistUnits(arr);
-  };
   /** نقلُ درسٍ إلى مادّةٍ أخرى — يُنزع من موضعه ويُلحق بآخر المقصد. */
   const moveLessonTo = (lid: string, uid: string) => {
     const lesson = videos.find((v) => v.id === lid);
@@ -247,15 +240,45 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
     مادّةٍ أخرى، فيقفز الدرسُ بين البابين بضغطةٍ لم تُرِد ذلك. والنقلُ بين
     الموادّ له قائمتُه المنسدلة، وهو فعلٌ يُقصد لا يقع بالسهو.
   */
-  const move = (uid: string, k: number, dir: -1 | 1) => {
+  /*
+    نقلٌ من موضعٍ إلى موضع. وكانت الحركةُ بخطوةٍ واحدةٍ (`dir: -1 | 1`)
+    فنقلُ درسٍ من العاشر إلى الأوّل تسعُ ضغطاتٍ وتسعُ كتاباتٍ إلى قاعدة
+    البيانات. والشجرةُ تسحب، والسحبُ يعرف مقصدَه فيُكتب مرّةً واحدة.
+
+    ومن لا يسحب — بلوحة المفاتيح — ينقل الدرسَ بقائمة «الوحدة» في لوح
+    إدارته، وهي طريقٌ لا تحتاج فأرةً أصلاً.
+  */
+  const reorderUnit = (from: number, to: number) => {
+    if (from === to || from < 0 || to < 0 || from >= units.length || to >= units.length) return;
+    const arr = [...units];
+    const [it] = arr.splice(from, 1);
+    arr.splice(to, 0, it);
+    persistUnits(arr);
+  };
+
+  const reorderLesson = (uid: string, from: number, to: number) => {
     const u = units.find((x) => x.id === uid);
     if (!u) return;
     const arr = [...(u.lessons ?? [])];
-    const j = k + dir;
-    if (j < 0 || j >= arr.length) return;
-    [arr[k], arr[j]] = [arr[j], arr[k]];
+    if (from === to || from < 0 || to < 0 || from >= arr.length || to >= arr.length) return;
+    const [it] = arr.splice(from, 1);
+    arr.splice(to, 0, it);
     persistUnits(units.map((x) => (x.id === uid ? { ...x, lessons: arr } : x)));
   };
+
+  /** نسخةٌ تقع تحت أصلها — لا في آخر الوحدة، فالمنسوخُ يُعدَّل في موضعه. */
+  const duplicateLesson = (lid: string) =>
+    persistUnits(
+      units.map((u) => {
+        const arr = [...(u.lessons ?? [])];
+        const i = arr.findIndex((l) => l.id === lid);
+        if (i < 0) return u;
+        const src = arr[i];
+        arr.splice(i + 1, 0, { ...src, id: `L-${Date.now()}`, title: `${src.title} — نسخة` });
+        return { ...u, lessons: arr };
+      })
+    );
+
 
   return (
     <>
@@ -592,20 +615,73 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
         موضعه. والمكوّنُ حرٌّ من تفاصيل هذه الصفحة: يأخذ ما يُغيّر
         (`on…`) وما يُرسَم (`render…`)، فيصلح لأيّ شاشةٍ أخرى بلا تعديل.
       */}
-      <CourseContent
+      <Curriculum
         courseName={subject.name}
         units={units}
         onAddUnit={addUnit}
         onRenameUnit={renameUnit}
         onRemoveUnit={removeUnit}
-        onMoveUnit={moveUnit}
-        onMoveLesson={move}
+        onReorderUnit={reorderUnit}
+        onReorderLesson={reorderLesson}
         onMoveLessonTo={moveLessonTo}
         onPatchLesson={patchLesson}
+        onDuplicateLesson={duplicateLesson}
         onRemoveLesson={remove}
         onSetQuiz={setQuiz}
-        quizStats={quizStats}
         renderQuiz={(l) => <QuizEditor lesson={l} onChange={(q) => setQuiz(l.id, q)} results={quizStats(l.id)} />}
+        renderSettings={
+          <>
+            {/* عنوانُ اللسان — كان ترويسةَ قسمٍ مستقلٍّ قبل الدمج */}
+            <div className="mb-4">
+              <p className="font-display text-[15px] font-extrabold">ملفّات الكورس</p>
+              <p className="text-[12px] text-muted-foreground">
+                مذكّراتٌ وملازمُ PDF يفتحها الطالبُ مع الدروس
+              </p>
+            </div>
+          <div>
+            <Card className="mb-4">
+              <div className="flex flex-wrap items-end gap-3">
+                <label className="min-w-40 flex-1"><span className="mb-1 block text-xs font-semibold text-muted-foreground">عنوان الملف</span>
+                  <input value={mat.title} onChange={(e) => setMat({ ...mat, title: e.target.value })} className="inp" placeholder="مثال: مذكّرة النحو" />
+                </label>
+                <label className="min-w-56 flex-[2]"><span className="mb-1 block text-xs font-semibold text-muted-foreground">رابط الملف</span>
+                  <input value={mat.url} onChange={(e) => setMat({ ...mat, url: e.target.value })} onKeyDown={(e) => e.key === "Enter" && addMaterial()} dir="ltr" className="inp text-right" placeholder="https://drive.google.com/… أو رابط PDF مباشر" />
+                </label>
+                <Button className="px-5 py-2.5" onClick={addMaterial}><Link2 className="size-4" /> إضافة بالرابط</Button>
+                <input ref={matRef} type="file" hidden onChange={async (e) => {
+                  const file = e.target.files?.[0]; if (!file) return;
+                  setUploading("material");
+                  const url = await uploadImage(file);
+                  setUploading(null);
+                  if (url) persistMats([...materials, { id: `M-${Date.now()}`, title: mat.title.trim() || file.name, url }]);
+                  setMat({ title: "", url: "" });
+                  if (matRef.current) matRef.current.value = "";
+                }} />
+                <Button variant="outline" className="px-5 py-2.5" onClick={() => matRef.current?.click()} disabled={uploading === "material"}>
+                  {uploading === "material" ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+                  {driveOn ? "رفع إلى Drive" : "رفع ملف"}
+                </Button>
+              </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                أضِف الملف برابط خارجي، أو ارفعه {driveOn ? "إلى Google Drive الحساب المربوط" : "إلى خادم المنصّة"}.
+              </p>
+            </Card>
+            {materials.length > 0 && (
+              <div className="space-y-2">
+                {materials.map((m) => (
+                  <Card key={m.id} className="!p-3">
+                    <div className="flex items-center gap-3">
+                      <span className="grid size-9 place-items-center rounded-2xl bg-primary/12 text-primary"><FileText className="size-5" /></span>
+                      <a href={m.url} target="_blank" rel="noreferrer" className="min-w-0 flex-1 truncate font-semibold hover:text-primary">{m.title}</a>
+                      <button onClick={() => removeMaterial(m.id)} title="حذف" className="grid size-8 place-items-center rounded-full border border-border text-rose-500 transition hover:border-rose-500"><Trash2 className="size-4" /></button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+          </>
+        }
         renderAddLesson={(uid) => (
           <Card className="!p-3">
             <div className="flex flex-wrap items-end gap-2.5">
@@ -639,56 +715,6 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
 
       </Section>
 
-      {/* مواد وملفات الكورس */}
-      <Section
-        className="mb-6"
-        title="ملفّات الكورس"
-        subtitle="مذكّراتٌ وملازمُ PDF يفتحها الطالبُ مع الدروس"
-        icon={<FileText className="size-4" />}
-      >
-      <div>
-        <Card className="mb-4">
-          <div className="flex flex-wrap items-end gap-3">
-            <label className="min-w-40 flex-1"><span className="mb-1 block text-xs font-semibold text-muted-foreground">عنوان الملف</span>
-              <input value={mat.title} onChange={(e) => setMat({ ...mat, title: e.target.value })} className="inp" placeholder="مثال: مذكّرة النحو" />
-            </label>
-            <label className="min-w-56 flex-[2]"><span className="mb-1 block text-xs font-semibold text-muted-foreground">رابط الملف</span>
-              <input value={mat.url} onChange={(e) => setMat({ ...mat, url: e.target.value })} onKeyDown={(e) => e.key === "Enter" && addMaterial()} dir="ltr" className="inp text-right" placeholder="https://drive.google.com/… أو رابط PDF مباشر" />
-            </label>
-            <Button className="px-5 py-2.5" onClick={addMaterial}><Link2 className="size-4" /> إضافة بالرابط</Button>
-            <input ref={matRef} type="file" hidden onChange={async (e) => {
-              const file = e.target.files?.[0]; if (!file) return;
-              setUploading("material");
-              const url = await uploadImage(file);
-              setUploading(null);
-              if (url) persistMats([...materials, { id: `M-${Date.now()}`, title: mat.title.trim() || file.name, url }]);
-              setMat({ title: "", url: "" });
-              if (matRef.current) matRef.current.value = "";
-            }} />
-            <Button variant="outline" className="px-5 py-2.5" onClick={() => matRef.current?.click()} disabled={uploading === "material"}>
-              {uploading === "material" ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
-              {driveOn ? "رفع إلى Drive" : "رفع ملف"}
-            </Button>
-          </div>
-          <p className="mt-2 text-[11px] text-muted-foreground">
-            أضِف الملف برابط خارجي، أو ارفعه {driveOn ? "إلى Google Drive الحساب المربوط" : "إلى خادم المنصّة"}.
-          </p>
-        </Card>
-        {materials.length > 0 && (
-          <div className="space-y-2">
-            {materials.map((m) => (
-              <Card key={m.id} className="!p-3">
-                <div className="flex items-center gap-3">
-                  <span className="grid size-9 place-items-center rounded-2xl bg-primary/12 text-primary"><FileText className="size-5" /></span>
-                  <a href={m.url} target="_blank" rel="noreferrer" className="min-w-0 flex-1 truncate font-semibold hover:text-primary">{m.title}</a>
-                  <button onClick={() => removeMaterial(m.id)} title="حذف" className="grid size-8 place-items-center rounded-full border border-border text-rose-500 transition hover:border-rose-500"><Trash2 className="size-4" /></button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
-      </Section>
     </>
   );
 }
