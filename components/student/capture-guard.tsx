@@ -54,6 +54,31 @@ export function CaptureGuard({ enabled }: { enabled: boolean }) {
       // أدوات المطوّر
       if (e.key === "F12") e.preventDefault();
       if (ctrl && e.shiftKey && ["i", "j", "c"].includes(k)) e.preventDefault();
+      /*
+        لقطاتُ macOS (‏Cmd+Shift+3/4/5‏) يلتقطها النظامُ قبل المتصفّح فلا
+        تُمنع — لكنّ ما نسخته الحافظةُ يُمسح، ويُخفى المحتوى لحظتين فلا
+        تُصوَّر شاشةٌ ثانية.
+      */
+      if (e.metaKey && e.shiftKey && ["3", "4", "5"].includes(k)) {
+        try { void navigator.clipboard?.writeText(""); } catch { /* ممنوعة */ }
+        hide();
+        window.setTimeout(show, 1500);
+      }
+    };
+
+    /**
+     * النسخُ يُمنع وتُمسح الحافظة.
+     * منعُ الحدث وحدَه لا يكفي: بعض الإضافات تنسخ قبل أن يصل المنع،
+     * فتُفرَغ الحافظةُ بعده أيضاً. ومحاولتان لا واحدة.
+     */
+    const onCopy = (e: ClipboardEvent) => {
+      e.preventDefault();
+      try {
+        e.clipboardData?.setData("text/plain", "");
+        void navigator.clipboard?.writeText("");
+      } catch {
+        /* الحافظة قد تكون ممنوعة — لا شيء نفعله */
+      }
     };
 
     /** إخفاء المحتوى حين تفقد النافذة التركيز — يُفشل أدوات اللقطة الخارجية. */
@@ -61,6 +86,37 @@ export function CaptureGuard({ enabled }: { enabled: boolean }) {
     const show = () => root.classList.remove("capture-hidden");
     const onVisibility = () => (document.hidden ? hide() : show());
 
+    /*
+      كشفُ أدوات المطوّر بفرق المقاس.
+      ------------------------------------------------------------------
+      لوحُ الأدوات المرسوُّ يقتطع من النافذة، فيفترق `outerWidth` عن
+      `innerWidth` بمئةٍ أو أكثر. وهو **كشفٌ لا منع**: من فتحها في نافذةٍ
+      منفصلةٍ لا يُكشف، ومن كبّر الصفحةَ قد يُكشف خطأً — ولذلك أثرُه
+      إخفاءُ المحتوى لا قطعُ الجلسة. ولا شيءَ يُفقد إن أخطأ.
+    */
+    const devtools = () => {
+      const gap = Math.max(window.outerWidth - window.innerWidth, window.outerHeight - window.innerHeight);
+      if (gap > 160) hide();
+      else if (!document.hidden && document.hasFocus()) show();
+    };
+    const devTimer = window.setInterval(devtools, 1200);
+
+    /*
+      تسجيلُ الشاشة من داخل الصفحة يُمنع.
+      ولا يمنع هذا برنامجاً خارجيّاً — لا شيء يمنعه — لكنّه يسدّ الطريقَ
+      الذي تسلكه إضافاتُ التسجيل التي تعمل في سياق الصفحة نفسِها.
+    */
+    const md = navigator.mediaDevices as (MediaDevices & { getDisplayMedia?: unknown }) | undefined;
+    const realGetDisplay = md?.getDisplayMedia;
+    if (md && realGetDisplay) {
+      md.getDisplayMedia = () => {
+        hide();
+        return Promise.reject(new DOMException("محظور", "NotAllowedError"));
+      };
+    }
+
+    document.addEventListener("copy", onCopy);
+    document.addEventListener("cut", onCopy);
     document.addEventListener("contextmenu", onContext);
     document.addEventListener("dragstart", onDrag);
     document.addEventListener("keydown", onKey, true);
@@ -69,7 +125,11 @@ export function CaptureGuard({ enabled }: { enabled: boolean }) {
     document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
+      window.clearInterval(devTimer);
+      if (md && realGetDisplay) md.getDisplayMedia = realGetDisplay;
       root.classList.remove("capture-guard", "capture-hidden");
+      document.removeEventListener("copy", onCopy);
+      document.removeEventListener("cut", onCopy);
       document.removeEventListener("contextmenu", onContext);
       document.removeEventListener("dragstart", onDrag);
       document.removeEventListener("keydown", onKey, true);

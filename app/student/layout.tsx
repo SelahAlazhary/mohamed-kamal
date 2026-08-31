@@ -12,6 +12,7 @@ import { findToolbar, toolbarClass, stickClass } from "@/lib/toolbar-styles";
 import { findMotion, motionClass, motionVars } from "@/lib/motion-styles";
 import { ActivityTracker } from "@/components/student/activity-tracker";
 import { CaptureGuard } from "@/components/student/capture-guard";
+import { PageWatermark } from "@/components/student/page-watermark";
 import { findSideNav, sideNavClass, navSideClass, findDock, dockClass, navColorVars, DEFAULT_ICON_SET } from "@/lib/nav-styles";
 import { findIconFrame, iconFrameClass, iconFrameVars } from "@/lib/icon-frames";
 import { findIconMotion, iconMotionClass } from "@/lib/icon-motion";
@@ -67,6 +68,12 @@ export default async function StudentLayout({ children }: { children: ReactNode 
       `CaptureGuard`.
     */}
     <CaptureGuard enabled={Boolean(pub.content?.blockCapture)} />
+    {/*
+      واسمُ الطالب على البوّابة كلِّها لا على الفيديو وحدَه: أسئلةُ
+      الواجبات تُصوَّر وتُنشر أكثرَ ممّا يُصوَّر المقطع — لقطةٌ واحدةٌ
+      تكفي لنقل الامتحان كلِّه إلى مجموعةٍ فيها مئة طالب.
+    */}
+    {pub.content?.blockCapture && <PageWatermark name={me?.name} tag={me?.id} />}
     <div
       className={`student-skin relative min-h-full ${mobileClass(mobile)} ${sideNavClass(side)} ${navSideClass(pub.content?.navSide, "student")} ${dockClass(dock)} ic-${icons} ${iconFrameClass(findIconFrame(pub.content?.iconFrame))} dsg ${iconCoverClass(findIconCover(pub.content?.iconCover))} ${iconMotionClass(findIconMotion(pub.content?.iconMotion))} ${tileClass(tile)} ${tileArtClass(tileArt)} ${toolbarClass(bar)} ${stickClass(pub.content?.toolbarStick)} ${motionClass(findMotion(pub.content?.motionStyle))} ${pub.content?.toolbarHidden ? "tools-hidden" : ""}`}
       style={{ ...navColorVars(pub.content?.navColors), ...tileColorVars(pub.content?.tileColors), ...tileArtVars(tileArt), ...motionVars(findMotion(pub.content?.motionStyle)), ...iconFrameVars(pub.content?.iconFrameColors), ...designVars(pub.content?.designColors) }}
