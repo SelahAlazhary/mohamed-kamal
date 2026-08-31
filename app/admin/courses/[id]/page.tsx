@@ -49,6 +49,13 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
     تُتصفَّح بالنظر، والدروسُ لا تُفتح إلّا لمن طُلبت مادّتُه.
   */
   const [openUnit, setOpenUnit] = useState<string | null>(null);
+  /*
+    الدرسُ المفتوحُ للتعديل.
+    كان يُحذف ويُضاف من جديد لتصحيح حرفٍ في عنوانه — والحذفُ يأخذ معه
+    اختبارَه ومرفقاتِه. فصار يُعدَّل في موضعه: حقولُه تُفتح على بطاقته،
+    وما لم يُمسّ يبقى كما هو.
+  */
+  const [editLesson, setEditLesson] = useState<string | null>(null);
   /** المادّةُ التي يُضاف إليها الدرسُ الجديد. */
   const [intoUnit, setIntoUnit] = useState<string>("");
   const videoRef = useRef<HTMLInputElement>(null);
@@ -98,6 +105,10 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
     persistUnits(units.map((u) => (u.id === target ? { ...u, lessons: [...(u.lessons ?? []), lesson] } : u)));
     setForm({ title: "", url: "", duration: "", isFree: false });
   };
+  /** يُعدِّل حقلاً في درسٍ بعينه — وما سواه يبقى. */
+  const patchLesson = (lid: string, p: Partial<Lesson>) =>
+    mapLessons((l) => (l.id === lid ? { ...l, ...p } : l));
+
   const remove = (lid: string) =>
     persistUnits(units.map((u) => ({ ...u, lessons: (u.lessons ?? []).filter((v) => v.id !== lid) })));
   /** تحديث اختبار درس (تشغيل/إيقاف + الأسئلة). */
@@ -627,6 +638,106 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
               {/* ---------- دروسُ المادّة — للمفتوحة وحدَها ---------- */}
               {openUnit === unit.id && (
               <div className="p-3 sm:p-4">
+              {/*
+                الدرسُ المفتوحُ قسمٌ كامل يحلّ محلَّ الشبكة، لا لوحٌ يُضاف
+                تحت بطاقته. والفرق: القسمُ يُفرد للدرس الشاشةَ فيتّسع
+                لاختباره وحقوله، واللوحُ تحت البطاقة يُزاحمه بجيرانه.
+              */}
+              {(() => {
+                const cur = (unit.lessons ?? []).find((x) => x.id === editLesson);
+                if (!cur) return null;
+                return (
+                  <div className="grid gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setEditLesson(null)}
+                      className="inline-flex w-fit items-center gap-1.5 rounded-2xl border border-border px-3 py-2 text-[11px] font-bold text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+                    >
+                      <ArrowRight className="size-3.5" /> رجوعٌ إلى دروس «{unit.title}»
+                    </button>
+
+                    <div className="grid gap-4 lg:grid-cols-[18rem_1fr]">
+                      <div className="overflow-hidden rounded-3xl border border-border">
+                        <CourseArt seed={cur.id} title={cur.title} className="aspect-[16/9] w-full" />
+                      </div>
+
+                      <div className="grid gap-3">
+                        <label className="block">
+                          <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">عنوان الدرس</span>
+                          <input
+                            defaultValue={cur.title}
+                            onBlur={(e) => patchLesson(cur.id, { title: e.target.value.trim() || cur.title })}
+                            className="inp"
+                          />
+                        </label>
+                        <label className="block">
+                          <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">رابط الفيديو</span>
+                          <input
+                            defaultValue={cur.url}
+                            dir="ltr"
+                            onBlur={(e) => patchLesson(cur.id, { url: e.target.value.trim() || cur.url })}
+                            className="inp text-right"
+                          />
+                        </label>
+                        <div className="flex flex-wrap items-end gap-3">
+                          <label className="min-w-32 flex-1">
+                            <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">المدّة</span>
+                            <input
+                              defaultValue={cur.duration ?? ""}
+                              placeholder="١٢:٤٥"
+                              onBlur={(e) => patchLesson(cur.id, { duration: e.target.value.trim() || undefined })}
+                              className="inp"
+                            />
+                          </label>
+                          <label className="flex items-center gap-2 rounded-2xl border border-border px-3.5 py-2.5 text-xs font-bold">
+                            <input
+                              type="checkbox"
+                              checked={Boolean(cur.isFree)}
+                              onChange={(e) => patchLesson(cur.id, { isFree: e.target.checked })}
+                              className="size-4 accent-[hsl(var(--primary))]"
+                            />
+                            درسٌ مجانيّ
+                          </label>
+                          {units.length > 1 && (
+                            <label className="min-w-40">
+                              <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">المادّة</span>
+                              <select
+                                value={unit.id}
+                                onChange={(e) => { moveLessonTo(cur.id, e.target.value); setOpenUnit(e.target.value); }}
+                                className="inp"
+                              >
+                                {units.map((u) => <option key={u.id} value={u.id}>{u.title}</option>)}
+                              </select>
+                            </label>
+                          )}
+                          <button
+                            onClick={() => { remove(cur.id); setEditLesson(null); }}
+                            className="inline-flex items-center gap-1.5 rounded-2xl border border-border px-3.5 py-2.5 text-xs font-bold text-rose-500 transition hover:border-rose-500"
+                          >
+                            <Trash2 className="size-4" /> حذف الدرس
+                          </button>
+                        </div>
+                        <p className="text-[10px] leading-relaxed text-muted-foreground">
+                          الحقولُ تُحفظ عند مغادرتها — لا زرَّ حفظٍ يُنسى فتضيع الكتابة، ولا حفظاً
+                          مع كلّ حرفٍ يكتب على القاعدة عشراتِ المرّات في الجملة الواحدة.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* ---------- أسئلةُ الدرس ---------- */}
+                    <div className="rounded-3xl border border-border p-3 sm:p-4">
+                      <p className="font-display mb-1 text-sm font-bold">أسئلةُ الدرس</p>
+                      <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
+                        تُعرض على الطالب بعد المشاهدة وتُصحَّح فوراً. والدرسُ بلا سؤالٍ يُشاهَد
+                        ولا يُتقَن.
+                      </p>
+                      <QuizEditor lesson={cur} onChange={(q) => setQuiz(cur.id, q)} results={quizStats(cur.id)} />
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {!(unit.lessons ?? []).some((x) => x.id === editLesson) && (<>
                             {(unit.lessons ?? []).length === 0 ? (
                 <p className="py-4 text-center text-xs text-muted-foreground">مادّةٌ فارغة — اختَرها في نموذج الإضافة بالأعلى.</p>
               ) : (
@@ -640,7 +751,12 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {(unit.lessons ?? []).map((v, i) => (
             <div key={v.id} className="flex flex-col overflow-hidden rounded-3xl border border-border bg-card transition hover:border-primary/40">
-              <div className="relative">
+              <button
+                type="button"
+                onClick={() => setEditLesson(v.id)}
+                title="افتح الدرس"
+                className="relative block w-full text-right"
+              >
                 <CourseArt seed={v.id} title={v.title} className="aspect-[16/9] w-full" />
                 <span className="absolute inset-0 grid place-items-center bg-black/25 text-white transition hover:bg-black/10">
                   <PlayCircle className="size-8 drop-shadow" />
@@ -655,14 +771,21 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
                     <span className="rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white">{v.duration}</span>
                   )}
                 </span>
-                {/* الترتيبُ يُبدَّل من الغلاف — أكثرُ ما يُفعل بالدرس بعد إضافته */}
-                <span className="absolute bottom-2 right-2 flex overflow-hidden rounded-full border border-white/25 bg-black/55 text-white">
+                {/*
+                  الترتيبُ يُبدَّل من الغلاف — أكثرُ ما يُفعل بالدرس بعد
+                  إضافته. و`stopPropagation` لازمٌ لأنّ الغلافَ صار زرّاً
+                  يفتح الدرس: بدونها يفتحه كلُّ ضغطٍ على سهم.
+                */}
+                <span
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute bottom-2 right-2 flex overflow-hidden rounded-full border border-white/25 bg-black/55 text-white"
+                >
                   <button onClick={() => move(unit.id, i, -1)} disabled={i === 0} title="أعلى"
                     className="px-2 py-0.5 text-[11px] transition hover:bg-white/15 disabled:opacity-30">▲</button>
                   <button onClick={() => move(unit.id, i, 1)} disabled={i === (unit.lessons ?? []).length - 1} title="أسفل"
                     className="px-2 py-0.5 text-[11px] transition hover:bg-white/15 disabled:opacity-30">▼</button>
                 </span>
-              </div>
+              </button>
 
               <div className="flex flex-1 flex-col gap-2.5 p-3">
                 <div className="min-w-0">
@@ -687,6 +810,15 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
                       {units.map((u) => <option key={u.id} value={u.id}>{u.title}</option>)}
                     </select>
                   )}
+                  <button
+                    onClick={() => setEditLesson(editLesson === v.id ? null : v.id)}
+                    title="تعديل الدرس"
+                    className={`grid size-8 shrink-0 place-items-center rounded-2xl border transition ${
+                      editLesson === v.id ? "border-primary text-primary" : "border-border text-muted-foreground hover:border-primary hover:text-primary"
+                    }`}
+                  >
+                    <Palette className="size-4" />
+                  </button>
                   <button onClick={() => remove(v.id)} title="حذف"
                     className="grid size-8 shrink-0 place-items-center rounded-2xl border border-border text-rose-500 transition hover:border-rose-500">
                     <Trash2 className="size-4" />
@@ -701,6 +833,7 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
           ))}
         </div>
               )}
+              </>)}
               </div>
               )}
             </div>
