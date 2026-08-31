@@ -286,15 +286,32 @@ export function AzhariStudentHeader({
   ];
 
   /* ما أُخفي لا يُرسم — ولا يُترك مكانُه فارغاً، فالشبكةُ تتوزّع على الباقي */
-  const cards = allCards.filter((c) =>
+  const shown = allCards.filter((c) =>
     c.key === "progress" ? !o.hideProgress : c.key === "courses" ? !o.hideCourses : !o.hideSub
   );
+
+  /*
+    الترتيبُ يُقرأ من الضبط ويُكمَّل بالباقي.
+    ولا يُعتمد على طول القائمة المحفوظة: بطاقةٌ تُضاف غداً لا يعرفها
+    ضبطٌ حُفظ اليوم، فتسقط لو كان الترتيبُ هو المصدرَ الوحيد. فما ذُكر
+    يُقدَّم بترتيبه، وما لم يُذكر يلحق على أصله.
+  */
+  const cards = o.order?.length
+    ? [
+        ...o.order.map((k) => shown.find((c) => c.key === k)).filter(Boolean),
+        ...shown.filter((c) => !o.order!.includes(c.key)),
+      ] as typeof shown
+    : shown;
+
+  const pos = o.cardsPos ?? "below";
+  const align = o.align ?? "start";
+  const cols = o.cols ?? 3;
 
   if (o.off) return null;
 
   return (
     /* الحشوُ السفليّ يترك مكانَ نصف البطاقة الطافية — لا تغطّي ما بعدها */
-    <div className="az-head relative mb-6" style={vars}>
+    <div className="az-head relative mb-6 flex flex-col" style={vars}>
       <div
         style={{
           borderRadius: "calc(var(--az-radius) + 4px)",
@@ -332,7 +349,11 @@ export function AzhariStudentHeader({
           والصورةُ أوّلاً ثمّ الاسم: العينُ العربيّةُ تبدأ من اليمين،
           فتلقى الوجهَ ثمّ تقرأ صاحبَه — كما في كلّ بطاقةِ تعريف.
         */}
-        <div className="relative flex items-center gap-4 px-6 sm:px-9">
+        <div
+          className={`relative flex items-center gap-4 px-6 sm:px-9 ${
+            align === "center" ? "justify-center text-center" : align === "end" ? "justify-end" : ""
+          }`}
+        >
           {!o.hideAvatar && (
           <span
             style={{ width: "var(--az-avatar)", height: "var(--az-avatar)", borderColor: "color-mix(in srgb, var(--az-accent) 55%, transparent)" }}
@@ -363,9 +384,22 @@ export function AzhariStudentHeader({
         والفاصلُ بينها أكبر. والعنوانُ صار ١٣px بتباعدٍ خفيفٍ في الحروف —
         وهو ما يميّز لوحَ المؤشّرات المهنيَّ من صفٍّ من الصناديق.
       */}
+      {/*
+        موضعُ البطاقات — ضبطُ الأستاذ يسبق ما في التصميم.
+        التصميمُ يقترح (`st.cards`) والأستاذُ يقرّر (`o.cardsPos`): من لم
+        يضبط شيئاً تبع تصميمَه، ومن ضبط غلبه. ولا يُلغى أحدُهما بالآخر.
+      */}
       <div
-        className={`relative grid gap-4 px-3 sm:grid-cols-3 sm:px-6 ${
-          st.cards === "float"
+        className={`relative grid gap-4 px-3 sm:px-6 ${
+          cols === 1 ? "sm:grid-cols-1" : cols === 2 ? "sm:grid-cols-2" : "sm:grid-cols-3"
+        } ${
+          pos === "above"
+            ? "mb-4 order-first"
+            : pos === "inside"
+            ? "-mt-[calc(var(--az-lift)+1rem)]"
+            : pos === "side"
+            ? "-mt-[var(--az-lift)] sm:grid-cols-1"
+            : st.cards === "float"
             ? "-mt-[var(--az-lift)]"
             : st.cards === "inside"
             ? "-mt-[calc(var(--az-lift)+1rem)]"

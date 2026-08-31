@@ -125,6 +125,54 @@ function Color({
   );
 }
 
+
+/** اختيارٌ من صفٍّ — أوضحُ من قائمةٍ منسدلةٍ حين تكون الخياراتُ ثلاثةً أو أربعة. */
+function Pick<T extends string | number>({
+  label,
+  value,
+  options,
+  onChange,
+  hint,
+}: {
+  label: string;
+  value: T;
+  options: { v: T; t: string }[];
+  onChange: (v: T) => void;
+  hint?: string;
+}) {
+  return (
+    <div>
+      <span className="mb-1.5 block text-[11px] font-semibold text-muted-foreground">{label}</span>
+      <div className="inline-flex flex-wrap rounded-2xl border border-border bg-card p-1">
+        {options.map((op) => {
+          const on = op.v === value;
+          return (
+            <button
+              key={String(op.v)}
+              type="button"
+              onClick={() => onChange(op.v)}
+              aria-pressed={on}
+              style={on ? { background: "var(--brand-primary, hsl(var(--primary)))" } : undefined}
+              className={`rounded-xl px-3.5 py-2 text-[12px] font-bold transition ${
+                on ? "text-white" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {op.t}
+            </button>
+          );
+        })}
+      </div>
+      {hint && <p className="mt-1.5 text-[10px] leading-relaxed text-muted-foreground">{hint}</p>}
+    </div>
+  );
+}
+
+const CARD_NAME: Record<string, string> = {
+  progress: "متوسّط التقدّم",
+  courses: "الكورسات",
+  sub: "الاشتراك",
+};
+
 export function AzHeadPanel({
   value,
   onChange,
@@ -134,7 +182,18 @@ export function AzHeadPanel({
 }) {
   const o = value ?? {};
   const set = (patch: Partial<AzHeadOptions>) => onChange({ ...o, ...patch });
-  const [tab, setTab] = useState<"style" | "cards" | "colors" | "sizes" | "parts">("style");
+  const [tab, setTab] = useState<"style" | "cards" | "places" | "colors" | "sizes" | "parts">("style");
+
+  /* الترتيبُ يُكمَّل بالباقي — بطاقةٌ تُضاف غداً لا يعرفها ضبطُ اليوم. */
+  const ALL = ["progress", "courses", "sub"];
+  const order = [...(o.order ?? []).filter((k) => ALL.includes(k)), ...ALL.filter((k) => !(o.order ?? []).includes(k))];
+  const move = (i: number, dir: -1 | 1) => {
+    const j = i + dir;
+    if (j < 0 || j >= order.length) return;
+    const next = [...order];
+    [next[i], next[j]] = [next[j], next[i]];
+    set({ order: next });
+  };
 
   /*
     حارسُ التباين.
@@ -167,6 +226,7 @@ export function AzHeadPanel({
   const TABS = [
     { id: "style", label: "تصميم اللوح" },
     { id: "cards", label: "تصميم البطاقة" },
+    { id: "places", label: "المواضع" },
     { id: "colors", label: "الألوان" },
     { id: "sizes", label: "المقاسات" },
     { id: "parts", label: "العناصر" },
@@ -267,6 +327,84 @@ export function AzHeadPanel({
             تصميمُ البطاقة مستقلٌّ عن تصميم اللوح، فيتركّبان: عشرون بطاقةً في اثنين
             وعشرين لوحاً تعطي أربعمئةً وأربعين هيئة.
           </p>
+        </div>
+      )}
+
+      {tab === "places" && (
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Pick
+            label="موضع اللوح في الصفحة"
+            value={o.place ?? "top"}
+            options={[{ v: "top", t: "أعلى الصفحة" }, { v: "bottom", t: "أسفلها" }]}
+            onChange={(v) => set({ place: v })}
+            hint="الأسفلُ لمن يريد الدروسَ أوّلاً والملخّصَ ذيلاً."
+          />
+
+          <Pick
+            label="موضع البطاقات"
+            value={o.cardsPos ?? "below"}
+            options={[
+              { v: "below", t: "تطفو أسفلَه" },
+              { v: "above", t: "فوقه" },
+              { v: "inside", t: "داخله" },
+              { v: "side", t: "عمودٌ واحد" },
+            ]}
+            onChange={(v) => set({ cardsPos: v })}
+            hint="ضبطُك يسبق ما يقترحه التصميم."
+          />
+
+          <Pick
+            label="محاذاة الترحيب"
+            value={o.align ?? "start"}
+            options={[{ v: "start", t: "يمين" }, { v: "center", t: "وسط" }, { v: "end", t: "يسار" }]}
+            onChange={(v) => set({ align: v })}
+          />
+
+          <Pick
+            label="عدد الأعمدة"
+            value={o.cols ?? 3}
+            options={[{ v: 3, t: "٣" }, { v: 2, t: "٢" }, { v: 1, t: "١" }]}
+            onChange={(v) => set({ cols: v })}
+            hint="في الشاشات الواسعة — والهاتفُ عمودٌ واحدٌ دائماً."
+          />
+
+          {/*
+            ترتيبُ البطاقات بالأسهم لا بالسحب: السحبُ لا يعمل بلوحة
+            المفاتيح، وثلاثةُ عناصرَ لا تستحقّ بناءَه.
+          */}
+          <div className="sm:col-span-2">
+            <span className="mb-1.5 block text-[11px] font-semibold text-muted-foreground">
+              ترتيب البطاقات
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {order.map((k, i) => (
+                <span
+                  key={k}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-border bg-card px-3 py-2 text-[12px] font-bold"
+                >
+                  {CARD_NAME[k] ?? k}
+                  <button
+                    type="button"
+                    aria-label="إلى اليمين"
+                    disabled={i === 0}
+                    onClick={() => move(i, -1)}
+                    className="text-muted-foreground transition hover:text-primary disabled:opacity-30"
+                  >
+                    ›
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="إلى اليسار"
+                    disabled={i === order.length - 1}
+                    onClick={() => move(i, 1)}
+                    className="text-muted-foreground transition hover:text-primary disabled:opacity-30"
+                  >
+                    ‹
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 

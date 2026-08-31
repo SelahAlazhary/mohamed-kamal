@@ -160,7 +160,11 @@ export default function StudentHome() {
         زخرفتُه مبنيّةٌ وبطاقاتُه تطفو على حافّته — فتُرسم بمكوّنها ولا
         تُقحَم في تفريعات الهيئات الخمس.
       */}
-      {headerStyle === "azhari" && (
+      {/*
+        موضعُ اللوح: أعلى الصفحة أو أسفلها.
+        و«أسفل» يُرسم في آخر الصفحة لا هنا — انظر نهايةَ المكوّن.
+      */}
+      {headerStyle === "azhari" && (content.azHead?.place ?? "top") === "top" && (
         <AzhariStudentHeader
           name={session?.name ?? ""}
           grade={me?.grade}
@@ -417,6 +421,26 @@ export default function StudentHome() {
       </div>
       </div>
       </div>
+
+      {/*
+        اللوحُ في الذيل لمن اختاره.
+        ولا يُنسخ المكوّنُ ولا تُنسخ خصائصُه: تعريفٌ واحدٌ يُرسم في موضعين
+        بشرطٍ واحدٍ معكوس — فما يُصلَح في أحدهما يصلح في الآخر.
+      */}
+      {headerStyle === "azhari" && content.azHead?.place === "bottom" && (
+        <div className="mt-8">
+          <AzhariStudentHeader
+            name={session?.name ?? ""}
+            grade={me?.grade}
+            female={fem}
+            progress={avg}
+            courses={courses.length}
+            daysLeft={permanent ? null : (expiring?.left ?? null)}
+            active={subs.length > 0}
+            opts={content.azHead}
+          />
+        </div>
+      )}
     </>
   );
 }
