@@ -576,8 +576,21 @@ export function gradeQuiz(userId: string, subjectId: string, lessonId: string, a
     at: new Date().toISOString(),
   };
 
+  /*
+    أعلى نتيجةٍ تبقى.
+    ------------------------------------------------------------------
+    كانت المحاولةُ الأخيرةُ تمحو ما قبلها أيّاً كانت — فمن نجح بتسعين ثمّ
+    أعاد ليراجع فأخطأ، خسر نجاحَه بمراجعته. وهذا يُعلّم الطالبَ ألّا
+    يُعيد، وإعادةُ الواجب هي المقصودةُ منه.
+
+    فالأعلى يبقى، ويُحفظ تاريخُ آخر محاولةٍ معه: الأوّلُ يقول ما بلغه،
+    والثاني يقول متى عمل.
+  */
+  const prev = (user.quizResults ?? []).find((r) => r.lessonId === lessonId);
+  const keep = prev && prev.percent > result.percent ? { ...prev, at: result.at } : result;
+
   user.quizResults = (user.quizResults ?? []).filter((r) => r.lessonId !== lessonId);
-  user.quizResults.push(result);
+  user.quizResults.push(keep);
   saveDB(db);
   return { ok: true, result, correct };
 }

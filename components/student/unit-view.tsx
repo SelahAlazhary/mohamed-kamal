@@ -26,6 +26,7 @@ import {
   IconListChecks, IconXCircle, IconRotate, IconSpinner, IconTrophy,
 } from "@/components/brand/icons";
 import { Card } from "@/components/dashboard/ui";
+import { LessonQuiz } from "@/components/student/lesson-quiz";
 import { useContent } from "@/components/content/content-provider";
 import { VideoWatermark } from "@/components/student/video-watermark";
 import { allLessons } from "@/lib/course-units";
@@ -367,111 +368,3 @@ export function UnitView({
 }
 
 /* ---------- الاختبار التفاعلي على الفيديو ---------- */
-function LessonQuiz({
-  subjectId, lesson, fem, previous, onGraded,
-}: {
-  subjectId: string;
-  lesson: Lesson;
-  fem: boolean;
-  previous: { score: number; total: number; percent: number; passed: boolean } | null;
-  onGraded: () => Promise<void> | void;
-}) {
-  const questions = lesson.quiz?.questions ?? [];
-  const [answers, setAnswers] = useState<number[]>(() => Array(questions.length).fill(-1));
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-  const [graded, setGraded] = useState<{ correct: number[]; score: number; total: number; percent: number; passed: boolean } | null>(null);
-  const y = (v: string) => `${v}${fem ? "ي" : ""}`;
-
-  const answered = answers.filter((a) => a >= 0).length;
-  const pick = (qi: number, oi: number) =>
-    setAnswers((prev) => prev.map((a, i) => (i === qi ? oi : a)));
-
-  const submit = async () => {
-    setErr(null);
-    if (answered < questions.length) { setErr(`${y("أجب")} عن كل الأسئلة أولاً`); return; }
-    setBusy(true);
-    try {
-      const res = await fetch("/api/quiz", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subjectId, lessonId: lesson.id, answers }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setErr(data.error || "تعذّر تسليم الاختبار"); return; }
-      setGraded({ correct: data.correct, ...data.result });
-      await onGraded();
-    } catch {
-      setErr("تعذّر الاتصال — حاول مرة أخرى");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const retry = () => { setGraded(null); setAnswers(Array(questions.length).fill(-1)); setErr(null); };
-
-  return (
-    <Card className="mt-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <p className="inline-flex items-center gap-2 font-display font-extrabold">
-          <IconListChecks className="size-5 text-primary" /> اختبار الدرس
-        </p>
-        {graded ? (
-          <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${graded.passed ? "bg-emerald-500/15 text-emerald-500" : "bg-rose-500/15 text-rose-500"}`}>
-            <IconTrophy className="size-3.5" /> {graded.score}/{graded.total} · {graded.percent}٪ {graded.passed ? "ناجح" : "لم تنجح"}
-          </span>
-        ) : previous ? (
-          <span className="text-xs text-muted-foreground">آخر نتيجة: {previous.score}/{previous.total} ({previous.percent}٪)</span>
-        ) : (
-          <span className="text-xs text-muted-foreground">{questions.length.toLocaleString("ar-EG")} أسئلة اختيار من متعدّد</span>
-        )}
-      </div>
-
-      <div className="space-y-4">
-        {questions.map((q, qi) => (
-          <div key={q.id} className="rounded-2xl border border-border p-4">
-            <p className="mb-3 flex gap-2 text-sm font-bold">
-              <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary/12 text-xs text-primary">{qi + 1}</span>
-              {q.text}
-            </p>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {q.options.map((o, oi) => {
-                const chosen = answers[qi] === oi;
-                const right = graded ? graded.correct[qi] === oi : false;
-                const wrong = graded ? chosen && graded.correct[qi] !== oi : false;
-                return (
-                  <button key={oi} disabled={Boolean(graded)} onClick={() => pick(qi, oi)}
-                    className={`flex items-center gap-2 rounded-2xl border p-3 text-right text-sm transition ${
-                      right ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-500"
-                      : wrong ? "border-rose-500/50 bg-rose-500/10 text-rose-500"
-                      : chosen ? "border-primary/50 bg-primary/10 text-primary"
-                      : "border-border hover:border-primary/40"
-                    }`}>
-                    <span className="grid size-5 shrink-0 place-items-center rounded-full border border-current text-[10px]">
-                      {right ? <IconCheckCircle className="size-4" /> : wrong ? <IconXCircle className="size-4" /> : chosen ? "●" : ""}
-                    </span>
-                    <span className="min-w-0 flex-1">{o}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {err && <p className="mt-3 rounded-2xl bg-rose-500/10 px-3 py-2 text-center text-xs font-bold text-rose-500">{err}</p>}
-
-      <div className="mt-4 flex items-center gap-3">
-        {graded ? (
-          <button onClick={retry} className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-bold transition hover:border-primary hover:text-primary">
-            <IconRotate className="size-4" /> {y("أعد")} المحاولة
-          </button>
-        ) : (
-          <button onClick={submit} disabled={busy} className="inline-flex items-center gap-2 rounded-full btn-glow px-6 py-2.5 text-sm font-bold text-white disabled:opacity-60">
-            {busy ? <IconSpinner className="size-4 animate-spin" /> : <IconCheckCircle className="size-4" />} تسليم الإجابات
-          </button>
-        )}
-        <span className="text-xs text-muted-foreground">{answered.toLocaleString("ar-EG")} / {questions.length.toLocaleString("ar-EG")}</span>
-      </div>
-    </Card>
-  );
-}
