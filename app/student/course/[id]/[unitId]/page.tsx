@@ -18,7 +18,6 @@ import { IconArrowLeft, IconCheckCircle } from "@/components/brand/icons";
 import { EmptyLock } from "@/components/brand/illustrations";
 import { PageHeader, Card } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
-import { CaptureGuard } from "@/components/student/capture-guard";
 import { UnitView } from "@/components/student/unit-view";
 import { subscriptionFor, daysLeft, unitActive, unitSubscription } from "@/lib/access";
 import { courseUnits } from "@/lib/course-units";
@@ -75,7 +74,6 @@ export default function UnitPage({ params }: { params: Promise<{ id: string; uni
 
   return (
     <>
-      <CaptureGuard enabled={Boolean(content.blockCapture)} />
       <Link href={back} className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-primary">
         <IconArrowLeft className="size-4 rotate-180" /> موادّ {subject.name}
       </Link>

@@ -11,6 +11,7 @@ import { findTile, tileClass, tileColorVars, tileArtVars, tileArtClass } from "@
 import { findToolbar, toolbarClass, stickClass } from "@/lib/toolbar-styles";
 import { findMotion, motionClass, motionVars } from "@/lib/motion-styles";
 import { ActivityTracker } from "@/components/student/activity-tracker";
+import { CaptureGuard } from "@/components/student/capture-guard";
 import { findSideNav, sideNavClass, navSideClass, findDock, dockClass, navColorVars, DEFAULT_ICON_SET } from "@/lib/nav-styles";
 import { findIconFrame, iconFrameClass, iconFrameVars } from "@/lib/icon-frames";
 import { findIconMotion, iconMotionClass } from "@/lib/icon-motion";
@@ -53,6 +54,19 @@ export default async function StudentLayout({ children }: { children: ReactNode 
 
     {/* مراسل النشاط — بوابة الطالب وحدها، فنشاط المشرف ليس تقريراً */}
     <ActivityTracker />
+    {/*
+      حارسُ الالتقاط — على البوّابة كلِّها لا على صفحتَي الكورس وحدهما.
+      ------------------------------------------------------------------
+      كان مركَّباً في `/student/course/…` فقط. والمحتوى الذي يُحمى ليس
+      الفيديو وحدَه: أسئلةُ الواجبات ونصوصُها وأسماءُ الطلاب في لوح
+      الحساب كلُّها تُصوَّر وتُنشر. ومن خرج من صفحة الدرس خرج من الحماية
+      وهو ما يزال داخل البوّابة.
+
+      ولا يُغني عن العلامة المائيّة ولا تُغني عنه: هذا يرفع كلفةَ النسخ،
+      وتلك تدلّ على الناسخ. والمنعُ التامُّ مستحيلٌ — انظر توثيق
+      `CaptureGuard`.
+    */}
+    <CaptureGuard enabled={Boolean(pub.content?.blockCapture)} />
     <div
       className={`student-skin relative min-h-full ${mobileClass(mobile)} ${sideNavClass(side)} ${navSideClass(pub.content?.navSide, "student")} ${dockClass(dock)} ic-${icons} ${iconFrameClass(findIconFrame(pub.content?.iconFrame))} dsg ${iconCoverClass(findIconCover(pub.content?.iconCover))} ${iconMotionClass(findIconMotion(pub.content?.iconMotion))} ${tileClass(tile)} ${tileArtClass(tileArt)} ${toolbarClass(bar)} ${stickClass(pub.content?.toolbarStick)} ${motionClass(findMotion(pub.content?.motionStyle))} ${pub.content?.toolbarHidden ? "tools-hidden" : ""}`}
       style={{ ...navColorVars(pub.content?.navColors), ...tileColorVars(pub.content?.tileColors), ...tileArtVars(tileArt), ...motionVars(findMotion(pub.content?.motionStyle)), ...iconFrameVars(pub.content?.iconFrameColors), ...designVars(pub.content?.designColors) }}

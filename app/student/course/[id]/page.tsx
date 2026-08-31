@@ -24,7 +24,6 @@ import { IconArrowLeft, IconCheckCircle, IconListVideo, IconGift, IconPlay } fro
 import { EmptyLock } from "@/components/brand/illustrations";
 import { PageHeader, Card } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
-import { CaptureGuard } from "@/components/student/capture-guard";
 import { UnitView, useDone } from "@/components/student/unit-view";
 import { subjectActive, subscriptionFor, daysLeft, unitActive, ownsAnyUnit } from "@/lib/access";
 import { IconLock, IconCart } from "@/components/brand/icons";
@@ -74,7 +73,6 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
 
   const header = (
     <>
-      <CaptureGuard enabled={Boolean(content.blockCapture)} />
       <Link href="/student/subjects" className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-primary">
         <IconArrowLeft className="size-4 rotate-180" /> كل الكورسات
       </Link>

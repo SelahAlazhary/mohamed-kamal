@@ -27,6 +27,7 @@ import {
 } from "@/components/brand/icons";
 import { Card } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
+import { VideoWatermark } from "@/components/student/video-watermark";
 import { allLessons } from "@/lib/course-units";
 import type { Lesson, Material, Subject, Unit } from "@/lib/types";
 import { setPref } from "@/lib/consent";
@@ -258,7 +259,10 @@ export function UnitView({
               </div>
             </div>
           ) : embed?.kind === "video" ? (
-            <video key={current.id} src={embed.src} controls className="size-full" />
+            <>
+              <video key={current.id} src={embed.src} controls className="size-full" />
+              <VideoWatermark name={me?.name} tag={me?.id} />
+            </>
           ) : (
             <>
               <iframe key={current.id} src={embed?.src} title={current.title} allowFullScreen
@@ -269,6 +273,11 @@ export function UnitView({
                 <span aria-hidden="true" className="absolute right-0 top-0 z-10 h-14 w-24 cursor-default"
                   onContextMenu={(e) => e.preventDefault()} />
               )}
+              {/*
+                اسمُ المشاهد فوق المقطع — لا يمنع التصوير، لكنّه يجعل
+                المصوِّرَ معروفاً. وهي الحمايةُ الوحيدةُ التي تعمل حقّاً.
+              */}
+              <VideoWatermark name={me?.name} tag={me?.id} />
             </>
           )}
         </div>
