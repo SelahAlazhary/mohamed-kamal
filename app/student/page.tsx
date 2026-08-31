@@ -238,11 +238,23 @@ export default function StudentHome() {
 
             و`?.[0]` لا `.charAt(0)`: الاسمُ قد يكون فارغاً لحظةَ التحميل.
           */}
-          <span className="student-avatar" aria-hidden="true">
-            {(session?.name ?? "").trim()[0] ?? ""}
-          </span>
+          {/*
+            القرصُ والاسمُ وحدةٌ واحدة.
+            ------------------------------------------------------------
+            الصفُّ عليه `justify-between` ليُبعد الحلقةَ إلى الطرف المقابل.
+            فلمّا وُضع القرصُ أخاً للاسم صار عنصراً ثالثاً في الصفّ —
+            فباعد بينهما التوزيعُ نفسُه، ونُفي القرصُ إلى الحافّة وحدَه
+            بينما بقي الاسمُ في الجهة الأخرى.
 
-          <div className={`student-greet ${L.header === "stacked" ? "w-full" : "min-w-0"}`}>
+            والعلاجُ أن يُلَفّا معاً: التوزيعُ يُباعد بين **الوحدتين** —
+            الهويّةِ والحلقةِ — لا بين القرص واسمِه.
+          */}
+          <div className="student-id flex min-w-0 items-center gap-3">
+            <span className="student-avatar" aria-hidden="true">
+              {(session?.name ?? "").trim()[0] ?? ""}
+            </span>
+
+            <div className={`student-greet ${L.header === "stacked" ? "w-full" : "min-w-0"}`}>
             <p
               className={`font-kufi font-bold tracking-[0.04em] text-white/90 drop-shadow-sm ${
                 L.header === "compact" ? "text-xs" : "text-base sm:text-lg"
@@ -268,6 +280,7 @@ export default function StudentHome() {
             {me?.grade && L.header !== "compact" && (
               <p className="student-header-extra font-kufi mt-2 text-base font-semibold text-white/85">{me.grade}</p>
             )}
+            </div>
           </div>
 
           {/* المنقسم والمضغوط: حلقة التقدّم في الطرف المقابل */}

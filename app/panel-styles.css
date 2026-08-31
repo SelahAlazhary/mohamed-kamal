@@ -132,8 +132,10 @@
 /* الحلقةُ تصعد فوق الاسم — والمحدِّدُ بالصنف لا بالموضع، فإضافةُ قرصٍ
    في أوّل الصفّ لا تكسره. */
 .pnl-center .student-header > * > :last-child { order: -1; }
-.pnl-center .student-avatar { order: -2; }
+/* في «المتوسّط» يعلو القرصُ الاسمَ داخل وحدتهما */
+.pnl-center .student-id { flex-direction: column; text-align: center; }
 .pnl-center .student-greet { width: 100%; }
+.pnl-center .student-id { width: 100%; }
 
 /* ــ ١٠) السطر — لوحٌ بارتفاع سطر ــ */
 .pnl-bar .student-header {
@@ -217,3 +219,7 @@
 @media (max-width: 640px) {
   .student-avatar { width: 2.6rem; height: 2.6rem; font-size: 1.1rem; }
 }
+
+
+/* الوحدةُ تتمدّد فيبقى القرصُ ملاصقاً لاسمه مهما اتّسع اللوح */
+.student-id { flex: 1 1 auto; }
