@@ -4757,3 +4757,38 @@ body {
 [data-layout="dark"] .ad-t-ok   { color: hsl(152 55% 62%); }
 [data-layout="dark"] .ad-t-wait { color: hsl(38 90% 68%); }
 [data-layout="dark"] .ad-t-bad  { color: hsl(0 84% 72%); }
+
+/* ============================================================
+   اللوحُ الجانبيُّ يميناً — تثبيتٌ صريح
+   ------------------------------------------------------------
+   العلامةُ تكتبه `right-3` وهي خاصّيةٌ فيزيائيّة، ولا قاعدةَ في المشروع
+   تنقله. ومع ذلك يُرى يساراً عند بعض الإعدادات — إضافةُ متصفّحٍ تقلب
+   الاتّجاه، أو ورقةُ نمطٍ خارجية، أو `direction` مفروضٌ من فوق.
+
+   فيُثبَّت هنا بالخاصّيتين معاً — الفيزيائيّة والمنطقيّة — فلا يقلبه
+   اتّجاهٌ ولا يزيحه نمطٌ. والمتنُ يترك عرضَه من الجهة نفسِها، وإلّا مرّ
+   تحته أو بقيت فجوةٌ في الجهة الأخرى.
+   ============================================================ */
+@media (min-width: 1024px) {
+  .app-shell > aside:not([class*="fixed inset-y-0"]) {
+    right: 0.75rem !important;
+    left: auto !important;
+    inset-inline-start: auto !important;
+    inset-inline-end: 0.75rem !important;
+  }
+  .app-shell > div.app-body {
+    padding-right: 17.5rem !important;
+    padding-left: 0 !important;
+    padding-inline-start: 0 !important;
+    padding-inline-end: 17.5rem !important;
+  }
+}
+/* والدُرجُ على الهاتف يخرج من اليمين أيضاً */
+@media (max-width: 1023.98px) {
+  .app-shell aside.fixed {
+    right: 0 !important;
+    left: auto !important;
+    inset-inline-start: auto !important;
+    inset-inline-end: 0 !important;
+  }
+}

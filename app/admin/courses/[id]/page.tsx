@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { courseUnits, isSplit, withUnits, LEGACY_UNIT_ID } from "@/lib/course-units";
 import { PageHeader, Card } from "@/components/dashboard/ui";
+import { CourseContent } from "@/components/admin/course-content";
 import { Button } from "@/components/ui/primitives";
 import { useContent } from "@/components/content/content-provider";
 import { CourseArt, COVER_PATTERNS } from "@/components/brand/course-art";
@@ -572,275 +573,56 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
         actions={<Button className="px-4 py-2 text-xs" onClick={addUnit}>+ إضافة مادّة</Button>}
       >
 
-      {videos.length === 0 && units.length === 1 ? (
-        <p className="rounded-3xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">لا توجد دروس بعد. أضِف أول درس بالأعلى.</p>
-      ) : (
-        /*
-          المادّةُ بطاقةٌ بغلافها لا طيّةٌ في قائمة.
-          الطيُّ يُخفي المادّةَ خلف سطرٍ نصّيّ، والأستاذُ يتنقّل بين موادّه
-          بالنظر لا بالقراءة. فصار لكلّ مادّةٍ غلافٌ ببذرتها — فتُعرف من
-          لوحتها قبل اسمها — ودروسُها تحتها بأغلفتها.
-        */
-        <div className={openUnit ? "grid gap-5" : "grid gap-4 sm:grid-cols-2 xl:grid-cols-3"}>
-          {units
-            .filter((u) => !openUnit || u.id === openUnit)
-            .map((unit) => {
-              const ui = units.findIndex((x) => x.id === unit.id);
-              return (
-            <div key={unit.id} className="overflow-hidden rounded-[1.75rem] border border-border bg-card shadow-bento">
-              {/* ---------- ترويسةُ المادّة: غلافٌ واسمٌ وإجراءات ---------- */}
-              <div className="flex flex-wrap items-center gap-3 border-b border-border p-3 sm:p-4">
-                {/*
-                  الغلافُ هو البابُ حين تكون المادّةُ مغلقة — لا زرٌّ صغيرٌ
-                  بجانبه. أكبرُ ما في البطاقة أولى بأن يكون مقبضَها.
-                */}
-                <button
-                  type="button"
-                  onClick={() => setOpenUnit(openUnit === unit.id ? null : unit.id)}
-                  title={openUnit === unit.id ? "إغلاق المادّة" : "افتح دروس المادّة"}
-                  className="relative w-24 shrink-0 overflow-hidden rounded-2xl sm:w-28"
-                >
-                  <CourseArt seed={unit.id} title={unit.title} className="aspect-[16/9] w-full" />
-                  <span className="absolute inset-0 grid place-items-center bg-black/25 text-white transition hover:bg-black/10">
-                    {openUnit === unit.id ? <X className="size-5" /> : <ListVideo className="size-5" />}
-                  </span>
-                </button>
-
-                <div className="min-w-0 flex-1">
-                  {/*
-                    العنوانُ حقلٌ يُكتب فيه مباشرةً — لا زرَّ «إعادة تسمية»
-                    يفتح نافذة. والتسميةُ أكثرُ ما يُفعل بالمادّة، فجعلُها
-                    ثلاثَ نقراتٍ يجعل الأستاذ يتركها بأسمائها الافتراضيّة.
-                  */}
-                  <input
-                    value={unit.title}
-                    onChange={(e) => renameUnit(unit.id, e.target.value)}
-                    className="w-full rounded-xl border border-transparent bg-transparent px-2 py-1 text-base font-bold outline-none transition hover:border-border focus:border-primary/50 focus:bg-background"
-                  />
-                  <p className="mt-0.5 px-2 text-[11px] text-muted-foreground">
-                    {(unit.lessons ?? []).length.toLocaleString("ar-EG")} درساً
-                  </p>
-                </div>
-
-                <div className="flex shrink-0 items-center gap-1.5">
-                  <button onClick={() => moveUnit(ui, -1)} disabled={ui === 0} title="أعلى"
-                    className="grid size-8 place-items-center rounded-full border border-border text-muted-foreground transition hover:text-primary disabled:opacity-30">▲</button>
-                  <button onClick={() => moveUnit(ui, 1)} disabled={ui === units.length - 1} title="أسفل"
-                    className="grid size-8 place-items-center rounded-full border border-border text-muted-foreground transition hover:text-primary disabled:opacity-30">▼</button>
-                  <button onClick={() => removeUnit(unit.id)} disabled={units.length <= 1}
-                    title="حذف المادّة — دروسُها تنتقل إلى ما قبلها ولا تُحذف"
-                    className="grid size-8 place-items-center rounded-full border border-border text-rose-500 transition hover:border-rose-500 disabled:opacity-30">
-                    <Trash2 className="size-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* ---------- دروسُ المادّة — للمفتوحة وحدَها ---------- */}
-              {openUnit === unit.id && (
-              <div className="p-3 sm:p-4">
+      {/*
+        محتوى الكورس — ثلاثةُ مستوياتٍ في مكانٍ واحد.
+        الموادُّ ← دروسُ مادّة ← تعديلُ درس، والانتقالُ يستبدل المتنَ في
+        موضعه. والمكوّنُ حرٌّ من تفاصيل هذه الصفحة: يأخذ ما يُغيّر
+        (`on…`) وما يُرسَم (`render…`)، فيصلح لأيّ شاشةٍ أخرى بلا تعديل.
+      */}
+      <CourseContent
+        courseName={subject.name}
+        units={units}
+        onAddUnit={addUnit}
+        onRenameUnit={renameUnit}
+        onRemoveUnit={removeUnit}
+        onMoveUnit={moveUnit}
+        onMoveLesson={move}
+        onMoveLessonTo={moveLessonTo}
+        onPatchLesson={patchLesson}
+        onRemoveLesson={remove}
+        onSetQuiz={setQuiz}
+        quizStats={quizStats}
+        renderQuiz={(l) => <QuizEditor lesson={l} onChange={(q) => setQuiz(l.id, q)} results={quizStats(l.id)} />}
+        renderAddLesson={(uid) => (
+          <Card className="!p-3">
+            <div className="flex flex-wrap items-end gap-2.5">
+              <label className="min-w-40 flex-1">
+                <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">عنوان الدرس</span>
+                <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="inp" placeholder="مثال: الباب الأول — التعريف والدليل" />
+              </label>
+              <label className="min-w-56 flex-[2]">
+                <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">رابط الفيديو</span>
+                <input value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} dir="ltr" className="inp text-right" placeholder="https://…" />
+              </label>
+              <label className="min-w-24">
+                <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">المدّة</span>
+                <input value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} className="inp" placeholder="١٢:٤٥" />
+              </label>
+              <label className="flex items-center gap-2 rounded-2xl border border-border px-3 py-2.5 text-[11px] font-bold">
+                <input type="checkbox" checked={form.isFree} onChange={(e) => setForm({ ...form, isFree: e.target.checked })} className="size-4 accent-[hsl(var(--primary))]" />
+                مجانيّ
+              </label>
               {/*
-                الدرسُ المفتوحُ قسمٌ كامل يحلّ محلَّ الشبكة، لا لوحٌ يُضاف
-                تحت بطاقته. والفرق: القسمُ يُفرد للدرس الشاشةَ فيتّسع
-                لاختباره وحقوله، واللوحُ تحت البطاقة يُزاحمه بجيرانه.
+                المادّةُ تُؤخذ من المستوى المفتوح لا من قائمةٍ تُختار: من
+                فتح مادّةً ثمّ أضاف درساً يريده فيها، وسؤالُه ثانيةً عبثٌ.
               */}
-              {(() => {
-                const cur = (unit.lessons ?? []).find((x) => x.id === editLesson);
-                if (!cur) return null;
-                return (
-                  <div className="grid gap-4">
-                    <button
-                      type="button"
-                      onClick={() => setEditLesson(null)}
-                      className="inline-flex w-fit items-center gap-1.5 rounded-2xl border border-border px-3 py-2 text-[11px] font-bold text-muted-foreground transition hover:border-primary/40 hover:text-primary"
-                    >
-                      <ArrowRight className="size-3.5" /> رجوعٌ إلى دروس «{unit.title}»
-                    </button>
-
-                    <div className="grid gap-4 lg:grid-cols-[18rem_1fr]">
-                      <div className="overflow-hidden rounded-3xl border border-border">
-                        <CourseArt seed={cur.id} title={cur.title} className="aspect-[16/9] w-full" />
-                      </div>
-
-                      <div className="grid gap-3">
-                        <label className="block">
-                          <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">عنوان الدرس</span>
-                          <input
-                            defaultValue={cur.title}
-                            onBlur={(e) => patchLesson(cur.id, { title: e.target.value.trim() || cur.title })}
-                            className="inp"
-                          />
-                        </label>
-                        <label className="block">
-                          <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">رابط الفيديو</span>
-                          <input
-                            defaultValue={cur.url}
-                            dir="ltr"
-                            onBlur={(e) => patchLesson(cur.id, { url: e.target.value.trim() || cur.url })}
-                            className="inp text-right"
-                          />
-                        </label>
-                        <div className="flex flex-wrap items-end gap-3">
-                          <label className="min-w-32 flex-1">
-                            <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">المدّة</span>
-                            <input
-                              defaultValue={cur.duration ?? ""}
-                              placeholder="١٢:٤٥"
-                              onBlur={(e) => patchLesson(cur.id, { duration: e.target.value.trim() || undefined })}
-                              className="inp"
-                            />
-                          </label>
-                          <label className="flex items-center gap-2 rounded-2xl border border-border px-3.5 py-2.5 text-xs font-bold">
-                            <input
-                              type="checkbox"
-                              checked={Boolean(cur.isFree)}
-                              onChange={(e) => patchLesson(cur.id, { isFree: e.target.checked })}
-                              className="size-4 accent-[hsl(var(--primary))]"
-                            />
-                            درسٌ مجانيّ
-                          </label>
-                          {units.length > 1 && (
-                            <label className="min-w-40">
-                              <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">المادّة</span>
-                              <select
-                                value={unit.id}
-                                onChange={(e) => { moveLessonTo(cur.id, e.target.value); setOpenUnit(e.target.value); }}
-                                className="inp"
-                              >
-                                {units.map((u) => <option key={u.id} value={u.id}>{u.title}</option>)}
-                              </select>
-                            </label>
-                          )}
-                          <button
-                            onClick={() => { remove(cur.id); setEditLesson(null); }}
-                            className="inline-flex items-center gap-1.5 rounded-2xl border border-border px-3.5 py-2.5 text-xs font-bold text-rose-500 transition hover:border-rose-500"
-                          >
-                            <Trash2 className="size-4" /> حذف الدرس
-                          </button>
-                        </div>
-                        <p className="text-[10px] leading-relaxed text-muted-foreground">
-                          الحقولُ تُحفظ عند مغادرتها — لا زرَّ حفظٍ يُنسى فتضيع الكتابة، ولا حفظاً
-                          مع كلّ حرفٍ يكتب على القاعدة عشراتِ المرّات في الجملة الواحدة.
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* ---------- أسئلةُ الدرس ---------- */}
-                    <div className="rounded-3xl border border-border p-3 sm:p-4">
-                      <p className="font-display mb-1 text-sm font-bold">أسئلةُ الدرس</p>
-                      <p className="mb-3 text-[11px] leading-relaxed text-muted-foreground">
-                        تُعرض على الطالب بعد المشاهدة وتُصحَّح فوراً. والدرسُ بلا سؤالٍ يُشاهَد
-                        ولا يُتقَن.
-                      </p>
-                      <QuizEditor lesson={cur} onChange={(q) => setQuiz(cur.id, q)} results={quizStats(cur.id)} />
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {!(unit.lessons ?? []).some((x) => x.id === editLesson) && (<>
-                            {(unit.lessons ?? []).length === 0 ? (
-                <p className="py-4 text-center text-xs text-muted-foreground">مادّةٌ فارغة — اختَرها في نموذج الإضافة بالأعلى.</p>
-              ) : (
-        /*
-          الدروسُ بطاقاتٌ بأغلفتها لا صفوفَ قائمة.
-          الدرسُ ليس سطرَ نصّ: له غلافٌ يراه الطالبُ في بوابته، ومدّةٌ
-          واختبارٌ ومرفقات. والصفُّ يُخفي الغلافَ كلَّه — وهو أوّلُ ما
-          يميّز درساً عن درس. والغلافُ هنا `CourseArt` ببذرة الدرس، فلكلّ
-          درسٍ لوحتُه ولا تتشابه.
-        */
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {(unit.lessons ?? []).map((v, i) => (
-            <div key={v.id} className="flex flex-col overflow-hidden rounded-3xl border border-border bg-card transition hover:border-primary/40">
-              <button
-                type="button"
-                onClick={() => setEditLesson(v.id)}
-                title="افتح الدرس"
-                className="relative block w-full text-right"
-              >
-                <CourseArt seed={v.id} title={v.title} className="aspect-[16/9] w-full" />
-                <span className="absolute inset-0 grid place-items-center bg-black/25 text-white transition hover:bg-black/10">
-                  <PlayCircle className="size-8 drop-shadow" />
-                </span>
-                <span className="absolute right-2 top-2 flex items-center gap-1.5">
-                  {v.isFree && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold text-white">
-                      <Gift className="size-3" /> مجاني
-                    </span>
-                  )}
-                  {v.duration && (
-                    <span className="rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white">{v.duration}</span>
-                  )}
-                </span>
-                {/*
-                  الترتيبُ يُبدَّل من الغلاف — أكثرُ ما يُفعل بالدرس بعد
-                  إضافته. و`stopPropagation` لازمٌ لأنّ الغلافَ صار زرّاً
-                  يفتح الدرس: بدونها يفتحه كلُّ ضغطٍ على سهم.
-                */}
-                <span
-                  onClick={(e) => e.stopPropagation()}
-                  className="absolute bottom-2 right-2 flex overflow-hidden rounded-full border border-white/25 bg-black/55 text-white"
-                >
-                  <button onClick={() => move(unit.id, i, -1)} disabled={i === 0} title="أعلى"
-                    className="px-2 py-0.5 text-[11px] transition hover:bg-white/15 disabled:opacity-30">▲</button>
-                  <button onClick={() => move(unit.id, i, 1)} disabled={i === (unit.lessons ?? []).length - 1} title="أسفل"
-                    className="px-2 py-0.5 text-[11px] transition hover:bg-white/15 disabled:opacity-30">▼</button>
-                </span>
-              </button>
-
-              <div className="flex flex-1 flex-col gap-2.5 p-3">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-bold">
-                    {(i + 1).toLocaleString("ar-EG")}. {v.title}
-                  </p>
-                  <p className="mt-0.5 truncate text-[10px] text-muted-foreground" dir="ltr">{v.url}</p>
-                </div>
-
-                <div className="mt-auto flex flex-wrap items-center gap-1.5">
-                  <button onClick={() => setQuizFor(quizFor === v.id ? null : v.id)} title="اختبار الدرس"
-                    className={`inline-flex flex-1 items-center justify-center gap-1 rounded-2xl border px-2.5 py-1.5 text-[11px] font-bold transition ${
-                      v.quiz?.enabled ? "border-emerald-500/40 text-emerald-500" : "border-border text-muted-foreground hover:border-primary hover:text-primary"
-                    }`}>
-                    <ListChecks className="size-3.5" />
-                    {v.quiz?.enabled ? `اختبار (${v.quiz.questions.length.toLocaleString("ar-EG")})` : "اختبار"}
-                    <ChevronDown className={`size-3 transition ${quizFor === v.id ? "rotate-180" : ""}`} />
-                  </button>
-                  {units.length > 1 && (
-                    <select value={unit.id} onChange={(e) => moveLessonTo(v.id, e.target.value)} title="نقل إلى مادّة"
-                      className="max-w-[7.5rem] rounded-2xl border border-border bg-card/60 px-2 py-1.5 text-[11px] font-bold outline-none focus:border-primary/50">
-                      {units.map((u) => <option key={u.id} value={u.id}>{u.title}</option>)}
-                    </select>
-                  )}
-                  <button
-                    onClick={() => setEditLesson(editLesson === v.id ? null : v.id)}
-                    title="تعديل الدرس"
-                    className={`grid size-8 shrink-0 place-items-center rounded-2xl border transition ${
-                      editLesson === v.id ? "border-primary text-primary" : "border-border text-muted-foreground hover:border-primary hover:text-primary"
-                    }`}
-                  >
-                    <Palette className="size-4" />
-                  </button>
-                  <button onClick={() => remove(v.id)} title="حذف"
-                    className="grid size-8 shrink-0 place-items-center rounded-2xl border border-border text-rose-500 transition hover:border-rose-500">
-                    <Trash2 className="size-4" />
-                  </button>
-                </div>
-
-                {quizFor === v.id && (
-                  <QuizEditor lesson={v} onChange={(q) => setQuiz(v.id, q)} results={quizStats(v.id)} />
-                )}
-              </div>
+              <Button className="px-5 py-2.5" onClick={() => { setIntoUnit(uid); add(); }}>
+                <Plus className="size-4" /> إضافة درس
+              </Button>
             </div>
-          ))}
-        </div>
-              )}
-              </>)}
-              </div>
-              )}
-            </div>
-              );
-            })}
-        </div>
-      )}
+          </Card>
+        )}
+      />
 
       </Section>
 
