@@ -64,6 +64,33 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
   const [uploading, setUploading] = useState<"video" | "material" | null>(null);
   const driveOn = content.mediaHost === "drive";
 
+  /*
+    قياسُ نسبة الغلاف — **قبل الحارس لا بعده**.
+    ------------------------------------------------------------------
+    كان هذا الخطّافُ يقع بعد `if (!subject) return`. وأوّلَ رسمٍ تكون
+    القاعدةُ لم تصل بعد فيكون `subject` غيرَ معرَّف، فيخرج المكوّنُ باكراً
+    ولا يُسجَّل الخطّاف. فإذا وصلت القاعدةُ ووُجد الكورس، رُسم المكوّنُ
+    بخطّافٍ زائدٍ عن الرسمة السابقة — و«عددُ الخطّافات لا يتغيّر بين
+    رسمتين» قاعدةٌ لا تُخالَف، فتنهار الصفحةُ كلُّها.
+
+    وهذا هو سببُ «تعذّر تحميل الصفحة» عند فتح كورسٍ من قائمته: التنقّلُ
+    يُركّب المكوّنَ قبل أن تصل بياناتُه.
+
+    فمكانُه هنا — فوق كلّ خروجٍ مشروط — ويحرس نفسَه بـ`subject?.cover`.
+  */
+  useEffect(() => {
+    if (!subject?.cover) return;
+    const img = new window.Image();
+    img.onload = () => {
+      const r = Number((img.naturalWidth / img.naturalHeight).toFixed(4));
+      if (r > 0 && Math.abs((subject.coverRatio ?? 0) - r) > 0.01) {
+        save({ subjects: subjects.map((x) => (x.id === id ? { ...subject, coverRatio: r } : x)) });
+      }
+    };
+    img.src = subject.cover;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subject?.cover]);
+
   if (!subject) {
     return (
       <Card className="mx-auto max-w-md text-center">
@@ -182,20 +209,6 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
     setMat({ title: "", url: "" });
   };
   const removeMaterial = (mid: string) => persistMats(materials.filter((m) => m.id !== mid));
-
-  /** قياس نسبة الغلاف الأصلية مرّة واحدة (لوضع «الإطار يتبع الصورة»). */
-  useEffect(() => {
-    if (!subject?.cover) return;
-    const img = new window.Image();
-    img.onload = () => {
-      const r = Number((img.naturalWidth / img.naturalHeight).toFixed(4));
-      if (r > 0 && Math.abs((subject.coverRatio ?? 0) - r) > 0.01) {
-        save({ subjects: subjects.map((x) => (x.id === id ? { ...subject, coverRatio: r } : x)) });
-      }
-    };
-    img.src = subject.cover;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subject?.cover]);
 
   /** ضبط الغلاف (محاذاة/تكبير) — يُحفظ فوراً وتتحدّث المعاينة. */
   const setCoverFit = (patch: Partial<ImageFit>) =>
