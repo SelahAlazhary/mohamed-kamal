@@ -42,9 +42,9 @@ export default function StudentExamsPage() {
       <PageHeader title="الاختبارات" subtitle={`${y("حلّ")} اختباراتك داخل المنصّة — النتيجة تظهر فوراً`} />
 
       <div className="mb-6 grid gap-3 sm:grid-cols-3">
-        <Summary icon={<IconClipboardCheck className="size-5" />} label="اختبارات متاحة" value={exams.length} tone="bg-primary/12 text-primary" />
-        <Summary icon={<IconCheckCircle className="size-5" />} label="تم حلّها" value={solved} tone="bg-sky-500/12 text-sky-500" />
-        <Summary icon={<IconCheckCircle className="size-5" />} label="نجحت فيها" value={passed} tone="bg-emerald-500/12 text-emerald-500" />
+        <Summary icon={<IconClipboardCheck className="size-5" />} label="اختبارات متاحة" value={exams.length} tone="bg-primary/12 text-primary" bar="bg-primary/70" />
+        <Summary icon={<IconCheckCircle className="size-5" />} label="تم حلّها" value={solved} tone="bg-sky-500/12 text-sky-500" bar="bg-sky-500/70" />
+        <Summary icon={<IconCheckCircle className="size-5" />} label="نجحت فيها" value={passed} tone="bg-emerald-500/12 text-emerald-500" bar="bg-emerald-500/70" />
       </div>
 
       {exams.length === 0 && (
@@ -111,14 +111,51 @@ export default function StudentExamsPage() {
   );
 }
 
-function Summary({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: React.ReactNode; tone: string }) {
+/**
+ * بطاقةُ رقمٍ في لوح الاختبارات.
+ * ------------------------------------------------------------------
+ * كانت أيقونةً وبجانبها رقمٌ `text-xl` وسطرٌ صغير، في بطاقةٍ عريضةٍ
+ * يبقى ثلثاها فارغاً — فتبدو حاشيةً لا مؤشّراً.
+ *
+ * **والرقمُ كان يُكتب بالخانات العربيّة**، وصفرُها `٠` نقطةٌ في أصل
+ * رسمه: بطاقةٌ قيمتُها صفرٌ تبدو بلا رقمٍ أصلاً، فيراها الطالبُ نقطةً
+ * ويظنّ الشاشةَ عطبت. فالعددُ الكبيرُ بالخانات الغربيّة — حلقتُه
+ * مفرَّغةٌ لا تُشبه غيرَ الصفر — والنصُّ عربيٌّ كما كان.
+ *
+ * والترتيبُ يبدأ من اليمين: أيقونةٌ فعنوانٌ فرقم، عمودٌ واحدٌ تنزل فيه
+ * العينُ بلا ارتداد. وشريطُ النبرة أسفلَها يفرّق الثلاثَ بلمحة.
+ */
+function Summary({
+  icon,
+  label,
+  value,
+  tone,
+  bar,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: React.ReactNode;
+  tone: string;
+  /** لونُ الشريط السفليّ — يميّز البطاقةَ من جارتها بلا قراءة. */
+  bar: string;
+}) {
   return (
-    <Card className="flex items-center gap-3">
-      <span className={`grid size-11 place-items-center rounded-2xl ${tone}`}>{icon}</span>
-      <div>
-        <p className="font-display text-xl font-extrabold">{typeof value === "number" ? value.toLocaleString("ar-EG") : value}</p>
-        <p className="text-xs text-muted-foreground">{label}</p>
+    <Card className="relative overflow-hidden !p-5">
+      <div className="mb-3.5 flex items-center gap-3">
+        <span className={`grid size-11 shrink-0 place-items-center rounded-2xl ${tone}`}>{icon}</span>
+        <span className="min-w-0 flex-1 text-[13px] font-bold leading-snug text-muted-foreground">
+          {label}
+        </span>
       </div>
+
+      <p
+        className="font-display text-[2.25rem] font-extrabold leading-none"
+        style={{ fontVariantNumeric: "tabular-nums" }}
+      >
+        {typeof value === "number" ? value.toLocaleString("en-US") : value}
+      </p>
+
+      <span className={`absolute inset-x-0 bottom-0 block h-1 ${bar}`} />
     </Card>
   );
 }

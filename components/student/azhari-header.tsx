@@ -245,19 +245,30 @@ export function AzhariStudentHeader({
           style={{ background: "linear-gradient(270deg, hsl(217 48% 13% / 0.96) 22%, transparent 72%)" }}
         />
 
-        {/* الترحيب */}
-        <div className="relative flex items-center justify-end gap-4 px-6 sm:px-9">
-          <div className="min-w-0 text-right">
+        {/*
+          الترحيبُ يبدأ من اليمين.
+          ------------------------------------------------------------------
+          كان `justify-end` يدفعه إلى الطرف — و`end` في وثيقةٍ عربيّةٍ هو
+          **اليسار**. وقرائنُ اللوح نفسِه تشهد أنّ المقصود كان اليمين:
+          الزخرفةُ الهندسيّة موضوعةٌ في اليسار (`left-0`) لتخلوَ الجهةُ
+          الأخرى للنصّ، والتدرّجُ يُعتم اليمينَ ليبقى المكتوبُ فوقه
+          مقروءاً. فالنصُّ كان يقف على الزخرفة، والعتمةُ تُهدر على فراغ.
+
+          والصورةُ أوّلاً ثمّ الاسم: العينُ العربيّةُ تبدأ من اليمين،
+          فتلقى الوجهَ ثمّ تقرأ صاحبَه — كما في كلّ بطاقةِ تعريف.
+        */}
+        <div className="relative flex items-center gap-4 px-6 sm:px-9">
+          <span className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-full border-2 border-[hsl(var(--gold)/0.5)] bg-white/10 sm:size-[4.5rem]">
+            {/* لا صورةَ للطالب في نموذج الحساب — فأوّلُ حرفٍ من اسمه */}
+            <span className="font-display text-2xl font-bold text-[hsl(var(--gold))] sm:text-3xl">{name.slice(0, 1)}</span>
+          </span>
+          <div className="min-w-0 text-start">
             <p className="font-kufi text-[13px] font-bold text-white/70">أهلاً {female ? "بكِ" : "بك"}،</p>
             <h1 className="font-display mt-1.5 truncate text-[1.75rem] font-extrabold leading-tight text-white sm:text-[2.25rem]">{name}</h1>
             {grade && (
               <p className="font-kufi mt-2 text-[15px] font-bold text-[hsl(var(--gold))]">{grade}</p>
             )}
           </div>
-          <span className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-full border-2 border-[hsl(var(--gold)/0.5)] bg-white/10 sm:size-[4.5rem]">
-            {/* لا صورةَ للطالب في نموذج الحساب — فأوّلُ حرفٍ من اسمه */}
-            <span className="font-display text-2xl font-bold text-[hsl(var(--gold))] sm:text-3xl">{name.slice(0, 1)}</span>
-          </span>
         </div>
       </div>
 
