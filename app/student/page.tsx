@@ -226,7 +226,23 @@ export default function StudentHome() {
                   : "flex flex-wrap items-center justify-between"
           }`}
         >
-          <div className={L.header === "stacked" ? "w-full" : "min-w-0"}>
+          {/*
+            قرصُ الحرف الأوّل.
+            ------------------------------------------------------------
+            اللوحُ كان نصّاً وحدَه — «أهلاً بك» واسماً ومرحلة — فيبدأ من
+            حافّةٍ فارغةٍ ولا شيءَ يُثبّت العين. والقرصُ يُعطي الترحيبَ
+            مرساةً، وهو أوّلُ ما يُرى في كلّ لوحةٍ تُخاطب صاحبَها باسمه.
+
+            والحرفُ من الاسم نفسِه لا صورةٌ تُرفع: الطالبُ لا يرفع صورةً
+            في هذه المنصّة، وقرصٌ فارغٌ ينتظر صورةً لا تأتي أسوأُ من حرف.
+
+            و`?.[0]` لا `.charAt(0)`: الاسمُ قد يكون فارغاً لحظةَ التحميل.
+          */}
+          <span className="student-avatar" aria-hidden="true">
+            {(session?.name ?? "").trim()[0] ?? ""}
+          </span>
+
+          <div className={`student-greet ${L.header === "stacked" ? "w-full" : "min-w-0"}`}>
             <p
               className={`font-kufi font-bold tracking-[0.04em] text-white/90 drop-shadow-sm ${
                 L.header === "compact" ? "text-xs" : "text-base sm:text-lg"

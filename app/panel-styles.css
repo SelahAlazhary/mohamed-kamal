@@ -129,8 +129,11 @@
   text-align: center;
 }
 /* الحلقةُ تصعد فوق الاسم: `order` يُعيد الترتيبَ بلا لمس الشجرة */
+/* الحلقةُ تصعد فوق الاسم — والمحدِّدُ بالصنف لا بالموضع، فإضافةُ قرصٍ
+   في أوّل الصفّ لا تكسره. */
 .pnl-center .student-header > * > :last-child { order: -1; }
-.pnl-center .student-header > * > :first-child { width: 100%; }
+.pnl-center .student-avatar { order: -2; }
+.pnl-center .student-greet { width: 100%; }
 
 /* ــ ١٠) السطر — لوحٌ بارتفاع سطر ــ */
 .pnl-bar .student-header {
@@ -144,7 +147,7 @@
   القِصر، ولا يُقال له إنّها لم تقصر.
 */
 .pnl-bar .student-header .student-header-extra { display: none; }
-.pnl-bar .student-header > * > :first-child > svg { display: none; }
+.pnl-bar .student-greet > svg { display: none; }
 .pnl-bar .student-header > :first-child,
 .pnl-bar .student-header > :nth-child(2) { display: none; }
 .pnl-bar .student-header > * > :last-child {
@@ -175,4 +178,42 @@
 .student-header .student-stats > * {
   flex: initial !important;
   min-width: 0;
+}
+
+
+/* ============================================================
+   قرصُ الحرف الأوّل
+   ------------------------------------------------------------
+   ذهبٌ خفيفٌ خلفَه وحرفٌ أبيضُ فوقه على اللوح الداكن، وينقلب على الفاتح.
+   ومقاسُه يتبع معالجةَ اللوح: يكبر في «المتوسّط» حيث هو أوّلُ ما يُرى،
+   ويصغر في «السطر» حيث لا يسع غيرَ سطر.
+   ============================================================ */
+.student-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 3.1rem;
+  height: 3.1rem;
+  border-radius: 999px;
+  background: hsl(var(--gold) / 0.28);
+  box-shadow: inset 0 0 0 1px hsl(var(--gold) / 0.55);
+  color: #fff;
+  font-family: var(--font-display, inherit);
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1;
+  user-select: none;
+}
+/* على السطح الفاتح ينقلب: الأبيضُ عليه لا يُقرأ */
+.pnl-paper .student-avatar,
+.pnl-rule .student-avatar,
+.pnl-bare .student-avatar,
+.pnl-frame .student-avatar { color: hsl(var(--primary)); }
+
+.pnl-center .student-avatar { width: 4rem; height: 4rem; font-size: 1.75rem; }
+.pnl-bar .student-avatar { width: 2.2rem; height: 2.2rem; font-size: 0.95rem; }
+
+/* المبسّطُ بلا لوح — القرصُ يبقى مرساةً للاسم */
+@media (max-width: 640px) {
+  .student-avatar { width: 2.6rem; height: 2.6rem; font-size: 1.1rem; }
 }
