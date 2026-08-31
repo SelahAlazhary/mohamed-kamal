@@ -60,16 +60,40 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
     بوّابة الدفع كما لو كان الوضعُ الأوّل، ولا يُترك في شاشةٍ بلا معنى.
   */
   const perUnit = (subject.entryMode ?? "gateway") === "materials" && units.length > 1;
-  if (!owned && !perUnit && !ownsAnyUnit(me, id)) {
-    return (
-      <Card className="mx-auto max-w-md text-center">
-        <EmptyLock className="mx-auto mb-2 text-primary" width={176} />
-        <h2 className="font-display text-xl font-extrabold">هذا الكورس غير مُفعّل</h2>
-        <p className="mt-2 text-sm text-muted-foreground">{fem ? "فعّلي" : "فعّل"} الكورس بكود التفعيل لمشاهدة الدروس.</p>
-        <Link href={`/student/pay?subject=${subject.id}`} className="mt-5 inline-flex rounded-full btn-glow px-6 py-2.5 text-sm font-bold text-white">خيارات الاشتراك</Link>
-      </Card>
-    );
-  }
+
+  /*
+    البابُ يُفتح والفيديو يُقفل.
+    ------------------------------------------------------------------
+    كان من لا يملك الكورس يُردّ عند الباب بلوحٍ يقول «غير مُفعّل» — فلا
+    يرى ما فيه أصلاً. وهو يُسأل أن يدفع لشيءٍ لم يُرِه أحدٌ له: كم مادّةً
+    فيه؟ وكم درساً؟ وما عناوينُها؟ لا جواب.
+
+    فصار يدخل فيرى المنهجَ كلَّه — الموادَّ وعناوينَ الدروس ومُددَها —
+    **والمشغّلُ وحدَه مقفول**: `owned` يبقى `false` فيُظهر `UnitView`
+    لوحَ الشراء مكانَ الفيديو. فيعرف ما يشتري قبل أن يشتريه، وهذا أدعى
+    للشراء من بابٍ موصد.
+
+    ولا يُفتح شيءٌ من المحتوى بهذا: الرابطُ لا يخرج والفيديو لا يعمل —
+    العناوينُ وحدَها، وهي في صفحة الكورس العامّة أصلاً.
+  */
+  const locked = !owned && !perUnit && !ownsAnyUnit(me, id);
+
+  const buyBanner = locked ? (
+    <Card className="mb-5 flex flex-wrap items-center justify-between gap-3 border-primary/30">
+      <div className="min-w-0">
+        <p className="font-display text-base font-extrabold">هذا الكورس غير مُفعّل</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          تتصفّح المنهجَ ومحتوياته — و{fem ? "لمشاهدتِك" : "لمشاهدة"} الدروس {fem ? "فعّلي" : "فعّل"} الكورس بكود التفعيل.
+        </p>
+      </div>
+      <Link
+        href={`/student/pay?subject=${subject.id}`}
+        className="shrink-0 rounded-full btn-glow px-6 py-2.5 text-sm font-bold text-white"
+      >
+        خيارات الاشتراك
+      </Link>
+    </Card>
+  ) : null;
 
   const header = (
     <>
@@ -93,7 +117,7 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
   );
 
   if (lessons.length === 0) {
-    return <>{header}<NotFound msg="لم تُضَف دروس لهذا الكورس بعد." /></>;
+    return <>{header}{buyBanner}<NotFound msg="لم تُضَف دروس لهذا الكورس بعد." /></>;
   }
 
   /* كورسٌ لم يُقسَّم — لا لوحَ وسيطاً بلا فائدة */
@@ -101,6 +125,7 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
     return (
       <>
         {header}
+        {buyBanner}
         <UnitView course={subject} unit={units[0]} owned={owned} backHref="/student/subjects" backLabel="كل الكورسات" />
       </>
     );
@@ -109,6 +134,7 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
   return (
     <>
       {header}
+      {buyBanner}
 
       <p className="mb-4 flex items-center gap-2 font-display font-extrabold">
         <IconListVideo className="size-5 text-primary" /> موادّ الكورس

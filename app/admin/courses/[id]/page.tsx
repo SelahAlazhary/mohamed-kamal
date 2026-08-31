@@ -6,8 +6,7 @@ import Image from "next/image";
 import {
   ArrowRight, Plus, Trash2, PlayCircle, Gift, FileText, Upload, ImageIcon,
   ListChecks, ChevronDown, Check, Link2, X, Loader2, Video, Palette, Wallet, Layers,
-  ListVideo,
-} from "lucide-react";
+  ListVideo, Eye } from "lucide-react";
 import { courseUnits, isSplit, withUnits, LEGACY_UNIT_ID } from "@/lib/course-units";
 import { PageHeader, Card } from "@/components/dashboard/ui";
 import { Collapse } from "@/components/dashboard/collapse";
@@ -296,7 +295,54 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
       <Link href="/admin/subjects" className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-primary">
         <ArrowRight className="size-4" /> كل الكورسات
       </Link>
-      <PageHeader title={`دروس: ${subject.name}`} subtitle={`${videos.length} درس · السعر ${subject.price.toLocaleString("ar-EG")} ج.م`} />
+      <PageHeader
+        title={`دروس: ${subject.name}`}
+        subtitle={`${videos.length} درس · السعر ${subject.price.toLocaleString("ar-EG")} ج.م`}
+        /*
+          المعاينةُ من هنا — لا بحسابِ طالبٍ اشترى.
+          كان الأستاذُ لا يرى ما بناه إلّا بالخروج من لوحته والدخول بحسابٍ
+          آخرَ والمرورِ ببوّابة الدفع. فكثيرٌ لا يتأكّد، ويكتشف العطبَ من
+          شكوى طالب.
+        */
+        action={
+          <Link
+            href={`/admin/courses/${id}/preview`}
+            className="inline-flex items-center gap-1.5 rounded-2xl border border-border px-4 py-2.5 text-xs font-bold transition hover:border-primary/50 hover:text-primary"
+          >
+            <Eye className="size-4" /> معاينة كطالب
+          </Link>
+        }
+      />
+
+      {/*
+        الإتاحةُ المجانيّة — مفتاحٌ ظاهرٌ لا مدفونٌ في إعداد.
+        كورسٌ يُفتح مجّاناً حالةٌ مؤقّتةٌ في الغالب: موسمٌ أو تجربة. ومن
+        فتحه ينساه، فيبقى منهجُه مبذولاً شهوراً. فالمفتاحُ في أعلى
+        الصفحة، وحالتُه مكتوبةٌ بلونٍ يُرى من بعيد.
+      */}
+      <Card className={`mb-6 flex flex-wrap items-center justify-between gap-3 ${subject.free ? "border-emerald-500/45" : ""}`}>
+        <div className="min-w-0">
+          <p className="font-display text-sm font-bold">
+            {subject.free ? "هذا الكورس متاحٌ مجّاناً للجميع" : "الكورس مدفوع"}
+          </p>
+          <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
+            {subject.free
+              ? "كلُّ طالبٍ يشاهد دروسَه بلا شراءٍ ولا كود. أطفئه لتعود بوّابةُ الدفع."
+              : "من لا يملكه يدخل فيرى المنهجَ وعناوينَ الدروس، والفيديو مقفولٌ حتى يشتري."}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => save({ subjects: subjects.map((x) => (x.id === id ? { ...x, free: !subject.free } : x)) })}
+          className={`shrink-0 rounded-2xl px-5 py-2.5 text-xs font-bold transition ${
+            subject.free
+              ? "border border-rose-500/40 text-rose-600 hover:bg-rose-500/10"
+              : "btn-glow text-white"
+          }`}
+        >
+          {subject.free ? "إيقاف الإتاحة المجانيّة" : "إتاحته مجّاناً"}
+        </button>
+      </Card>
 
       {/*
         المحتوى والمنهج — على متن الصفحة لا في بطاقةِ شبكةٍ تُضغط.

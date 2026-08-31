@@ -37,10 +37,16 @@ export function courseActive(
 /** صلاحية على كورس بكائنه (يمرّر الفصل الدراسي تلقائياً). */
 export function subjectActive(
   u: U | null | undefined,
-  subject: { id: string; term?: TermNo } | null | undefined,
+  subject: { id: string; term?: TermNo; free?: boolean } | null | undefined,
   now = Date.now()
 ): boolean {
   if (!subject) return false;
+  /*
+    المجّانيُّ يسبق كلَّ فحص.
+    من أتاحه الأستاذُ مجّاناً أراده مفتوحاً لكلّ أحد — بحسابٍ أو بلا
+    اشتراكٍ ساري. وفحصُ الاشتراك بعده عبثٌ: نتيجتُه لا تغيّر شيئاً.
+  */
+  if (subject.free) return true;
   return courseActive(u, subject.id, now, subject.term);
 }
 

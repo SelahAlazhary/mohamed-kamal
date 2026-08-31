@@ -19,8 +19,23 @@
 
 import { useMemo, type ReactNode } from "react";
 
-/** رقمٌ بالعربية. */
+/** رقمٌ بالعربية — للنصّ الجاري. */
 const ar = (n: number) => n.toLocaleString("ar-EG");
+
+/**
+ * رقمٌ بالخانات الغربيّة — للأعداد الكبيرة وحدَها.
+ * ------------------------------------------------------------------
+ * **صفرُ العربيّة `٠` نقطةٌ في أصل رسمه**، لا حلقةٌ مفرَّغة. وهو مقروءٌ
+ * في سياق نصٍّ جارٍ حيث تُحيط به حروفٌ تدلّ عليه؛ فإذا كبُر ووقف وحدَه
+ * في لوح مؤشّراتٍ عند ٤٤px صار **معيّناً أبيضَ لا عدداً** — يراه الطالبُ
+ * فيظنّ الشاشةَ عطبت، وهو محقٌّ فيما يرى.
+ *
+ * فالعددُ الكبيرُ وحدَه بالخانات الغربيّة (`0`, `12`, `100`): حلقتُه
+ * مفرَّغةٌ لا تُشبه شيئاً غيرَ الصفر، وعرضُها ثابتٌ فلا يتراقص الصفّ.
+ * وما بقي من نصّ المنصّة عربيُّ الخانات كما كان — التبديلُ في الرقم
+ * الكبير لا في اللغة.
+ */
+const west = (n: number) => n.toLocaleString("en-US");
 
 /* ============================================================
    الشبكة الهندسية
@@ -92,14 +107,14 @@ function GirihField({ className = "" }: { className?: string }) {
 
 /**
  * أيقونةٌ في مربّعٍ مذهّب — رسمٌ داخليٌّ بـ`currentColor`.
- * مقاسُها مقاسُ حلقة النسبة (٤٢) فتستوي البطاقاتُ الثلاثُ في صفٍّ واحد.
+ * مقاسُها مقاسُ حلقة النسبة (٤٨) فتستوي البطاقاتُ الثلاثُ في صفٍّ واحد.
  */
 function TileIcon({ children }: { children: ReactNode }) {
   return (
-    <span className="grid size-[2.625rem] shrink-0 place-items-center rounded-2xl border border-[hsl(var(--gold)/0.35)] bg-[hsl(var(--gold)/0.1)] text-[hsl(var(--gold))]">
+    <span className="grid size-12 shrink-0 place-items-center rounded-2xl border border-[hsl(var(--gold)/0.35)] bg-[hsl(var(--gold)/0.1)] text-[hsl(var(--gold))]">
       <svg
         viewBox="0 0 24 24"
-        className="size-5"
+        className="size-[1.375rem]"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.6"
@@ -130,7 +145,7 @@ function Ring({ value, size = 62 }: { value: number; size?: number }) {
           strokeDasharray={`${(c * v) / 100} ${c}`}
         />
       </svg>
-      <span className="font-display absolute text-[0.8rem] font-bold text-[hsl(var(--gold))]">{ar(v)}٪</span>
+      <span className="font-display absolute text-[0.72rem] font-bold text-[hsl(var(--gold))]">{west(v)}٪</span>
     </span>
   );
 }
@@ -177,10 +192,11 @@ export function AzhariStudentHeader({
   const cards = [
     {
       key: "progress",
-      art: <Ring value={progress} size={42} />,
+      art: <Ring value={progress} size={48} />,
       title: "متوسّط تقدّمك الدراسي",
-      value: ar(progress),
+      value: west(progress),
       unit: "٪",
+      bar: progress,
       note: progress > 0 ? `أنجزتَ ${ar(progress)}٪ من دروسك` : "ابدأ أوّل درسٍ لك",
     },
     {
@@ -192,8 +208,10 @@ export function AzhariStudentHeader({
         </TileIcon>
       ),
       title: "كورساتك",
-      value: ar(courses),
+      value: west(courses),
       unit: courses === 1 ? "كورس" : "كورسات",
+      /* لا نسبةَ للعدد — خطٌّ ساكنٌ يُسوّي الصفّ ولا يدّعي قياساً. */
+      bar: null,
       note: courses > 0 ? "متاحةٌ لك الآن" : "لا كورساتٍ بعد",
     },
     {
@@ -205,16 +223,18 @@ export function AzhariStudentHeader({
         </TileIcon>
       ),
       title: "اشتراكك",
-      value: daysLeft === null ? "∞" : ar(daysLeft),
+      value: daysLeft === null ? "∞" : west(daysLeft),
       unit: daysLeft === null ? "دائم" : "يوماً متبقياً",
+      /* الأيامُ تُقاس على شهرٍ — فالشريطُ يقصر كلّما اقترب الانتهاء. */
+      bar: daysLeft === null ? null : Math.round((Math.min(daysLeft, 30) / 30) * 100),
       note: active ? "اشتراكٌ ساري المفعول" : "لا اشتراكَ ساري",
     },
   ];
 
   return (
     /* الحشوُ السفليّ يترك مكانَ نصف البطاقة الطافية — لا تغطّي ما بعدها */
-    <div className="az-head relative mb-6 [--az-lift:3.25rem]">
-      <div className="relative overflow-hidden rounded-[2rem] bg-[hsl(217_48%_13%)] pb-[calc(var(--az-lift)+1rem)] pt-7 shadow-bento">
+    <div className="az-head relative mb-6 [--az-lift:4rem]">
+      <div className="relative overflow-hidden rounded-[2rem] bg-[hsl(217_48%_13%)] pb-[calc(var(--az-lift)+1.25rem)] pt-9 shadow-bento">
         {/* الزخرفةُ الهندسية — من الطرف المقابل للنصّ */}
         <div className="pointer-events-none absolute inset-y-0 left-0 w-[62%] opacity-70">
           <GirihField className="size-full" />
@@ -228,47 +248,82 @@ export function AzhariStudentHeader({
         {/* الترحيب */}
         <div className="relative flex items-center justify-end gap-4 px-6 sm:px-9">
           <div className="min-w-0 text-right">
-            <p className="font-kufi text-xs font-bold text-white/70">أهلاً {female ? "بكِ" : "بك"}،</p>
-            <h1 className="font-display mt-1 truncate text-2xl font-bold text-white sm:text-3xl">{name}</h1>
+            <p className="font-kufi text-[13px] font-bold text-white/70">أهلاً {female ? "بكِ" : "بك"}،</p>
+            <h1 className="font-display mt-1.5 truncate text-[1.75rem] font-extrabold leading-tight text-white sm:text-[2.25rem]">{name}</h1>
             {grade && (
-              <p className="font-kufi mt-1.5 text-sm font-bold text-[hsl(var(--gold))]">{grade}</p>
+              <p className="font-kufi mt-2 text-[15px] font-bold text-[hsl(var(--gold))]">{grade}</p>
             )}
           </div>
-          <span className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-full border-2 border-[hsl(var(--gold)/0.5)] bg-white/10 sm:size-16">
+          <span className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-full border-2 border-[hsl(var(--gold)/0.5)] bg-white/10 sm:size-[4.5rem]">
             {/* لا صورةَ للطالب في نموذج الحساب — فأوّلُ حرفٍ من اسمه */}
-            <span className="font-display text-xl font-bold text-[hsl(var(--gold))]">{name.slice(0, 1)}</span>
+            <span className="font-display text-2xl font-bold text-[hsl(var(--gold))] sm:text-3xl">{name.slice(0, 1)}</span>
           </span>
         </div>
       </div>
 
-      {/* البطاقاتُ الطافية — نصفُها في اللوح ونصفُها خارجه */}
-      <div className="relative -mt-[var(--az-lift)] grid gap-3 px-3 sm:grid-cols-3 sm:px-6">
+      {/*
+        البطاقاتُ الطافية — نصفُها في اللوح ونصفُها خارجه.
+        ------------------------------------------------------------------
+        كانت صغيرةً: عنوانٌ ١١px ورقمٌ ٣٠px في حشوٍ ضيّق، فتبدو حاشيةً على
+        اللوح لا مؤشّراتٍ تُقرأ من بعيد. وهي أوّلُ ما تقع عليه العينُ في
+        الشاشة — فيها خلاصةُ حال الطالب كلِّها.
+
+        فكبُرت: الرقمُ يبلغ ٤٨px في الشاشات الواسعة، والحشوُ أوسع،
+        والفاصلُ بينها أكبر. والعنوانُ صار ١٣px بتباعدٍ خفيفٍ في الحروف —
+        وهو ما يميّز لوحَ المؤشّرات المهنيَّ من صفٍّ من الصناديق.
+      */}
+      <div className="relative -mt-[var(--az-lift)] grid gap-4 px-3 sm:grid-cols-3 sm:px-6">
         {cards.map((c) => (
           <div
             key={c.key}
-            className="rounded-3xl border border-[hsl(var(--gold)/0.28)] bg-[hsl(217_48%_15%)] px-4 py-3.5 shadow-[0_18px_38px_-22px_rgba(0,0,0,.8)]"
+            className="group rounded-[1.75rem] border border-[hsl(var(--gold)/0.3)] bg-[hsl(217_48%_15%)] px-5 py-5 shadow-[0_22px_46px_-24px_rgba(0,0,0,.85)] transition duration-300 hover:border-[hsl(var(--gold)/0.55)]"
           >
-            {/* العنوانُ فوق والرسمُ في الطرف — فلا يزاحمان الرقم */}
-            <div className="mb-2 flex items-start justify-between gap-2">
-              <span className="font-kufi min-w-0 flex-1 truncate text-[11px] font-bold text-white/65">
+            {/*
+              الرسمُ والعنوانُ يبدآن من جهةٍ واحدة — اليمين.
+              ------------------------------------------------------------------
+              كان الرسمُ مدفوعاً إلى الطرف المقابل بـ`justify-between`، فتقرأ
+              العينُ العنوانَ يميناً ثمّ تقطع البطاقةَ عرضاً إلى الأيقونة ثمّ
+              ترجع إلى الرقم. ثلاثُ وقفاتٍ لبطاقةٍ فيها رقمٌ واحد.
+
+              فصارا معاً في المبتدأ: أيقونةٌ فعنوانٌ فرقمٌ فسطرُ حال — عمودٌ
+              واحدٌ تنزل فيه العينُ بلا ارتداد.
+            */}
+            <div className="mb-4 flex items-center gap-3">
+              <span className="shrink-0 transition duration-300 group-hover:scale-105">{c.art}</span>
+              <span
+                className="font-kufi min-w-0 flex-1 text-[14px] font-bold leading-snug text-white/75"
+                style={{ letterSpacing: "0.01em" }}
+              >
                 {c.title}
               </span>
-              <span className="shrink-0">{c.art}</span>
             </div>
 
-            <p className="flex items-baseline gap-1.5">
+            <p className="flex items-baseline gap-2">
               <span
-                className="font-display text-3xl font-extrabold leading-none text-white"
+                className="font-display text-[2.5rem] font-extrabold leading-[0.95] text-white sm:text-[2.75rem]"
                 style={{ fontVariantNumeric: "tabular-nums" }}
               >
                 {c.value}
               </span>
-              <span className="font-kufi truncate text-[11px] font-bold text-[hsl(var(--gold))]">
+              <span className="font-kufi truncate text-[15px] font-bold text-[hsl(var(--gold))]">
                 {c.unit}
               </span>
             </p>
 
-            <p className="font-kufi mt-1.5 truncate text-[11px] text-white/55">{c.note}</p>
+            {/*
+              شريطٌ رفيعٌ تحت الرقم.
+              العينُ تقرأ الطولَ أسرعَ ممّا تقرأ العدد، فالنسبةُ تُرى قبل
+              أن تُقرأ. وما لا نسبةَ له يأخذ خطّاً ذهبيّاً ساكناً — فتستوي
+              البطاقاتُ الثلاثُ ارتفاعاً ولا يتعرّج الصفّ.
+            */}
+            <span className="mt-4 block h-1.5 overflow-hidden rounded-full bg-white/10">
+              <span
+                className="block h-full rounded-full bg-[hsl(var(--gold))] transition-[width] duration-700"
+                style={{ width: c.bar === null ? "100%" : `${Math.max(3, Math.min(100, c.bar))}%`, opacity: c.bar === null ? 0.35 : 1 }}
+              />
+            </span>
+
+            <p className="font-kufi mt-3 truncate text-[13px] leading-relaxed text-white/65">{c.note}</p>
           </div>
         ))}
       </div>
