@@ -20,9 +20,25 @@ export function QuizEditor({
 }: {
   lesson: Lesson;
   onChange: (q: Quiz | undefined) => void;
-  results: { attempts: number; avg: number; passed: number };
+  results?: { attempts: number; avg: number; passed: number };
 }) {
-  const quiz: Quiz = lesson.quiz ?? { enabled: false, passScore: 60, questions: [] };
+  /*
+    الاختبارُ يُبنى حقلاً حقلاً لا بـ`??` واحدة.
+    ------------------------------------------------------------------
+    كانت `lesson.quiz ?? {…}` تحرس غيابَ الاختبار كلِّه ولا تحرس غيابَ ما
+    بداخله. و**Firebase لا يخزّن المصفوفات الفارغة**: درسٌ فُعِّل اختبارُه
+    ثمّ حُذفت أسئلتُه يعود `{ enabled: true, passScore: 60 }` بلا مفتاح
+    `questions` أصلاً — فتسقط `quiz.questions.length` بـ«Cannot read
+    properties of undefined»، وتذهب الشاشةُ كلُّها عند فتح تعديل الدرس.
+
+    وهذا ليس خطأً في هذا الملفّ وحدَه بل في كلّ ما يقرأ مصفوفةً من
+    القاعدة: الغائبُ والفارغُ شيءٌ واحدٌ عندها. فالقراءةُ تُطبِّع دائماً.
+  */
+  const quiz: Quiz = {
+    enabled: lesson.quiz?.enabled ?? false,
+    passScore: lesson.quiz?.passScore ?? 60,
+    questions: lesson.quiz?.questions ?? [],
+  };
   const [q, setQ] = useState({ text: "", options: ["", "", "", ""], correct: 0 });
 
   const update = (patch: Partial<Quiz>) => onChange({ ...quiz, ...patch });
@@ -53,7 +69,7 @@ export function QuizEditor({
             className="w-20 rounded-xl border border-border bg-card/60 px-2 py-1 text-xs outline-none" />
           ٪
         </label>
-        {results.attempts > 0 && (
+        {(results?.attempts ?? 0) > 0 && results && (
           <span className="text-xs text-muted-foreground">
             {results.attempts.toLocaleString("ar-EG")} محاولة · متوسط {results.avg}٪ · ناجح {results.passed.toLocaleString("ar-EG")}
           </span>

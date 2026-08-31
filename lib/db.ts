@@ -87,10 +87,59 @@ export async function flushDB() {
   return flushStore();
 }
 
+/**
+ * تطبيعُ المصفوفات — الغائبُ والفارغُ شيءٌ واحدٌ عند Firebase.
+ * ------------------------------------------------------------------
+ * **Firebase RTDB لا يخزّن المصفوفةَ الفارغة ولا الكائنَ الفارغ**: يكتبها
+ * فيحذف المفتاحَ من العقدة. فامتحانٌ حُذفت أسئلتُه كلُّها يعود
+ * `{ title, … }` بلا `questions`، ودرسٌ نُزعت مرفقاتُه يعود بلا
+ * `materials`. والشيفرةُ تقرأ `x.questions.length` فتسقط الشجرةُ كلُّها
+ * بـ«Cannot read properties of undefined» — وهذا ما كان يُطفئ صفحاتِ
+ * اللوحة الواحدةَ تلوَ الأخرى.
+ *
+ * ولا يُصلَح بـ`?.` في كلّ قراءة: المواضعُ عشراتٌ، وسيُنسى بعضُها، وسيُنسى
+ * في كلّ ما يُكتب غداً. فالتطبيعُ عند الحدّ: ما خرج من القاعدة خرج
+ * مكتملَ المصفوفات، ولا يعود بقيّةُ البرنامج تسأل.
+ *
+ * ويُعدَّل الكائنُ في مكانه لا نسخةً منه — `peek` يُرجع المخبوءَ نفسَه،
+ * ونسخةٌ جديدةٌ في كلّ نداءٍ تُبطل المقارنةَ بالمرجع في React.
+ */
+function normalizeArrays(db: DB) {
+  db.notifications = db.notifications ?? [];
+  db.plans = db.plans ?? [];
+  db.students = db.students ?? [];
+  db.subjects = db.subjects ?? [];
+  db.grades = db.grades ?? [];
+  db.codes = db.codes ?? [];
+  db.exams = db.exams ?? [];
+  db.live = db.live ?? [];
+  db.tickets = db.tickets ?? [];
+  db.users = db.users ?? [];
+
+  for (const e of db.exams) e.questions = e.questions ?? [];
+
+  for (const c of db.subjects) {
+    c.materials = c.materials ?? [];
+    c.videos = c.videos ?? [];
+    for (const u of c.units ?? []) {
+      u.lessons = u.lessons ?? [];
+      for (const l of u.lessons) normalizeLesson(l);
+    }
+    for (const l of c.videos) normalizeLesson(l);
+  }
+
+  for (const u of db.users) u.quizResults = u.quizResults ?? [];
+}
+
+/** الدرسُ: مرفقاتُه وأسئلتُه — كلاهما يُحذف حين يفرغ. */
+function normalizeLesson(l: Lesson) {
+  l.materials = l.materials ?? [];
+  if (l.quiz) l.quiz.questions = l.quiz.questions ?? [];
+}
+
 export function getDB(): DB {
   const db = peek(seed);
-  // تعبئة أي مصفوفات مفقودة (لقواعد بيانات أُنشئت قبل إضافة الحقل)
-  db.notifications = db.notifications ?? [];
+  normalizeArrays(db);
 
   /**
    * مالكة المنصّة: إن لم يُعلَّم أحد بعد، فأقدم مشرف هو المالكة.

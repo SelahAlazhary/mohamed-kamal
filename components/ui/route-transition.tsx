@@ -18,6 +18,9 @@ export function RouteTransition({ children }: { children: ReactNode }) {
 
   useEffect(() => { setBarKey((k) => k + 1); }, [pathname]);
 
+  /** اللوحاتُ: قشرةٌ ثابتةٌ فيها عناصرُ `fixed` لا تحتمل غلافاً متحوّلاً. */
+  const app = pathname.startsWith("/admin") || pathname.startsWith("/student");
+
   return (
     <>
       {/* شريط التقدّم العلوي */}
@@ -35,15 +38,41 @@ export function RouteTransition({ children }: { children: ReactNode }) {
         />
       </div>
 
-      {/* دخول المحتوى الجديد — أنيميشن تنقّل ناعم بدون exit لتفادي أي فراغ */}
-      <motion.div
-        key={pathname}
-        initial={reduce ? false : { opacity: 0, y: 18, scale: 0.985, filter: "blur(4px)" }}
-        animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      >
-        {children}
-      </motion.div>
+      {/*
+        اللوحاتُ خارج الحركة.
+        ------------------------------------------------------------------
+        `position: fixed` تتصرّف تصرّفَ `absolute` إن كان في أسلافها عنصرٌ
+        عليه `transform` أو `filter`. وغلافُ الحركة يضع الاثنين — والأسوأُ
+        أنّ `filter: blur(0px)` **تبقى في الأسلوب المحسوب بعد انتهاء
+        الحركة**، فلا تعود `none` أبداً. فيبقى الغلافُ حاجزاً دائماً لا
+        نصفَ ثانية.
+
+        وأثرُه أنّ لوحَ اللوحة الجانبيَّ — وهو `fixed` — كان يتمرّر مع
+        الصفحة فينزل إلى أسفلها كلّما تحرّك المشرفُ في قسم. وكذلك لوحُ
+        الحفظ وكلُّ ما ثُبِّت في هذه الشجرة.
+
+        والحركةُ زينةُ تصفُّحٍ لا تصلح للوحاتِ العمل أصلاً: القشرةُ ثابتةٌ
+        والمتنُ وحدَه يتغيّر، فتحريكُ الشاشة كلِّها عند كلّ نقرةٍ إزعاج.
+        فتُلغى في `/admin` و`/student`، ويبقى شريطُ التقدّم فوقُ يقول
+        إنّ شيئاً يُحمَّل.
+      */}
+      {app ? (
+        children
+      ) : (
+        <motion.div
+          key={pathname}
+          /*
+            ولا `filter` هنا كذلك: البابُ الذي يُغلق في اللوحات لا يُترك
+            مفتوحاً في الموقع. و`transform` تعود `none` من تلقائها حين
+            تنتهي الحركةُ عند قيمها المحايدة — و`blur(0px)` لا تعود.
+          */
+          initial={reduce ? false : { opacity: 0, y: 18, scale: 0.985 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {children}
+        </motion.div>
+      )}
     </>
   );
 }
