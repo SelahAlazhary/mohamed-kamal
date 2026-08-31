@@ -266,6 +266,12 @@ export type SiteContent = {
    * التخطيطاتُ تُركّب الترويسةَ والمؤشّراتِ والبطاقاتِ معاً، فمن أراد
    * ترويسةً بعينها لزمه تخطيطٌ كامل. وهذا يفرد الترويسةَ وحدَها.
    */
+  /** جهةُ القائمة الجانبية في بوابة الطالب: right (الأصل) أو left. */
+  navSide?: string;
+  /** جهةُ القائمة الجانبية في اللوحة. */
+  adminNavSide?: string;
+  /** تصميمُ قائمة اللوحة — مستقلٌّ عن قائمة الطالب. */
+  adminSideNav?: string;
   studentHeader?: string;
   studentDesign?: string;
   sideNav?: string;

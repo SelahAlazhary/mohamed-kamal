@@ -4769,6 +4769,33 @@ body {
    اتّجاهٌ ولا يزيحه نمطٌ. والمتنُ يترك عرضَه من الجهة نفسِها، وإلّا مرّ
    تحته أو بقيت فجوةٌ في الجهة الأخرى.
    ============================================================ */
+/* الجهةُ اليسرى — تُطلب من اللوحة، ولكلٍّ نطاقُه فلا يتبع أحدُهما الآخر */
+@media (min-width: 1024px) {
+  .nav-left-student .app-shell > aside:not([class*="fixed inset-y-0"]),
+  .nav-left-admin .app-shell > aside:not([class*="fixed inset-y-0"]) {
+    left: 0.75rem !important;
+    right: auto !important;
+    inset-inline-start: 0.75rem !important;
+    inset-inline-end: auto !important;
+  }
+  .nav-left-student .app-shell > div.app-body,
+  .nav-left-admin .app-shell > div.app-body {
+    padding-left: 17.5rem !important;
+    padding-right: 0 !important;
+    padding-inline-start: 17.5rem !important;
+    padding-inline-end: 0 !important;
+  }
+}
+@media (max-width: 1023.98px) {
+  .nav-left-student .app-shell aside.fixed,
+  .nav-left-admin .app-shell aside.fixed {
+    left: 0 !important;
+    right: auto !important;
+    inset-inline-start: 0 !important;
+    inset-inline-end: auto !important;
+  }
+}
+
 @media (min-width: 1024px) {
   .app-shell > aside:not([class*="fixed inset-y-0"]) {
     right: 0.75rem !important;

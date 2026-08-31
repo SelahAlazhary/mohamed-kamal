@@ -10,6 +10,7 @@ import { findToolbar, toolbarClass, stickClass } from "@/lib/toolbar-styles";
 import { findIconFrame, iconFrameClass, iconFrameVars } from "@/lib/icon-frames";
 import { findIconMotion, iconMotionClass } from "@/lib/icon-motion";
 import { findIconCover, iconCoverClass } from "@/lib/icon-covers";
+import { sideNavClassIfPicked, navSideClass } from "@/lib/nav-styles";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "لوحة الإدارة", robots: { index: false } };
@@ -44,7 +45,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   return (
     // admin-skin: هوية بصرية خاصة بلوحة الإدارة (تصميم فقط — لا يمسّ الموقع أو بوابة الطالب)
-    <div style={iconFrameVars(getDB().content.iconFrameColors)} className={`admin-skin ad-root ${iconFrameClass(findIconFrame(getDB().content.iconFrame))} ${iconCoverClass(findIconCover(getDB().content.iconCover))} ${iconMotionClass(findIconMotion(getDB().content.iconMotion))} ${toolbarClass(bar)} ${stickClass(getDB().content.toolbarStick)} ${getDB().content.toolbarHidden ? "tools-hidden" : ""}`} data-toolbar={bar.id}>
+    <div style={iconFrameVars(getDB().content.iconFrameColors)} className={`admin-skin ${sideNavClassIfPicked(getDB().content.adminSideNav)} ${navSideClass(getDB().content.adminNavSide, "admin")} ad-root ${iconFrameClass(findIconFrame(getDB().content.iconFrame))} ${iconCoverClass(findIconCover(getDB().content.iconCover))} ${iconMotionClass(findIconMotion(getDB().content.iconMotion))} ${toolbarClass(bar)} ${stickClass(getDB().content.toolbarStick)} ${getDB().content.toolbarHidden ? "tools-hidden" : ""}`} data-toolbar={bar.id}>
       {/*
         قشرةُ اللوحة بناءٌ مستقلٌّ عن قشرة الطالب.
         كانتا واحدةً — عمودٌ عريضٌ فيه اثنان وعشرون رابطاً — وهي تصلح

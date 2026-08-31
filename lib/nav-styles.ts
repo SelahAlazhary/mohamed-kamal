@@ -79,8 +79,35 @@ export const SIDE_NAV_STYLES: SideNavStyle[] = [
 
 export const DEFAULT_SIDE_NAV = SIDE_NAV_STYLES[0].id;
 
+/**
+ * نمطُ لوحٍ اختِير صراحةً — أو لا شيء.
+ * ------------------------------------------------------------------
+ * `findSideNav` تُرجع الكلاسيكيَّ لِما لم يُختر، وهو صوابٌ للطالب فلوحُه
+ * مبنيٌّ على هذه الأصناف. أمّا اللوحةُ فبناؤها `ad-root` مستقلٌّ، وطبعُ
+ * أصنافِ `sn-` عليها بلا طلبٍ يجعلها ترث تنسيقاً لم يُرِده أحد — وقواعدُ
+ * `sn-` تقع على `aside` مجرّداً فتُصيب كلَّ لوحٍ في الشجرة.
+ * فمَن لم يختر لا يُطبع عليه شيء.
+ */
+export function sideNavClassIfPicked(id?: string): string {
+  const x = SIDE_NAV_STYLES.find((s) => s.id === id);
+  return x ? sideNavClass(x) : "";
+}
+
 export function findSideNav(id?: string): SideNavStyle {
   return SIDE_NAV_STYLES.find((x) => x.id === id) ?? SIDE_NAV_STYLES[0];
+}
+
+/**
+ * جهةُ اللوح الجانبيّ.
+ * ------------------------------------------------------------------
+ * جهةٌ فيزيائيّةٌ لا منطقيّة (`right`/`left` لا `start`/`end`): المنصّةُ
+ * عربيّةٌ فالمنطقيُّ يعني اليمينَ دائماً، ومن أراد اللوحَ يساراً في واجهةٍ
+ * عربيّةٍ أرادَه يساراً على الشاشة لا «في نهاية السطر».
+ */
+export type NavSide = "right" | "left";
+
+export function navSideClass(v: string | undefined, scope: "student" | "admin"): string {
+  return v === "left" ? `nav-left-${scope}` : "";
 }
 
 export function sideNavClass(x: SideNavStyle): string {

@@ -11,7 +11,7 @@ import { findTile, tileClass, tileColorVars, tileArtVars, tileArtClass } from "@
 import { findToolbar, toolbarClass, stickClass } from "@/lib/toolbar-styles";
 import { findMotion, motionClass, motionVars } from "@/lib/motion-styles";
 import { ActivityTracker } from "@/components/student/activity-tracker";
-import { findSideNav, sideNavClass, findDock, dockClass, navColorVars, DEFAULT_ICON_SET } from "@/lib/nav-styles";
+import { findSideNav, sideNavClass, navSideClass, findDock, dockClass, navColorVars, DEFAULT_ICON_SET } from "@/lib/nav-styles";
 import { findIconFrame, iconFrameClass, iconFrameVars } from "@/lib/icon-frames";
 import { findIconMotion, iconMotionClass } from "@/lib/icon-motion";
 import { findIconCover, iconCoverClass } from "@/lib/icon-covers";
@@ -54,7 +54,7 @@ export default async function StudentLayout({ children }: { children: ReactNode 
     {/* مراسل النشاط — بوابة الطالب وحدها، فنشاط المشرف ليس تقريراً */}
     <ActivityTracker />
     <div
-      className={`student-skin relative min-h-full ${mobileClass(mobile)} ${sideNavClass(side)} ${dockClass(dock)} ic-${icons} ${iconFrameClass(findIconFrame(pub.content?.iconFrame))} dsg ${iconCoverClass(findIconCover(pub.content?.iconCover))} ${iconMotionClass(findIconMotion(pub.content?.iconMotion))} ${tileClass(tile)} ${tileArtClass(tileArt)} ${toolbarClass(bar)} ${stickClass(pub.content?.toolbarStick)} ${motionClass(findMotion(pub.content?.motionStyle))} ${pub.content?.toolbarHidden ? "tools-hidden" : ""}`}
+      className={`student-skin relative min-h-full ${mobileClass(mobile)} ${sideNavClass(side)} ${navSideClass(pub.content?.navSide, "student")} ${dockClass(dock)} ic-${icons} ${iconFrameClass(findIconFrame(pub.content?.iconFrame))} dsg ${iconCoverClass(findIconCover(pub.content?.iconCover))} ${iconMotionClass(findIconMotion(pub.content?.iconMotion))} ${tileClass(tile)} ${tileArtClass(tileArt)} ${toolbarClass(bar)} ${stickClass(pub.content?.toolbarStick)} ${motionClass(findMotion(pub.content?.motionStyle))} ${pub.content?.toolbarHidden ? "tools-hidden" : ""}`}
       style={{ ...navColorVars(pub.content?.navColors), ...tileColorVars(pub.content?.tileColors), ...tileArtVars(tileArt), ...motionVars(findMotion(pub.content?.motionStyle)), ...iconFrameVars(pub.content?.iconFrameColors), ...designVars(pub.content?.designColors) }}
       data-skin={skin.id}
       data-layout={layout.id}

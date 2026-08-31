@@ -170,6 +170,7 @@ export default function AppearancePage() {
   const tileColors = content.tileColors ?? {};
   const tileArt: TileArt = content.tileArt ?? {};
   const side = findSideNav(content.sideNav);
+  const adminSide = findSideNav(content.adminSideNav);
   const dock = findDock(content.dockStyle);
   const iconSet = content.navIcons ?? DEFAULT_ICON_SET;
   const navColors = content.navColors ?? {};
@@ -354,6 +355,12 @@ export default function AppearancePage() {
   /** ألوان القائمة تُدمج فلا يمحو ضبطُ لونٍ لونًا آخر. */
   const setNavColor = (patch: Record<string, string>) =>
     saveContent({ navColors: { ...navColors, ...patch } });
+
+  const pickAdminSide = async (x: SideNavStyle) => {
+    setBusy(`as-${x.id}`);
+    await saveContent({ adminSideNav: x.id });
+    setBusy(null);
+  };
 
   const pickSide = async (x: SideNavStyle) => {
     setBusy(x.id);
@@ -954,6 +961,98 @@ export default function AppearancePage() {
             );
           })}
         </div>
+      )}
+
+      {tab === "side" && (
+        <Card className="mb-5">
+          <p className="font-display mb-1 font-bold">جهةُ القائمة الجانبية</p>
+          <p className="mb-4 text-[11px] leading-relaxed text-muted-foreground">
+            جهةٌ على الشاشة لا في السطر: المنصّةُ عربيّةٌ فـ«البداية» تعني اليمينَ دائماً، ومن
+            أراد اللوحَ يساراً أرادَه يساراً حيث تراه العين. ولكلِّ بوّابةٍ جهتُها — قد يعمل
+            الأستاذُ بلوحةٍ يساريّةٍ ويترك بوّابةَ طلابه يمينيّة.
+          </p>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            {([
+              { key: "navSide" as const, label: "بوّابة الطالب", cur: content.navSide },
+              { key: "adminNavSide" as const, label: "لوحة التحكّم", cur: content.adminNavSide },
+            ]).map((row) => (
+              <div key={row.key}>
+                <p className="mb-2 text-xs font-bold">{row.label}</p>
+                <div className="inline-flex rounded-2xl border border-border bg-card p-1">
+                  {([
+                    { id: "right", label: "يمين" },
+                    { id: "left", label: "يسار" },
+                  ] as const).map((o) => {
+                    const on = (row.cur ?? "right") === o.id;
+                    return (
+                      <button
+                        key={o.id}
+                        type="button"
+                        disabled={busy !== null}
+                        onClick={async () => { setBusy(`${row.key}-${o.id}`); await saveContent({ [row.key]: o.id }); setBusy(null); }}
+                        className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition disabled:opacity-60 ${
+                          on ? "btn-glow text-white" : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {/* سهمٌ يشير إلى الجهة — أوضحُ من كلمة */}
+                        <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          {o.id === "right" ? <path d="M5 12h14M13 6l6 6-6 6" /> : <path d="M19 12H5M11 6l-6 6 6 6" />}
+                        </svg>
+                        {o.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* ---------- تصميم قائمة اللوحة ---------- */}
+      {tab === "side" && (
+        <>
+          <Card className="mb-4">
+            <p className="font-display mb-1 font-bold">تصميم قائمة لوحة التحكّم</p>
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              مستقلٌّ عن قائمة الطالب. واللوحةُ يقضي فيها الأستاذُ ساعاتٍ والطالبُ دقائق —
+              فما يريح في إحداهما لا يلزم أن يريح في الأخرى.
+            </p>
+          </Card>
+
+          <div className="mb-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {SIDE_NAV_STYLES.map((x) => {
+              const on = x.id === adminSide.id;
+              return (
+                <button
+                  key={x.id}
+                  type="button"
+                  onClick={() => pickAdminSide(x)}
+                  disabled={busy !== null}
+                  className={`group relative overflow-hidden rounded-3xl border-2 p-2 text-right transition disabled:opacity-60 ${
+                    on ? "border-primary shadow-bento" : "border-border hover:border-primary/50"
+                  }`}
+                >
+                  <SideNavPreview nav={x} skin={skin} />
+                  <div className="flex items-center justify-between gap-2 px-1.5 pb-1 pt-2.5">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold">{x.name}</p>
+                      <p className="truncate text-[10px] text-muted-foreground">{x.hint}</p>
+                    </div>
+                    {busy === `as-${x.id}` ? (
+                      <Loader2 className="size-4 shrink-0 animate-spin text-primary" />
+                    ) : on ? (
+                      <span className="grid size-6 shrink-0 place-items-center rounded-full bg-primary text-white">
+                        <Check className="size-3.5" />
+                      </span>
+                    ) : null}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {tab === "side" && (
