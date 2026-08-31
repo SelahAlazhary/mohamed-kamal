@@ -42,8 +42,22 @@ export function bunnyConfigured(): boolean {
   return Boolean(bunnyConfig().key);
 }
 
-/** بصمةُ Bunny: SHA256 خامٌّ بترميز base64 آمنٍ للروابط. */
-function sign(key: string, path: string, expires: number): string {
+/**
+ * بصمةُ Bunny.
+ * ------------------------------------------------------------------
+ * **ولـBunny صيغتان لا واحدة، وخلطُهما يحجب الفيديو:**
+ *
+ *   • **رمزُ الشبكة (CDN)** لملفٍّ يُطلب مباشرةً: `SHA256(key + path +
+ *     expires)` بترميز base64 آمنٍ للروابط.
+ *   • **رمزُ التضمين (Embed)** لمشغّلٍ في `iframe`: `SHA256(key +
+ *     videoId + expires)` بترميز سُدسيّ عشريّ — لا المسارُ ولا base64.
+ *
+ * وكنتُ أُوقّع رابطَ التضمين بصيغة الشبكة، فيردّه Bunny بـ«This content
+ * is blocked» لمن فعّل `Embed view token authentication`. والعجيبُ أنّ
+ * الخطأ لا يظهر إلّا بعد تفعيل الحماية — فقبله يمرّ الرابطُ بلا فحص،
+ * ويبدو كلُّ شيءٍ سليماً.
+ */
+function signCdn(key: string, path: string, expires: number): string {
   return crypto
     .createHash("sha256")
     .update(key + path + String(expires))
@@ -51,6 +65,10 @@ function sign(key: string, path: string, expires: number): string {
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=+$/, "");
+}
+
+function signEmbed(key: string, videoId: string, expires: number): string {
+  return crypto.createHash("sha256").update(key + videoId + String(expires)).digest("hex");
 }
 
 /**
@@ -73,7 +91,24 @@ export function signBunnyUrl(url: string): string {
   if (u.searchParams.has("token")) return url;
 
   const expires = Math.floor(Date.now() / 1000) + ttl;
-  u.searchParams.set("token", sign(key, u.pathname, expires));
-  u.searchParams.set("expires", String(expires));
-  return u.toString();
+
+  /*
+    مسارُ التضمين: `/embed/<library>/<videoId>` — ومنه يُؤخذ المعرّف.
+    وما لم يطابق هذا الشكلَ لا يُوقَّع أصلاً: توقيعٌ بصيغةٍ مظنونةٍ أسوأُ
+    من تركِ الرابط — فالأوّلُ يحجب، والثاني يعمل حتى تُضبط الحماية.
+  */
+  const m = u.pathname.match(/^\/embed\/[^/]+\/([^/?#]+)/);
+  if (m) {
+    u.searchParams.set("token", signEmbed(key, m[1], expires));
+    u.searchParams.set("expires", String(expires));
+    return u.toString();
+  }
+
+  if (/^\/[^/]+\//.test(u.pathname) && !u.pathname.startsWith("/embed/")) {
+    u.searchParams.set("token", signCdn(key, u.pathname, expires));
+    u.searchParams.set("expires", String(expires));
+    return u.toString();
+  }
+
+  return url;
 }
