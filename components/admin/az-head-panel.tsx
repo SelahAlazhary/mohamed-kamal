@@ -19,6 +19,7 @@
 import { useState } from "react";
 import { Card } from "@/components/dashboard/ui";
 import { AZ_HEAD_STYLES } from "@/lib/az-head-styles";
+import { AZ_CARD_STYLES } from "@/lib/az-card-styles";
 import type { AzHeadOptions } from "@/lib/types";
 
 /** مقاسٌ يُحرَّك — الرقمُ مكتوبٌ بجانبه فلا يُخمَّن. */
@@ -133,10 +134,39 @@ export function AzHeadPanel({
 }) {
   const o = value ?? {};
   const set = (patch: Partial<AzHeadOptions>) => onChange({ ...o, ...patch });
-  const [tab, setTab] = useState<"style" | "colors" | "sizes" | "parts">("style");
+  const [tab, setTab] = useState<"style" | "cards" | "colors" | "sizes" | "parts">("style");
+
+  /*
+    حارسُ التباين.
+    ------------------------------------------------------------------
+    اللوحةُ كانت تقبل حبراً بلون الأرض، فيختفي النصُّ كلُّه ويظنّ الأستاذُ
+    المنصّةَ عطبت. وهو خطأٌ في اللوحة لا في اختياره: أداةٌ تسمح بضبطٍ
+    يُعمي شاشتَها ولا تُنبّه، أداةٌ ناقصة.
+
+    والحسابُ حسابُ WCAG نفسُه: النسبةُ دون ٤٫٥ لا يُقرأ بها نصُّ متن.
+    ولا يُمنع الاختيار — قد يريده لسببٍ لا أعرفه — بل يُقال له ويُعرض
+    عليه الإصلاح.
+  */
+  const lum = (hex: string) => {
+    const h = hex.replace("#", "");
+    if (h.length !== 6) return null;
+    const v = [0, 2, 4].map((i) => {
+      const c = parseInt(h.slice(i, i + 2), 16) / 255;
+      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+  };
+  const contrast = (() => {
+    const a = lum(o.inkColor ?? "");
+    const b = lum(o.panelColor ?? "");
+    if (a === null || b === null) return null;
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+  })();
+  const unreadable = contrast !== null && contrast < 4.5;
 
   const TABS = [
-    { id: "style", label: "التصميم" },
+    { id: "style", label: "تصميم اللوح" },
+    { id: "cards", label: "تصميم البطاقة" },
     { id: "colors", label: "الألوان" },
     { id: "sizes", label: "المقاسات" },
     { id: "parts", label: "العناصر" },
@@ -215,12 +245,51 @@ export function AzHeadPanel({
         </div>
       )}
 
+      {tab === "cards" && (
+        <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+          {AZ_CARD_STYLES.map((x) => {
+            const on = (o.cardStyle ?? "stack") === x.id;
+            return (
+              <button
+                key={x.id}
+                type="button"
+                onClick={() => set({ cardStyle: x.id })}
+                className={`rounded-2xl border-2 p-3 text-right transition ${
+                  on ? "border-primary shadow-bento" : "border-border hover:border-primary/50"
+                }`}
+              >
+                <span className="mb-2 block truncate text-[12px] font-bold">{x.name}</span>
+                <span className="block truncate text-[10px] text-muted-foreground">{x.hint}</span>
+              </button>
+            );
+          })}
+          <p className="text-[11px] leading-relaxed text-muted-foreground sm:col-span-2 lg:col-span-4">
+            تصميمُ البطاقة مستقلٌّ عن تصميم اللوح، فيتركّبان: عشرون بطاقةً في اثنين
+            وعشرين لوحاً تعطي أربعمئةً وأربعين هيئة.
+          </p>
+        </div>
+      )}
+
       {tab === "colors" && (
         <div className="grid gap-3 sm:grid-cols-3">
           <Color label="أرضُ اللوح" value={o.panelColor} fallback="#132b4d" onChange={(v) => set({ panelColor: v })} />
           <Color label="لونُ التمييز" value={o.accentColor} fallback="#e0991f" onChange={(v) => set({ accentColor: v })} />
           <Color label="لونُ الحبر" value={o.inkColor} fallback="#ffffff" onChange={(v) => set({ inkColor: v })} />
           <Color label="لونُ الحافّة" value={o.edgeColor} fallback="#0b0f18" onChange={(v) => set({ edgeColor: v })} />
+          {unreadable && (
+            <div className="rounded-2xl border border-amber-500/45 bg-amber-500/[0.08] p-3 sm:col-span-3">
+              <p className="text-[12px] font-bold text-amber-700 dark:text-amber-400">
+                الحبرُ لا يُقرأ على هذه الأرض — التباينُ {contrast?.toFixed(2)}:1 والحدُّ الأدنى 4.5:1
+              </p>
+              <button
+                type="button"
+                onClick={() => set({ inkColor: undefined })}
+                className="mt-2 rounded-xl border border-amber-500/50 px-3 py-1.5 text-[11px] font-bold text-amber-700 transition hover:bg-amber-500/10 dark:text-amber-400"
+              >
+                أعِد لونَ الحبر إلى الأصل
+              </button>
+            </div>
+          )}
           <p className="text-[11px] leading-relaxed text-muted-foreground sm:col-span-3">
             المتروكُ فارغاً يأخذ لونَ التصميم المختار — ومن لا لونَ له يتبع هويّةَ منصّتك،
             فتتبدّل التصاميمُ كلُّها بتبديلها.
@@ -236,6 +305,7 @@ export function AzHeadPanel({
           <Slide label="سطر الحال" value={o.noteSize ?? 13} min={10} max={20} onChange={(v) => set({ noteSize: v })} />
           <Slide label="قطر الصورة" value={o.avatarSize ?? 72} min={40} max={120} onChange={(v) => set({ avatarSize: v })} />
           <Slide label="انحناء الحواف" value={o.radius ?? 28} min={0} max={48} onChange={(v) => set({ radius: v })} />
+          <Slide label="قطر العدّاد" value={o.ringSize ?? 64} min={36} max={140} onChange={(v) => set({ ringSize: v })} />
         </div>
       )}
 

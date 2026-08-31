@@ -634,8 +634,12 @@ export type Unit = {
 
 /** ضبطُ لوح ترحيب الطالب — كلُّه اختياريّ، والغيابُ هو الأصل. */
 export type AzHeadOptions = {
-  /** معرّفُ التصميم — انظر `AZ_HEAD_STYLES`. */
+  /** معرّفُ تصميم اللوح — انظر `AZ_HEAD_STYLES`. */
   style?: string;
+  /** معرّفُ تصميم البطاقة — انظر `AZ_CARD_STYLES`. مستقلٌّ عن اللوح. */
+  cardStyle?: string;
+  /** مضاعِفُ حجم عدّاد النسبة (الحلقة). */
+  ringSize?: number;
   /** ألوانٌ تسبق التصميم: من ضبط لوناً أراده هو. */
   panelColor?: string;
   accentColor?: string;

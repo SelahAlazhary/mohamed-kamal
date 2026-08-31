@@ -20,6 +20,7 @@
 import { useMemo, type ReactNode } from "react";
 import type { AzHeadOptions } from "@/lib/types";
 import { findAzHead, azPad, azShadow } from "@/lib/az-head-styles";
+import { findAzCard } from "@/lib/az-card-styles";
 
 /** رقمٌ بالعربية — للنصّ الجاري. */
 const ar = (n: number) => n.toLocaleString("ar-EG");
@@ -111,12 +112,12 @@ function GirihField({ className = "" }: { className?: string }) {
  * أيقونةٌ في مربّعٍ مذهّب — رسمٌ داخليٌّ بـ`currentColor`.
  * مقاسُها مقاسُ حلقة النسبة (٤٨) فتستوي البطاقاتُ الثلاثُ في صفٍّ واحد.
  */
-function TileIcon({ children }: { children: ReactNode }) {
+function TileIcon({ children, size = 48 }: { children: ReactNode; size?: number }) {
   return (
-    <span className="grid size-12 shrink-0 place-items-center rounded-2xl border border-[hsl(var(--gold)/0.35)] bg-[hsl(var(--gold)/0.1)] text-[hsl(var(--gold))]">
+    <span style={{ width: size, height: size }} className="grid shrink-0 place-items-center rounded-2xl border border-[hsl(var(--gold)/0.35)] bg-[hsl(var(--gold)/0.1)] text-[hsl(var(--gold))]">
       <svg
         viewBox="0 0 24 24"
-        className="size-[1.375rem]"
+        style={{ width: size * 0.46, height: size * 0.46 }}
         fill="none"
         stroke="currentColor"
         strokeWidth="1.6"
@@ -147,7 +148,13 @@ function Ring({ value, size = 62 }: { value: number; size?: number }) {
           strokeDasharray={`${(c * v) / 100} ${c}`}
         />
       </svg>
-      <span className="font-display absolute text-[0.72rem] font-bold text-[hsl(var(--gold))]">{west(v)}٪</span>
+      {/* النصُّ يتبع قطرَ الحلقة — نسبةٌ ثابتةٌ لا مقاسٌ مكتوب، فلا يفيض إن كبُرت */}
+      <span
+        className="font-display absolute font-bold"
+        style={{ color: "var(--az-accent)", fontSize: `${Math.round(size * 0.24)}px` }}
+      >
+        {west(v)}٪
+      </span>
     </span>
   );
 }
@@ -186,6 +193,7 @@ export function AzhariStudentHeader({
   */
   const o = opts ?? {};
   const st = findAzHead(o.style);
+  const cd = findAzCard(o.cardStyle);
   const pad = azPad(st.pad);
 
   /*
@@ -238,7 +246,7 @@ export function AzhariStudentHeader({
   const allCards = [
     {
       key: "progress",
-      art: <Ring value={progress} size={48} />,
+      art: <Ring value={progress} size={o.ringSize ?? 64} />,
       title: "متوسّط تقدّمك الدراسي",
       value: west(progress),
       unit: "٪",
@@ -248,7 +256,7 @@ export function AzhariStudentHeader({
     {
       key: "courses",
       art: (
-        <TileIcon>
+        <TileIcon size={o.ringSize ?? 64}>
           <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H10a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H5.5A1.5 1.5 0 0 1 4 15.5z" />
           <path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H14a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h4.5a1.5 1.5 0 0 0 1.5-1.5z" />
         </TileIcon>
@@ -263,7 +271,7 @@ export function AzhariStudentHeader({
     {
       key: "sub",
       art: (
-        <TileIcon>
+        <TileIcon size={o.ringSize ?? 64}>
           <circle cx="12" cy="12" r="8.5" />
           <path d="M12 7.5V12l3 1.8" />
         </TileIcon>
@@ -369,13 +377,34 @@ export function AzhariStudentHeader({
             key={c.key}
             style={{
               borderRadius: st.cards === "strip" ? 0 : "var(--az-radius)",
-              background: cardBg,
+              background:
+                cd.deco === "gradient"
+                  ? `linear-gradient(160deg, color-mix(in srgb, var(--az-accent) 12%, ${cardBg}), ${cardBg})`
+                  : cardBg,
               borderColor: "var(--az-edge)",
               boxShadow: azShadow(st.shadow, "color-mix(in srgb, var(--az-accent) 55%, transparent)"),
               color: ink,
             }}
-            className="group border px-5 py-5 transition duration-300"
+            className={`group relative overflow-hidden border px-5 py-5 transition duration-300 ${
+              cd.deco === "thick" ? "border-[3px]" : ""
+            } ${cd.deco === "underline" ? "border-x-0 border-t-0 border-b-[3px]" : ""}`}
           >
+            {/* الزينةُ خلف المتن — لا تزاحمه ولا تبتلع ضغطةً */}
+            {cd.deco === "sideBar" && (
+              <span className="pointer-events-none absolute inset-y-0 end-0 w-1.5" style={{ background: "var(--az-accent)" }} />
+            )}
+            {cd.deco === "topBar" && (
+              <span className="pointer-events-none absolute inset-x-0 top-0 h-1.5" style={{ background: "var(--az-accent)" }} />
+            )}
+            {cd.deco === "ghost" && (
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute -bottom-4 -start-3 opacity-[0.07]"
+                style={{ transform: "scale(2.6)", transformOrigin: "bottom left" }}
+              >
+                {c.art}
+              </span>
+            )}
             {/*
               الرسمُ والعنوانُ يبدآن من جهةٍ واحدة — اليمين.
               ------------------------------------------------------------------
@@ -386,8 +415,14 @@ export function AzhariStudentHeader({
               فصارا معاً في المبتدأ: أيقونةٌ فعنوانٌ فرقمٌ فسطرُ حال — عمودٌ
               واحدٌ تنزل فيه العينُ بلا ارتداد.
             */}
-            <div className="mb-4 flex items-center gap-3">
-              <span className="shrink-0 transition duration-300 group-hover:scale-105">{c.art}</span>
+            <div
+              className={`relative mb-4 flex gap-3 ${
+                cd.layout === "center" ? "flex-col items-center text-center" : "items-center"
+              } ${cd.layout === "line" ? "mb-2" : ""}`}
+            >
+              {cd.icon && (
+                <span className="shrink-0 transition duration-300 group-hover:scale-105">{c.art}</span>
+              )}
               <span
                 className="font-kufi min-w-0 flex-1 font-bold leading-snug"
                 style={{ letterSpacing: "0.01em", fontSize: "var(--az-title)", color: "color-mix(in srgb, var(--az-ink) 75%, transparent)" }}
@@ -396,10 +431,18 @@ export function AzhariStudentHeader({
               </span>
             </div>
 
-            <p className="flex items-baseline gap-2">
+            <p
+              className={`relative flex items-baseline gap-2 ${
+                cd.layout === "center" ? "justify-center" : ""
+              } ${cd.layout === "split" ? "justify-between" : ""}`}
+            >
               <span
                 className="font-display font-extrabold leading-[0.95]"
-                style={{ fontVariantNumeric: "tabular-nums", fontSize: "var(--az-value)", color: "var(--az-ink)" }}
+                style={{
+                  fontVariantNumeric: "tabular-nums",
+                  fontSize: `calc(var(--az-value) * ${cd.scale})`,
+                  color: "var(--az-ink)",
+                }}
               >
                 {c.value}
               </span>
@@ -414,8 +457,8 @@ export function AzhariStudentHeader({
               أن تُقرأ. وما لا نسبةَ له يأخذ خطّاً ذهبيّاً ساكناً — فتستوي
               البطاقاتُ الثلاثُ ارتفاعاً ولا يتعرّج الصفّ.
             */}
-            {!o.hideBars && (
-            <span className="mt-4 block h-1.5 overflow-hidden rounded-full bg-white/10">
+            {!o.hideBars && cd.bar && (
+            <span className="relative mt-4 block h-1.5 overflow-hidden rounded-full bg-white/10">
               <span
                 className="block h-full rounded-full transition-[width] duration-700"
                 style={{ width: c.bar === null ? "100%" : `${Math.max(3, Math.min(100, c.bar))}%`, opacity: c.bar === null ? 0.35 : 1, background: "var(--az-accent)" }}
@@ -423,7 +466,7 @@ export function AzhariStudentHeader({
             </span>
             )}
 
-            <p className="font-kufi mt-3 truncate leading-relaxed" style={{ fontSize: "var(--az-note)", color: "color-mix(in srgb, var(--az-ink) 62%, transparent)" }}>{c.note}</p>
+            <p className={`font-kufi mt-3 truncate leading-relaxed ${cd.layout === "center" ? "text-center" : ""}`} style={{ fontSize: "var(--az-note)", color: "color-mix(in srgb, var(--az-ink) 62%, transparent)" }}>{c.note}</p>
           </div>
         ))}
       </div>
