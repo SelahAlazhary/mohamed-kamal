@@ -6,6 +6,7 @@ import { adminNav } from "@/lib/dashboard-data";
 import { getSession } from "@/lib/session";
 import { loadDB, getDB } from "@/lib/db";
 import { can, isOwner, permForPath } from "@/lib/perms";
+import { deviceMatches } from "@/lib/device-guard";
 import { findToolbar, toolbarClass, stickClass } from "@/lib/toolbar-styles";
 import { findIconFrame, iconFrameClass, iconFrameVars } from "@/lib/icon-frames";
 import { findIconMotion, iconMotionClass } from "@/lib/icon-motion";
@@ -22,6 +23,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   await loadDB();
   const me = getDB().users.find((u) => u.id === session.uid);
   if (!me || me.role !== "admin" || !me.active) redirect("/login?next=/admin");
+  /* والجهازُ يُفحص في كلّ طلب — انظر `deviceMatches`. */
+  if (!(await deviceMatches(me))) redirect("/login?device=1");
 
   // القائمة تعرض ما يملكه هذا المشرف فقط
   const nav = adminNav.filter((item) => {

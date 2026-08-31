@@ -70,6 +70,23 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<Problem>(null);
+
+  /*
+    الردُّ من الحارس، لا من شاشة الدخول.
+    ------------------------------------------------------------------
+    فحصُ الجهاز صار يقع في كلّ طلبٍ لصفحةٍ محميّة لا عند الدخول وحدَه
+    (انظر `deviceMatches`). ومن رُدَّ منه يصل إلى هنا بـ`?device=1` ولم
+    يكتب شيئاً بعد — فلو تُرك بلا بيانٍ لظنّ أنّه خرج من تلقاء نفسه،
+    وأعاد المحاولةَ مرّاتٍ بلا أن يعرف أنّ المشكلة في الجهاز لا في كلمة
+    المرور.
+  */
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("device") !== "1") return;
+    setProblem({
+      kind: "device",
+      msg: "هذا الحساب مرتبطٌ بجهازٍ آخر. للدخول من هذا الجهاز تواصل مع الدعم للسماح به.",
+    });
+  }, []);
   const [caps, setCaps] = useState(false);
   const [remember, setRemember] = useState(true);
   const [now, setNow] = useState(() => Date.now());

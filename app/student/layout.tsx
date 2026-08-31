@@ -4,6 +4,7 @@ import { DashboardShell } from "@/components/dashboard/shell";
 import { studentNav } from "@/lib/dashboard-data";
 import { getSession } from "@/lib/session";
 import { getPublicDB, loadDB, sessionUser } from "@/lib/db";
+import { deviceMatches } from "@/lib/device-guard";
 import { findSkin, findLayout, findMobile, mobileClass, skinCss } from "@/lib/skins";
 import { SkinOrnament } from "@/components/brand/skin-ornaments";
 import { findDesign } from "@/lib/designs";
@@ -30,6 +31,12 @@ export default async function StudentLayout({ children }: { children: ReactNode 
      نفسه عند كل تحميل: المحذوف أو الموقوف يُعاد إلى صفحة الدخول فوراً. */
   await loadDB();
   if (!sessionUser(session)) redirect("/login?gone=1");
+
+  /*
+    والجهازُ يُفحص هنا لا في شاشة الدخول وحدَها — انظر `deviceMatches`.
+    من نسخ كوكي الجلسة إلى جهازٍ آخر يُردّ إلى الدخول، ورمزُه لا ينفعه.
+  */
+  if (!(await deviceMatches(sessionUser(session)))) redirect("/login?device=1");
 
   const pub = getPublicDB();
   const me = pub.users.find((u) => u.id === session.uid);
