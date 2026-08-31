@@ -26,11 +26,8 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  Plus, PlayCircle, Users, Trash2, ToggleLeft, ToggleRight, X, ListVideo,
-  BookOpen, GraduationCap, Wallet,
-} from "lucide-react";
-import { DataTable, StatusBadge } from "@/components/dashboard/ui";
+import { Plus, X, BookOpen, GraduationCap, Wallet } from "lucide-react";
+
 import { PageBar } from "@/components/dashboard/page-bar";
 import { Section } from "@/components/dashboard/section";
 import { Button } from "@/components/ui/primitives";
@@ -39,6 +36,7 @@ import { gradeHasTrack } from "@/lib/data";
 import { planPrice } from "@/lib/plans";
 import { parsePick } from "@/lib/picks";
 import type { Subject } from "@/lib/types";
+import { AdminCourseCard } from "@/components/admin/course-card";
 
 const TERMS = [
   { id: 1 as const, label: "الفصل الدراسي الأول" },
@@ -134,75 +132,29 @@ export default function SubjectsPage() {
     return i < 0 ? 999 : i;
   };
 
+  /*
+    الكورسُ غلافٌ ودروس، وكلاهما لا يدخل خانةً في جدول. فصار بطاقةً
+    يُرسم غلافُها بـ`CourseArt` نفسِه الذي يرسمه في بوابة الطالب — فما
+    يراه الأستاذُ هنا هو ما يراه الطالبُ هناك، ولا يفاجئه فرقٌ بعد النشر.
+  */
   const rows = (list: Subject[]) => (
-    <DataTable head={["الكورس", "الشعبة", "الدروس", "الطلاب", "أرخص خطّة", "الحالة", "إجراءات"]}>
-      {list.map((s) => (
-        <tr key={s.id} className="transition hover:bg-muted/50">
-          <td className="px-4 py-3">
-            <div className="flex items-center gap-3">
-              <span className="grid size-9 shrink-0 place-items-center rounded-2xl bg-primary/12 text-primary"><PlayCircle className="size-5" /></span>
-              <div className="min-w-0">
-                <p className="font-semibold">{s.name}</p>
-                {/*
-                  الفصلُ يبقى قابلاً للتبديل من الصفّ وإن صار عنواناً فوقه:
-                  نقلُ كورسٍ إلى الفصل الآخر أكثرُ ما يُفعل هنا، ولو لزمه
-                  فتحُ شاشةٍ أخرى لصار عملاً.
-                */}
-                <select
-                  value={s.term ?? 1}
-                  onChange={(e) => setTerm(s.id, Number(e.target.value) as 1 | 2)}
-                  className="mt-1 rounded-lg border border-border bg-card/60 px-2 py-0.5 text-[11px] text-muted-foreground outline-none focus:border-primary/50"
-                >
-                  <option value={1}>الفصل الأول</option>
-                  <option value={2}>الفصل الثاني</option>
-                </select>
-              </div>
-            </div>
-          </td>
-          <td className="px-4 py-3">
-            {gradeHasTrack(s.grade) ? (
-              <select value={s.track || "الكل"} onChange={(e) => setTrack(s.id, e.target.value)}
-                className="rounded-lg border border-border bg-card/60 px-2 py-1 text-xs outline-none focus:border-primary/50">
-                <option value="الكل">الكل</option><option value="علمي">علمي</option><option value="أدبي">أدبي</option>
-              </select>
-            ) : (
-              <span className="text-xs text-muted-foreground">—</span>
-            )}
-          </td>
-          <td className="px-4 py-3 font-semibold">{s.lessons}</td>
-          <td className="px-4 py-3"><span className="inline-flex items-center gap-1 text-muted-foreground"><Users className="size-3.5" /> {s.students.toLocaleString("ar-EG")}</span></td>
-          <td className="px-4 py-3">
-            {(() => {
-              const p = cheapestFor(s);
-              if (!p) {
-                return (
-                  <Link href="/admin/plans" className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-rose-500/12 px-2 py-1 text-[10px] font-bold text-rose-600 transition hover:bg-rose-500/20 dark:text-rose-400">
-                    <Wallet className="size-3" /> لا خطّة تفتحه
-                  </Link>
-                );
-              }
-              const pr = planPrice(p);
-              return (
-                <Link href="/admin/plans" className="inline-flex flex-col whitespace-nowrap transition hover:text-primary" title="يُعدَّل من بوّابة الدفع">
-                  <span className="text-sm font-bold">{pr.price.toLocaleString("ar-EG")} ج.م</span>
-                  <span className="text-[10px] text-muted-foreground">{p.name}</span>
-                </Link>
-              );
-            })()}
-          </td>
-          <td className="px-4 py-3"><StatusBadge status={s.status} /></td>
-          <td className="px-4 py-3">
-            <div className="flex items-center gap-1">
-              <Link href={`/admin/courses/${s.id}`} title="إدارة الدروس" className="grid size-8 place-items-center rounded-full border border-border text-primary transition hover:border-primary"><ListVideo className="size-4" /></Link>
-              <button onClick={() => toggle(s.id)} title="نشر/إخفاء" className="grid size-8 place-items-center rounded-full border border-border text-primary transition hover:border-primary">
-                {s.status === "منشورة" ? <ToggleRight className="size-4" /> : <ToggleLeft className="size-4" />}
-              </button>
-              <button onClick={() => remove(s.id)} title="حذف" className="grid size-8 place-items-center rounded-full border border-border text-rose-500 transition hover:border-rose-500"><Trash2 className="size-4" /></button>
-            </div>
-          </td>
-        </tr>
-      ))}
-    </DataTable>
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      {list.map((s) => {
+        const p = cheapestFor(s);
+        return (
+          <AdminCourseCard
+            key={s.id}
+            s={s}
+            cheapest={p ? { plan: p, price: planPrice(p).price } : null}
+            hasTrack={gradeHasTrack(s.grade)}
+            onToggle={() => toggle(s.id)}
+            onRemove={() => remove(s.id)}
+            onTerm={(t) => setTerm(s.id, t)}
+            onTrack={(t) => setTrack(s.id, t)}
+          />
+        );
+      })}
+    </div>
   );
 
   const inTermCount = (t: 1 | 2) => subjects.filter((s) => (s.term ?? 1) === t).length;
