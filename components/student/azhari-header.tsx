@@ -201,10 +201,17 @@ export function AzhariStudentHeader({
     : st.panel === "paper" ? "hsl(0 0% 100%)"
     : "hsl(217 48% 15%)";
   const ink = o.inkColor || (st.ink === "dark" ? "hsl(220 30% 14%)" : "#fff");
+  /*
+    الحافّةُ لونٌ مستقلٌّ لا اشتقاقٌ من التمييز.
+    كانت تُشتقّ منه بمزجٍ (٣٢٪)، فلا تُنال حافّةٌ سوداءُ حادّةٌ على أرضٍ
+    زجاجيّةٍ إلّا بتسويد التمييز معها — وهو غيرُ مقصود. فصارت تُختار.
+  */
+  const edge = o.edgeColor || st.edge || "color-mix(in srgb, var(--az-accent) 32%, transparent)";
 
   const vars = {
     "--az-accent": accent,
     "--az-ink": ink,
+    "--az-edge": edge,
     "--az-name": `${o.nameSize ?? 36}px`,
     "--az-value": `${o.valueSize ?? 44}px`,
     "--az-title": `${o.titleSize ?? 14}px`,
@@ -284,7 +291,7 @@ export function AzhariStudentHeader({
         style={{
           borderRadius: "calc(var(--az-radius) + 4px)",
           background: st.panel === "outline" ? "transparent" : panelBg,
-          border: st.panel === "outline" ? "1px solid color-mix(in srgb, var(--az-accent) 45%, transparent)" : undefined,
+          border: st.panel === "outline" || st.edge || o.edgeColor ? "1px solid var(--az-edge)" : undefined,
           backdropFilter: st.panel === "glass" ? "blur(14px)" : undefined,
           paddingTop: pad.top,
           color: ink,
@@ -363,7 +370,7 @@ export function AzhariStudentHeader({
             style={{
               borderRadius: st.cards === "strip" ? 0 : "var(--az-radius)",
               background: cardBg,
-              borderColor: "color-mix(in srgb, var(--az-accent) 32%, transparent)",
+              borderColor: "var(--az-edge)",
               boxShadow: azShadow(st.shadow, "color-mix(in srgb, var(--az-accent) 55%, transparent)"),
               color: ink,
             }}

@@ -10,9 +10,44 @@ import { planSubjectId } from "@/lib/access";
 import { cleanPrefix, DEFAULT_CODE_PREFIX } from "@/lib/payments";
 import type { Code } from "@/lib/types";
 
+/*
+  حروفٌ لا تُخلط: لا `O/0` ولا `I/1` ولا `S/5`. الكودُ يُملى في الهاتف
+  ويُكتب باليد، وحرفٌ ملتبسٌ واحدٌ يعني اتّصالاً بالدعم.
+*/
+const CODE_ALPHABET = "ACDEFGHJKLMNPQRTUVWXYZ2346789";
+
+/**
+ * كودُ تفعيلٍ لا يُتنبّأ به.
+ * ------------------------------------------------------------------
+ * كان `Math.random()`. وهي **ليست عشوائيّةً آمنة**: مولّدُها في المتصفّح
+ * `xorshift128+` وحالتُه تُستنتج من بضع مخرجاتٍ متتالية — فمن اشترى
+ * كوداً واحداً ورأى تسلسلَه أمكنه أن يحسب ما بعده ويفعّل به بلا دفع.
+ * و`.toString(36).slice(2)` تزيدها ضعفاً: تُخرج طولاً متغيّراً، فيُحشى
+ * بالأصفار — وحشوٌ ثابتٌ عشوائيّةٌ ناقصة.
+ *
+ * و`crypto.getRandomValues` مولّدُ النظام: لا يُستنتج ولا يُعاد.
+ *
+ * **والقيمةُ تُؤخذ بالرفض لا بالباقي.** `byte % 29` يجعل أوائلَ الحروف
+ * أكثرَ ظهوراً من أواخرها (٢٥٦ لا تقبل القسمة على ٢٩)، وانحيازٌ في
+ * التوزيع نقصٌ في العشوائيّة. فما تجاوز الحدَّ يُطرح ويُسحب غيرُه.
+ */
+function randomChars(n: number): string {
+  const max = 256 - (256 % CODE_ALPHABET.length);
+  let out = "";
+  while (out.length < n) {
+    const buf = new Uint8Array(n * 2);
+    crypto.getRandomValues(buf);
+    for (const b of buf) {
+      if (b >= max) continue;
+      out += CODE_ALPHABET[b % CODE_ALPHABET.length];
+      if (out.length === n) break;
+    }
+  }
+  return out;
+}
+
 function genCode(prefix: string) {
-  const seg = () => Math.random().toString(36).slice(2).padEnd(4, "0").slice(0, 4).toUpperCase();
-  return `${cleanPrefix(prefix)}-${seg()}-${seg()}`;
+  return `${cleanPrefix(prefix)}-${randomChars(4)}-${randomChars(4)}`;
 }
 
 export default function CodesPage() {

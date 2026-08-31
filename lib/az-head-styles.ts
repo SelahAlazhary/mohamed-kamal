@@ -36,6 +36,8 @@ export type AzHeadStyle = {
   accent?: string;
   /** حبرٌ فاتحٌ أم داكن — يتبع الأرضَ لا الاختيار. */
   ink: "light" | "dark";
+  /** لونُ الحافّة حين يميّز التصميمَ؛ وإلّا فمن لون التمييز. */
+  edge?: string;
   /** ظلٌّ تحت البطاقات. */
   shadow: "none" | "soft" | "deep" | "glow";
   /** حشوُ اللوح. */
@@ -46,8 +48,8 @@ const S = (
   id: string, name: string, hint: string,
   panel: AzPanel, cards: AzCards, orn: AzOrn, radius: number,
   ink: AzHeadStyle["ink"], shadow: AzHeadStyle["shadow"], pad: AzHeadStyle["pad"],
-  panelColor?: string, accent?: string
-): AzHeadStyle => ({ id, name, hint, panel, cards, orn, radius, ink, shadow, pad, panelColor, accent });
+  panelColor?: string, accent?: string, edge?: string
+): AzHeadStyle => ({ id, name, hint, panel, cards, orn, radius, ink, shadow, pad, panelColor, accent, edge });
 
 export const AZ_HEAD_STYLES: AzHeadStyle[] = [
   S("azhari",    "الأزهري",          "كحليٌّ وزخرفةٌ ذهبيّةٌ ظاهرة",      "solid",    "float",  "on",    28, "light", "deep",  "normal"),
@@ -69,6 +71,14 @@ export const AZ_HEAD_STYLES: AzHeadStyle[] = [
   S("emerald",   "زمرّديّ",          "أخضرُ عميقٌ وتمييزٌ فاتح",         "gradient", "float",  "faint", 28, "light", "deep",  "normal", "linear-gradient(135deg,hsl(168 55% 12%),hsl(190 50% 16%))", "hsl(158 64% 62%)"),
   S("copper",    "نحاسيّ",           "بنّيٌّ دافئٌ ونحاسٌ لامع",          "gradient", "float",  "on",    28, "light", "deep",  "normal", "linear-gradient(135deg,hsl(20 40% 14%),hsl(30 38% 20%))", "hsl(28 78% 62%)"),
   S("ink",       "حبريّ",            "أسودُ قريبٌ وتمييزٌ هادئ",         "solid",    "float",  "faint", 24, "light", "soft",  "normal", "hsl(220 22% 9%)"),
+  /*
+    الزجاجيُّ بحافّةٍ سوداء: الأرضُ شفّافةٌ فلا حدَّ لها إلّا الحافّة —
+    والسوداءُ تُثبّتها على أيّ خلفيّةٍ تحتها، فاتحةً كانت أو داكنة.
+    وهو أثرٌ لا يُنال بلونٍ من الهويّة: الهويّةُ تُبدَّل والسوادُ لا يُبدَّل.
+  */
+  S("glassInk",  "زجاجيٌّ بحافّةٍ سوداء", "شفّافٌ وحدٌّ أسودُ حادّ",  "glass",    "float",  "faint", 24, "light", "soft",  "normal", undefined, undefined, "hsl(220 25% 6%)"),
+  S("glassNight","زجاجيٌّ ليليّ",         "شفّافٌ وحدٌّ أسودُ وزخرفة",  "glass",    "inside", "on",    30, "light", "deep",  "airy",   undefined, undefined, "hsl(0 0% 0%)"),
+
   S("dawn",      "فجريّ",            "تدرّجٌ فاتحٌ وحبرٌ داكن",           "gradient", "float",  "off",   30, "dark",  "soft",  "airy",   "linear-gradient(135deg,hsl(38 60% 94%),hsl(210 45% 92%))"),
 ];
 

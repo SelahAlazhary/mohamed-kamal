@@ -640,6 +640,8 @@ export type AzHeadOptions = {
   panelColor?: string;
   accentColor?: string;
   inkColor?: string;
+  /** لونُ الحافّة — يسبق لونَ التصميم ولونَ التمييز. */
+  edgeColor?: string;
   /** إخفاءُ اللوح كلِّه. */
   off?: boolean;
   /** إخفاءُ بطاقةٍ بعينها. */

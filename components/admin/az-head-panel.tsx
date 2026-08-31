@@ -220,6 +220,7 @@ export function AzHeadPanel({
           <Color label="أرضُ اللوح" value={o.panelColor} fallback="#132b4d" onChange={(v) => set({ panelColor: v })} />
           <Color label="لونُ التمييز" value={o.accentColor} fallback="#e0991f" onChange={(v) => set({ accentColor: v })} />
           <Color label="لونُ الحبر" value={o.inkColor} fallback="#ffffff" onChange={(v) => set({ inkColor: v })} />
+          <Color label="لونُ الحافّة" value={o.edgeColor} fallback="#0b0f18" onChange={(v) => set({ edgeColor: v })} />
           <p className="text-[11px] leading-relaxed text-muted-foreground sm:col-span-3">
             المتروكُ فارغاً يأخذ لونَ التصميم المختار — ومن لا لونَ له يتبع هويّةَ منصّتك،
             فتتبدّل التصاميمُ كلُّها بتبديلها.
