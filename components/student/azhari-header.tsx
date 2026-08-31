@@ -17,7 +17,7 @@
  * يُحسب مرّةً ويُستعمل في الموضعين فلا يفترقان.
  */
 
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 
 /** رقمٌ بالعربية. */
 const ar = (n: number) => n.toLocaleString("ar-EG");
@@ -87,6 +87,33 @@ function GirihField({ className = "" }: { className?: string }) {
 }
 
 /* ============================================================
+   رسمُ البطاقة
+   ============================================================ */
+
+/**
+ * أيقونةٌ في مربّعٍ مذهّب — رسمٌ داخليٌّ بـ`currentColor`.
+ * مقاسُها مقاسُ حلقة النسبة (٤٢) فتستوي البطاقاتُ الثلاثُ في صفٍّ واحد.
+ */
+function TileIcon({ children }: { children: ReactNode }) {
+  return (
+    <span className="grid size-[2.625rem] shrink-0 place-items-center rounded-2xl border border-[hsl(var(--gold)/0.35)] bg-[hsl(var(--gold)/0.1)] text-[hsl(var(--gold))]">
+      <svg
+        viewBox="0 0 24 24"
+        className="size-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        {children}
+      </svg>
+    </span>
+  );
+}
+
+/* ============================================================
    حلقةُ النسبة
    ============================================================ */
 function Ring({ value, size = 62 }: { value: number; size?: number }) {
@@ -132,33 +159,54 @@ export function AzhariStudentHeader({
   /** هل الاشتراكُ ساري. */
   active: boolean;
 }) {
+  /*
+    بطاقةُ الرقم: عنوانٌ فوق، ثمّ الرقمُ كبيراً ومعه وحدتُه، ثمّ سطرُ حال.
+    ------------------------------------------------------------------
+    كان الرقمُ محشوراً في دائرةٍ صغيرةٍ بحجم `text-lg`، والعنوانُ هو
+    الكبير. وصفرُ العربيّة `٠` **نقطةٌ في رسمه**، فبطاقةٌ قيمتُها صفرٌ
+    تبدو بلا رقمٍ أصلاً — يراها الطالبُ ثلاثَ نقاطٍ فيظنّها عطباً، وهو
+    محقٌّ فيما يرى.
+
+    فصار الرقمُ بطلَ البطاقة، **ومعه وحدتُه دائماً**: «٠٪»، «٠ كورسات»،
+    «∞ دائم». والوحدةُ هي التي تجعل النقطةَ تُقرأ عدداً — عينٌ ترى
+    «٠ كورسات» تعرف أنّها صفر، وعينٌ ترى «٠» وحدَها ترى نقطة.
+
+    والأرقامُ جدوليّةٌ (`tabular-nums`) فلا يتراقص عرضُ البطاقة كلّما
+    تغيّر الرقم.
+  */
   const cards = [
     {
       key: "progress",
-      art: <Ring value={progress} />,
+      art: <Ring value={progress} size={42} />,
       title: "متوسّط تقدّمك الدراسي",
+      value: ar(progress),
+      unit: "٪",
       note: progress > 0 ? `أنجزتَ ${ar(progress)}٪ من دروسك` : "ابدأ أوّل درسٍ لك",
     },
     {
       key: "courses",
       art: (
-        <span className="grid size-[3.4rem] shrink-0 place-items-center rounded-2xl border border-[hsl(var(--gold)/0.35)] bg-[hsl(var(--gold)/0.1)]">
-          <span className="font-display text-lg font-bold text-[hsl(var(--gold))]">{ar(courses)}</span>
-        </span>
+        <TileIcon>
+          <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H10a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H5.5A1.5 1.5 0 0 1 4 15.5z" />
+          <path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H14a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h4.5a1.5 1.5 0 0 0 1.5-1.5z" />
+        </TileIcon>
       ),
       title: "كورساتك",
+      value: ar(courses),
+      unit: courses === 1 ? "كورس" : "كورسات",
       note: courses > 0 ? "متاحةٌ لك الآن" : "لا كورساتٍ بعد",
     },
     {
       key: "sub",
       art: (
-        <span className="grid size-[3.4rem] shrink-0 place-items-center rounded-full border-2 border-[hsl(var(--gold)/0.4)]">
-          <span className="font-display text-base font-bold text-[hsl(var(--gold))]">
-            {daysLeft === null ? "∞" : ar(daysLeft)}
-          </span>
-        </span>
+        <TileIcon>
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="M12 7.5V12l3 1.8" />
+        </TileIcon>
       ),
-      title: daysLeft === null ? "اشتراكٌ دائم" : `${ar(daysLeft)} يوماً متبقية`,
+      title: "اشتراكك",
+      value: daysLeft === null ? "∞" : ar(daysLeft),
+      unit: daysLeft === null ? "دائم" : "يوماً متبقياً",
       note: active ? "اشتراكٌ ساري المفعول" : "لا اشتراكَ ساري",
     },
   ];
@@ -198,13 +246,29 @@ export function AzhariStudentHeader({
         {cards.map((c) => (
           <div
             key={c.key}
-            className="flex items-center gap-3 rounded-3xl border border-[hsl(var(--gold)/0.28)] bg-[hsl(217_48%_15%)] px-4 py-3 shadow-[0_18px_38px_-22px_rgba(0,0,0,.8)]"
+            className="rounded-3xl border border-[hsl(var(--gold)/0.28)] bg-[hsl(217_48%_15%)] px-4 py-3.5 shadow-[0_18px_38px_-22px_rgba(0,0,0,.8)]"
           >
-            {c.art}
-            <span className="min-w-0 flex-1 text-right">
-              <span className="font-display block truncate text-sm font-bold text-white">{c.title}</span>
-              <span className="font-kufi mt-0.5 block truncate text-[11px] text-white/60">{c.note}</span>
-            </span>
+            {/* العنوانُ فوق والرسمُ في الطرف — فلا يزاحمان الرقم */}
+            <div className="mb-2 flex items-start justify-between gap-2">
+              <span className="font-kufi min-w-0 flex-1 truncate text-[11px] font-bold text-white/65">
+                {c.title}
+              </span>
+              <span className="shrink-0">{c.art}</span>
+            </div>
+
+            <p className="flex items-baseline gap-1.5">
+              <span
+                className="font-display text-3xl font-extrabold leading-none text-white"
+                style={{ fontVariantNumeric: "tabular-nums" }}
+              >
+                {c.value}
+              </span>
+              <span className="font-kufi truncate text-[11px] font-bold text-[hsl(var(--gold))]">
+                {c.unit}
+              </span>
+            </p>
+
+            <p className="font-kufi mt-1.5 truncate text-[11px] text-white/55">{c.note}</p>
           </div>
         ))}
       </div>

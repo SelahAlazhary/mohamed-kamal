@@ -126,11 +126,22 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
   const mapLessons = (fn: (l: Lesson) => Lesson) =>
     persistUnits(units.map((u) => ({ ...u, lessons: (u.lessons ?? []).map(fn) })));
 
-  const add = () => {
+  /**
+   * إضافةُ درس — والوحدةُ تُمرَّر لا تُقرأ من الحالة.
+   * ------------------------------------------------------------------
+   * كان المستدعي يكتب `setIntoUnit(uid); add();` في معالِجٍ واحد. وحالةُ
+   * React لا تتغيّر في السطر التالي بل في الرسم التالي — فيقرأ `add`
+   * القيمةَ القديمة، ويسقط إلى «آخر وحدة». فمن ضغط «إضافة درس» في
+   * الوحدة الأولى وجد درسَه في الأخيرة، ولا رسالةَ تقول له لماذا.
+   *
+   * والحلُّ ألّا يمرّ المقصدُ بالحالة أصلاً: مَن ضغط الزرَّ يعرف وحدتَه
+   * فيقولها في النداء.
+   */
+  const add = (into?: string) => {
     if (!form.title.trim() || !form.url.trim()) return;
     const lesson: Lesson = { id: `L-${Date.now()}`, title: form.title.trim(), url: form.url.trim(), duration: form.duration.trim() || undefined, isFree: form.isFree };
-    /* يُضاف إلى المادّة المختارة، أو إلى آخر مادّةٍ إن لم تُختر واحدة. */
-    const target = units.some((u) => u.id === intoUnit) ? intoUnit : units[units.length - 1].id;
+    const wanted = into ?? intoUnit;
+    const target = units.some((u) => u.id === wanted) ? wanted : units[units.length - 1].id;
     persistUnits(units.map((u) => (u.id === target ? { ...u, lessons: [...(u.lessons ?? []), lesson] } : u)));
     setForm({ title: "", url: "", duration: "", isFree: false });
   };
@@ -677,7 +688,7 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
                 المادّةُ تُؤخذ من المستوى المفتوح لا من قائمةٍ تُختار: من
                 فتح مادّةً ثمّ أضاف درساً يريده فيها، وسؤالُه ثانيةً عبثٌ.
               */}
-              <Button className="px-5 py-2.5" onClick={() => { setIntoUnit(uid); add(); }}>
+              <Button className="px-5 py-2.5" onClick={() => add(uid)}>
                 <Plus className="size-4" /> إضافة درس
               </Button>
             </div>
