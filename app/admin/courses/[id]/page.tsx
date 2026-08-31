@@ -386,6 +386,272 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
               </div>
             )}
           </div>
+
+            {/*
+              إعداداتُ الكورس كلُّها في لسانها.
+              كانت أقساماً تتبع الشجرةَ في الصفحة، فيمرّ عليها من جاء
+              ليضيف درساً. وهي تُضبط مرّةً عند إنشاء الكورس: مظهرُه،
+              وماذا يرى من لا يملكه، ومن أين سعرُه. فصارت خلف لسانٍ
+              يُقصد قصداً، وبقيت الصفحةُ للمنهج وحدَه.
+            */}
+          {/*
+            التصميمُ مفصولٌ عن العمل.
+            غلافُ الكورس ونصُّه وصورُه تُضبط مرّةً عند إنشائه ثمّ لا تُمسّ؛
+            وإضافةُ الدروس وترتيبُها عملٌ يوميّ. وجمعُهما في عمودٍ واحدٍ
+            مفتوحٍ يجعل الأستاذ يمرّ على أربع لوحاتِ تصميمٍ كلَّ مرّةٍ يضيف
+            فيها درساً. فالتصميمُ مطويٌّ والعملُ مفتوح.
+          */}
+          <p className="font-kufi mb-2 mt-2 text-[11px] font-bold text-muted-foreground">تصميم البطاقة</p>
+          {/*
+            المظهرُ لوحٌ واحدٌ مطويّ.
+            كان ثلاثةَ أقسامٍ مفتوحةٍ يبلغ طولُها ألفاً وتسعمئةِ بكسل، تسبق
+            المنهجَ كلَّها. والغلافُ ونصُّه وملصقاتُه تُضبط مرّةً عند إنشاء
+            الكورس ثمّ لا تُمسّ شهراً — والدروسُ تُضاف كلَّ أسبوع.
+          */}
+          <Collapse className="mb-3" title="مظهر بطاقة الكورس" subtitle="الغلافُ ونصُّه وملصقاتُه — تُضبط مرّةً ثمّ تُترك" icon={<Palette className="size-4" />} storageKey="crs-look">
+          {/* غلاف الكورس */}
+          <Collapse className="mb-3" title="غلاف الكورس" subtitle="الصورةُ التي تُرى على بطاقة الكورس" icon={<ImageIcon className="size-4" />} storageKey="crs-cover">
+            <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
+              مقاس البطاقة ثابت ولا يتمدّد. عند التكبير ١٠٠٪ تظهر صورتك <b>كاملة</b>؛ ولو أردت ملء الإطار
+              كبّرها وحرّكها بنفسك — ما يخرج عن الإطار يُقصّ بإرادتك أنت لا تلقائياً.
+            </p>
+            <div className="flex flex-wrap items-start gap-5">
+              <div className="w-full max-w-xs">
+                <CourseArt seed={subject.id} title={subject.name} cover={subject.cover} coverFit={subject.coverFit} coverRatio={subject.coverRatio} coverColor={subject.coverColor} coverPattern={subject.coverPattern} coverText={subject.coverText} coverStickers={subject.coverStickers} progress={42} />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="w-64"><span className="mb-1 block text-xs font-semibold text-muted-foreground">رابط صورة الغلاف</span>
+                  <input defaultValue={subject.cover ?? ""} dir="ltr" className="inp text-right"
+                    onBlur={(e) => save({ subjects: subjects.map((s) => (s.id === id ? { ...subject, cover: e.target.value.trim() } : s)) })}
+                    placeholder="https://…" />
+                </label>
+                <input ref={coverRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadCover(f); }} />
+                <Button variant="outline" onClick={() => coverRef.current?.click()} disabled={coverUploading}>
+                  <Upload className="size-4" /> {coverUploading ? "جارٍ الرفع…" : "رفع غلاف"}
+                </Button>
+                {subject.cover && (
+                  <button onClick={() => save({ subjects: subjects.map((s) => (s.id === id ? { ...subject, cover: "" } : s)) })}
+                    className="rounded-full border border-border px-4 py-2 text-xs font-bold text-rose-500 transition hover:border-rose-500">إزالة الغلاف</button>
+                )}
+
+                {/* لون خلفية اللوحة — يظهر خلف الزخرفة، وكاملاً إن لم يكن هناك غلاف */}
+                <div className="mt-2 w-64">
+                  <span className="mb-1.5 block text-xs font-semibold text-muted-foreground">لون خلفية الغلاف</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setCoverColor("")}
+                      title="ألوان الثيم"
+                      className={`grid size-8 place-items-center rounded-xl border text-[9px] font-bold transition ${
+                        !subject.coverColor ? "border-primary ring-2 ring-primary/30" : "border-border hover:border-primary/50"
+                      }`}
+                      style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))", color: "#fff" }}
+                    >
+                      ثيم
+                    </button>
+                    {COVER_COLORS.map((c) => (
+                      <button
+                        key={c.hex}
+                        type="button"
+                        onClick={() => setCoverColor(c.hex)}
+                        title={c.label}
+                        aria-label={c.label}
+                        className={`size-8 rounded-xl border transition ${
+                          subject.coverColor?.toLowerCase() === c.hex ? "border-primary ring-2 ring-primary/40" : "border-border hover:border-primary/50"
+                        }`}
+                        style={{ background: c.hex }}
+                      />
+                    ))}
+                    <label
+                      title="لون مخصّص"
+                      className="grid size-8 cursor-pointer place-items-center rounded-xl border border-dashed border-border transition hover:border-primary/50"
+                      style={{ background: subject.coverColor || "transparent" }}
+                    >
+                      <input
+                        type="color"
+                        className="size-0 opacity-0"
+                        value={subject.coverColor || "#233b8b"}
+                        onChange={(e) => setCoverColor(e.target.value)}
+                      />
+                      {!subject.coverColor && <Palette className="size-4 text-muted-foreground" />}
+                    </label>
+                  </div>
+                  <p className="mt-1.5 text-[10px] leading-relaxed text-muted-foreground">
+                    يظهر خلف الزخرفة الهندسية، وفي الهوامش حول الصورة — والمعاينة على اليمين تتغيّر فوراً.
+                  </p>
+                </div>
+              </div>
+
+              {/* زخرفة اللوحة — المربّعات خلف الصورة */}
+              <div className="w-full">
+                <span className="lbl">زخرفة الغلاف</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  {([{ id: "auto", label: "تلقائي" }, { id: "none", label: "بلا زخرفة" }] as const).map((o) => (
+                    <button
+                      key={o.id}
+                      type="button"
+                      onClick={() => setCoverPattern(o.id)}
+                      className={`rounded-full border px-3.5 py-1.5 text-xs font-bold transition ${
+                        (subject.coverPattern ?? "auto") === o.id
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border hover:border-primary/40"
+                      }`}
+                    >
+                      {o.label}
+                    </button>
+                  ))}
+                  {COVER_PATTERNS.map((o) => (
+                    <button
+                      key={o.id}
+                      type="button"
+                      onClick={() => setCoverPattern(o.id)}
+                      className={`rounded-full border px-3.5 py-1.5 text-xs font-bold transition ${
+                        subject.coverPattern === o.id
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border hover:border-primary/40"
+                      }`}
+                    >
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-1.5 text-[11px] text-muted-foreground">
+                  «تلقائي» يختار نمطاً ثابتاً من معرّف الكورس فيبقى لكل كورس هويّة مميّزة، و«بلا زخرفة» تترك الخلفية سادة.
+                </p>
+              </div>
+
+              {/* محاذاة الغلاف وضبطه */}
+              {subject.cover && (
+                <div className="grid min-w-56 flex-1 gap-3 self-center">
+                  <div>
+                    <span className="lbl">شكل الحواف</span>
+                    <div className="grid grid-cols-3 gap-2">
+                      {([
+                        { id: "arch", label: "قوس" },
+                        { id: "rounded", label: "دائرية" },
+                        { id: "square", label: "مستقيمة" },
+                      ] as const).map((o) => (
+                        <button key={o.id} type="button" onClick={() => setCoverFit({ shape: o.id })}
+                          className={`rounded-2xl border px-3 py-2 text-xs font-bold transition ${
+                            (subject.coverFit?.shape ?? ((subject.coverFit?.frame ?? "fixed") === "image" ? "rounded" : "arch")) === o.id
+                              ? "border-primary bg-primary/10 text-primary" : "border-border hover:border-primary/40"
+                          }`}>{o.label}</button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <CoverSlider label="انحناء الحواف" value={subject.coverFit?.radius ?? 22} min={0} max={48} step={1}
+                    display={`${subject.coverFit?.radius ?? 22}`} onChange={(v) => setCoverFit({ radius: v })} />
+                  <CoverSlider label="التكبير" value={subject.coverFit?.scale ?? 1} min={0.6} max={2.5} step={0.02}
+                    display={`${Math.round((subject.coverFit?.scale ?? 1) * 100)}٪`} onChange={(v) => setCoverFit({ scale: v })} />
+                  <CoverSlider label="الإزاحة الأفقية" value={subject.coverFit?.x ?? 0} min={-40} max={40} step={1}
+                    display={`${subject.coverFit?.x ?? 0}٪`} onChange={(v) => setCoverFit({ x: v })} />
+                  <CoverSlider label="الإزاحة الرأسية" value={subject.coverFit?.y ?? 0} min={-40} max={40} step={1}
+                    display={`${subject.coverFit?.y ?? 0}٪`} onChange={(v) => setCoverFit({ y: v })} />
+                  <button onClick={() => setCoverFit({ shape: "arch", radius: 22, x: 0, y: 0, scale: 1 })}
+                    className="w-fit rounded-full border border-border px-4 py-2 text-xs font-bold transition hover:border-primary hover:text-primary">
+                    إعادة الضبط
+                  </button>
+                </div>
+              )}
+            </div>
+          </Collapse>
+
+          {/* نصّ على الغلاف */}
+          <Collapse className="mb-3" title="نصّ الغلاف" subtitle="كلمةٌ تُكتب فوق الصورة وتُحرَّك بالسحب" icon={<Palette className="size-4" />} storageKey="crs-text">
+            <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
+              اكتب نصّاً يظهر فوق لوحة الغلاف، ثم اسحبه بالماوس إلى مكانه. الموضع يُحفظ بالنسبة
+              المئوية فيبقى في مكانه على بطاقة الطالب الصغيرة وعلى المعاينة الكبيرة سواء.
+            </p>
+            <CoverTextEditor subject={subject} onChange={setCoverText} />
+          </Collapse>
+
+          {/* صور على الغلاف */}
+          <Collapse className="mb-3" title="ملصقات الغلاف" subtitle="صورٌ صغيرةٌ تُلصق فوق الغلاف" icon={<ImageIcon className="size-4" />} storageKey="crs-stickers">
+            <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
+              ارفع صورة — تُفتح أداة القصّ وإزالة الخلفية أولاً — ثم اسحبها بالماوس إلى مكانها
+              واضبط حجمها ودورانها وشفافيتها. الصور تُرسم تحت نصّ الغلاف ليبقى النصّ فوقها.
+            </p>
+            <CoverStickersEditor subject={subject} onChange={setCoverStickers} />
+          </Collapse>
+          </Collapse>
+
+          {/* أسعار الكورس */}
+          {/*
+            ما يحدث حين يضغط طالبٌ لا يملك الكورس.
+            كان واحداً لا خيارَ فيه: يُساق إلى بوّابة الدفع فوراً. وهو يصلح
+            لكورسٍ يُباع كتلةً واحدة، ولا يصلح لمنهجٍ طويلٍ يريد الطالبُ منه
+            باباً أو بابين — فيُساق إلى دفع المنهج كلِّه أو ينصرف.
+          */}
+          <Collapse className="mb-3" title="عند الضغط على الكورس" subtitle="ماذا يرى طالبٌ لا يملكه" icon={<Wallet className="size-4" />} storageKey="crs-click">
+            <div className="grid gap-3 sm:grid-cols-2">
+              {([
+                { id: "gateway", title: "بوّابة الدفع مباشرة", hint: "الكورسُ يُباع كتلةً واحدة — يُساق إلى خطط شرائه فوراً." },
+                { id: "materials", title: "موادّ الكورس", hint: "تُفتح له الموادُّ وفي كلٍّ سعرُها وزرُّ شرائها — يشتري ما يحتاج ويترك ما لا يحتاج." },
+              ] as const).map((m) => {
+                const on = (subject.entryMode ?? "gateway") === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => save({ subjects: subjects.map((s) => (s.id === id ? { ...subject, entryMode: m.id } : s)) })}
+                    className={`rounded-2xl border p-3 text-right transition ${
+                      on ? "border-primary bg-primary/5 ring-2 ring-primary/25" : "border-border hover:border-primary/40"
+                    }`}
+                  >
+                    <span className="block text-sm font-bold">{m.title}</span>
+                    <span className="mt-0.5 block text-[11px] leading-relaxed text-muted-foreground">{m.hint}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {/*
+              وضعُ «الموادّ» في كورسٍ بلا موادّ لا يفعل شيئاً.
+              الكورسُ غيرُ المقسَّم له مادّةٌ واحدةٌ ملفوفةٌ لا تُباع وحدَها، فمن
+              ضبطه على البيع المفرَّق ولم يقسّمه رأى بوّابةَ الدفع كما كان —
+              وظنّ الإعدادَ معطّلاً. فيُقال له ما ينقص.
+            */}
+            {(subject.entryMode ?? "gateway") === "materials" && !isSplit(subject) && (
+              <p className="mt-3 rounded-2xl bg-rose-500/10 px-3 py-2 text-[11px] font-bold leading-relaxed text-rose-600 dark:text-rose-400">
+                هذا الكورس لم يُقسَّم إلى موادّ بعد — فلا شيءَ يُباع مفرَّقاً، ويبقى الطالبُ
+                يُساق إلى بوّابة الدفع كما كان. أضِف موادَّ من الأسفل أوّلاً.
+              </p>
+            )}
+            {(subject.entryMode ?? "gateway") === "materials" && isSplit(subject) && (
+              <p className="mt-3 rounded-2xl bg-amber-500/10 px-3 py-2 text-[11px] font-bold leading-relaxed text-amber-700 dark:text-amber-400">
+                في هذا الوضع تُفتح للطالب موادُّ الكورس ليشتري ما يحتاج. وتُسعَّر كلُّ مادّةٍ
+                من <b>بوّابة الدفع</b>: أنشئ خطّةً نطاقُها «موادّ مختارة» وأشّر على المادّة.
+                والمادّةُ التي لا تفتحها خطّةٌ تبقى مقفلةً بلا زرِّ شراء.
+              </p>
+            )}
+          </Collapse>
+
+          {/*
+            الأسعارُ ليست هنا — ولا يُترك مكانُها فارغاً بلا بيان.
+            كانت تُضاف في الكورس وفي المادّة وفي الخطّة معاً، فيصير للشيء
+            الواحد سعران أو ثلاثة لا يُعرف أيُّها يُحصَّل. فصار مصدرُها واحداً:
+            بوّابة الدفع. وهذا السطرُ يدلّ عليه، وإلّا بحث الأستاذُ عن الحقل
+            الذي كان هنا وظنّ أنّه عُطّل.
+          */}
+          <Collapse className="mb-3" title="السعر ومدّة التفعيل" subtitle="مصدرُهما بوّابةُ الدفع" icon={<Wallet className="size-4" />} storageKey="crs-price">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="font-display font-extrabold">السعر ومدّة التفعيل</h3>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  تُضبَطان من <b>بوّابة الدفع</b> لا من هنا — سعرٌ واحدٌ في موضعٍ واحد.
+                  أنشئ خطّةً هناك وحدّد ما تفتحه: الكورسَ كلَّه، أو موادَّ منه تؤشّر عليها،
+                  وسعرَها ومدّتها.
+                </p>
+              </div>
+              <Link
+                href="/admin/plans"
+                className="btn-glow inline-flex shrink-0 items-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold text-white"
+              >
+                <Wallet className="size-4" /> افتح بوّابة الدفع
+              </Link>
+            </div>
+          </Collapse>
+
           </>
         }
         renderAddLesson={(uid) => (
@@ -421,279 +687,12 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
 
       </div>
 
-      {/*
-        التصميمُ مفصولٌ عن العمل.
-        غلافُ الكورس ونصُّه وصورُه تُضبط مرّةً عند إنشائه ثمّ لا تُمسّ؛
-        وإضافةُ الدروس وترتيبُها عملٌ يوميّ. وجمعُهما في عمودٍ واحدٍ
-        مفتوحٍ يجعل الأستاذ يمرّ على أربع لوحاتِ تصميمٍ كلَّ مرّةٍ يضيف
-        فيها درساً. فالتصميمُ مطويٌّ والعملُ مفتوح.
-      */}
-      <p className="font-kufi mb-2 mt-2 text-[11px] font-bold text-muted-foreground">تصميم البطاقة</p>
-      {/*
-        المظهرُ لوحٌ واحدٌ مطويّ.
-        كان ثلاثةَ أقسامٍ مفتوحةٍ يبلغ طولُها ألفاً وتسعمئةِ بكسل، تسبق
-        المنهجَ كلَّها. والغلافُ ونصُّه وملصقاتُه تُضبط مرّةً عند إنشاء
-        الكورس ثمّ لا تُمسّ شهراً — والدروسُ تُضاف كلَّ أسبوع.
-      */}
-      <Section
-        className="mb-6"
-        title="مظهر بطاقة الكورس"
-        subtitle="الغلافُ ونصُّه وملصقاتُه — تُضبط مرّةً ثمّ تُترك"
-        icon={<Palette className="size-4" />}
-      >
-      {/* غلاف الكورس */}
-      <Collapse className="mb-3" title="غلاف الكورس" subtitle="الصورةُ التي تُرى على بطاقة الكورس" icon={<ImageIcon className="size-4" />} storageKey="crs-cover">
-        <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
-          مقاس البطاقة ثابت ولا يتمدّد. عند التكبير ١٠٠٪ تظهر صورتك <b>كاملة</b>؛ ولو أردت ملء الإطار
-          كبّرها وحرّكها بنفسك — ما يخرج عن الإطار يُقصّ بإرادتك أنت لا تلقائياً.
-        </p>
-        <div className="flex flex-wrap items-start gap-5">
-          <div className="w-full max-w-xs">
-            <CourseArt seed={subject.id} title={subject.name} cover={subject.cover} coverFit={subject.coverFit} coverRatio={subject.coverRatio} coverColor={subject.coverColor} coverPattern={subject.coverPattern} coverText={subject.coverText} coverStickers={subject.coverStickers} progress={42} />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="w-64"><span className="mb-1 block text-xs font-semibold text-muted-foreground">رابط صورة الغلاف</span>
-              <input defaultValue={subject.cover ?? ""} dir="ltr" className="inp text-right"
-                onBlur={(e) => save({ subjects: subjects.map((s) => (s.id === id ? { ...subject, cover: e.target.value.trim() } : s)) })}
-                placeholder="https://…" />
-            </label>
-            <input ref={coverRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadCover(f); }} />
-            <Button variant="outline" onClick={() => coverRef.current?.click()} disabled={coverUploading}>
-              <Upload className="size-4" /> {coverUploading ? "جارٍ الرفع…" : "رفع غلاف"}
-            </Button>
-            {subject.cover && (
-              <button onClick={() => save({ subjects: subjects.map((s) => (s.id === id ? { ...subject, cover: "" } : s)) })}
-                className="rounded-full border border-border px-4 py-2 text-xs font-bold text-rose-500 transition hover:border-rose-500">إزالة الغلاف</button>
-            )}
-
-            {/* لون خلفية اللوحة — يظهر خلف الزخرفة، وكاملاً إن لم يكن هناك غلاف */}
-            <div className="mt-2 w-64">
-              <span className="mb-1.5 block text-xs font-semibold text-muted-foreground">لون خلفية الغلاف</span>
-              <div className="flex flex-wrap gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setCoverColor("")}
-                  title="ألوان الثيم"
-                  className={`grid size-8 place-items-center rounded-xl border text-[9px] font-bold transition ${
-                    !subject.coverColor ? "border-primary ring-2 ring-primary/30" : "border-border hover:border-primary/50"
-                  }`}
-                  style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))", color: "#fff" }}
-                >
-                  ثيم
-                </button>
-                {COVER_COLORS.map((c) => (
-                  <button
-                    key={c.hex}
-                    type="button"
-                    onClick={() => setCoverColor(c.hex)}
-                    title={c.label}
-                    aria-label={c.label}
-                    className={`size-8 rounded-xl border transition ${
-                      subject.coverColor?.toLowerCase() === c.hex ? "border-primary ring-2 ring-primary/40" : "border-border hover:border-primary/50"
-                    }`}
-                    style={{ background: c.hex }}
-                  />
-                ))}
-                <label
-                  title="لون مخصّص"
-                  className="grid size-8 cursor-pointer place-items-center rounded-xl border border-dashed border-border transition hover:border-primary/50"
-                  style={{ background: subject.coverColor || "transparent" }}
-                >
-                  <input
-                    type="color"
-                    className="size-0 opacity-0"
-                    value={subject.coverColor || "#233b8b"}
-                    onChange={(e) => setCoverColor(e.target.value)}
-                  />
-                  {!subject.coverColor && <Palette className="size-4 text-muted-foreground" />}
-                </label>
-              </div>
-              <p className="mt-1.5 text-[10px] leading-relaxed text-muted-foreground">
-                يظهر خلف الزخرفة الهندسية، وفي الهوامش حول الصورة — والمعاينة على اليمين تتغيّر فوراً.
-              </p>
-            </div>
-          </div>
-
-          {/* زخرفة اللوحة — المربّعات خلف الصورة */}
-          <div className="w-full">
-            <span className="lbl">زخرفة الغلاف</span>
-            <div className="flex flex-wrap items-center gap-2">
-              {([{ id: "auto", label: "تلقائي" }, { id: "none", label: "بلا زخرفة" }] as const).map((o) => (
-                <button
-                  key={o.id}
-                  type="button"
-                  onClick={() => setCoverPattern(o.id)}
-                  className={`rounded-full border px-3.5 py-1.5 text-xs font-bold transition ${
-                    (subject.coverPattern ?? "auto") === o.id
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border hover:border-primary/40"
-                  }`}
-                >
-                  {o.label}
-                </button>
-              ))}
-              {COVER_PATTERNS.map((o) => (
-                <button
-                  key={o.id}
-                  type="button"
-                  onClick={() => setCoverPattern(o.id)}
-                  className={`rounded-full border px-3.5 py-1.5 text-xs font-bold transition ${
-                    subject.coverPattern === o.id
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border hover:border-primary/40"
-                  }`}
-                >
-                  {o.label}
-                </button>
-              ))}
-            </div>
-            <p className="mt-1.5 text-[11px] text-muted-foreground">
-              «تلقائي» يختار نمطاً ثابتاً من معرّف الكورس فيبقى لكل كورس هويّة مميّزة، و«بلا زخرفة» تترك الخلفية سادة.
-            </p>
-          </div>
-
-          {/* محاذاة الغلاف وضبطه */}
-          {subject.cover && (
-            <div className="grid min-w-56 flex-1 gap-3 self-center">
-              <div>
-                <span className="lbl">شكل الحواف</span>
-                <div className="grid grid-cols-3 gap-2">
-                  {([
-                    { id: "arch", label: "قوس" },
-                    { id: "rounded", label: "دائرية" },
-                    { id: "square", label: "مستقيمة" },
-                  ] as const).map((o) => (
-                    <button key={o.id} type="button" onClick={() => setCoverFit({ shape: o.id })}
-                      className={`rounded-2xl border px-3 py-2 text-xs font-bold transition ${
-                        (subject.coverFit?.shape ?? ((subject.coverFit?.frame ?? "fixed") === "image" ? "rounded" : "arch")) === o.id
-                          ? "border-primary bg-primary/10 text-primary" : "border-border hover:border-primary/40"
-                      }`}>{o.label}</button>
-                  ))}
-                </div>
-              </div>
-
-              <CoverSlider label="انحناء الحواف" value={subject.coverFit?.radius ?? 22} min={0} max={48} step={1}
-                display={`${subject.coverFit?.radius ?? 22}`} onChange={(v) => setCoverFit({ radius: v })} />
-              <CoverSlider label="التكبير" value={subject.coverFit?.scale ?? 1} min={0.6} max={2.5} step={0.02}
-                display={`${Math.round((subject.coverFit?.scale ?? 1) * 100)}٪`} onChange={(v) => setCoverFit({ scale: v })} />
-              <CoverSlider label="الإزاحة الأفقية" value={subject.coverFit?.x ?? 0} min={-40} max={40} step={1}
-                display={`${subject.coverFit?.x ?? 0}٪`} onChange={(v) => setCoverFit({ x: v })} />
-              <CoverSlider label="الإزاحة الرأسية" value={subject.coverFit?.y ?? 0} min={-40} max={40} step={1}
-                display={`${subject.coverFit?.y ?? 0}٪`} onChange={(v) => setCoverFit({ y: v })} />
-              <button onClick={() => setCoverFit({ shape: "arch", radius: 22, x: 0, y: 0, scale: 1 })}
-                className="w-fit rounded-full border border-border px-4 py-2 text-xs font-bold transition hover:border-primary hover:text-primary">
-                إعادة الضبط
-              </button>
-            </div>
-          )}
-        </div>
-      </Collapse>
-
-      {/* نصّ على الغلاف */}
-      <Collapse className="mb-3" title="نصّ الغلاف" subtitle="كلمةٌ تُكتب فوق الصورة وتُحرَّك بالسحب" icon={<Palette className="size-4" />} storageKey="crs-text">
-        <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
-          اكتب نصّاً يظهر فوق لوحة الغلاف، ثم اسحبه بالماوس إلى مكانه. الموضع يُحفظ بالنسبة
-          المئوية فيبقى في مكانه على بطاقة الطالب الصغيرة وعلى المعاينة الكبيرة سواء.
-        </p>
-        <CoverTextEditor subject={subject} onChange={setCoverText} />
-      </Collapse>
-
-      {/* صور على الغلاف */}
-      <Collapse className="mb-3" title="ملصقات الغلاف" subtitle="صورٌ صغيرةٌ تُلصق فوق الغلاف" icon={<ImageIcon className="size-4" />} storageKey="crs-stickers">
-        <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
-          ارفع صورة — تُفتح أداة القصّ وإزالة الخلفية أولاً — ثم اسحبها بالماوس إلى مكانها
-          واضبط حجمها ودورانها وشفافيتها. الصور تُرسم تحت نصّ الغلاف ليبقى النصّ فوقها.
-        </p>
-        <CoverStickersEditor subject={subject} onChange={setCoverStickers} />
-      </Collapse>
-      </Section>
 
 
-      {/* أسعار الكورس */}
-      {/*
-        ما يحدث حين يضغط طالبٌ لا يملك الكورس.
-        كان واحداً لا خيارَ فيه: يُساق إلى بوّابة الدفع فوراً. وهو يصلح
-        لكورسٍ يُباع كتلةً واحدة، ولا يصلح لمنهجٍ طويلٍ يريد الطالبُ منه
-        باباً أو بابين — فيُساق إلى دفع المنهج كلِّه أو ينصرف.
-      */}
-      <Section
-        className="mb-6"
-        title="عند الضغط على الكورس"
-        subtitle="ماذا يرى طالبٌ لا يملكه — بوّابةَ الدفع أم موادَّ يشتري منها"
-        icon={<Wallet className="size-4" />}
-      >
-        <div className="grid gap-3 sm:grid-cols-2">
-          {([
-            { id: "gateway", title: "بوّابة الدفع مباشرة", hint: "الكورسُ يُباع كتلةً واحدة — يُساق إلى خطط شرائه فوراً." },
-            { id: "materials", title: "موادّ الكورس", hint: "تُفتح له الموادُّ وفي كلٍّ سعرُها وزرُّ شرائها — يشتري ما يحتاج ويترك ما لا يحتاج." },
-          ] as const).map((m) => {
-            const on = (subject.entryMode ?? "gateway") === m.id;
-            return (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => save({ subjects: subjects.map((s) => (s.id === id ? { ...subject, entryMode: m.id } : s)) })}
-                className={`rounded-2xl border p-3 text-right transition ${
-                  on ? "border-primary bg-primary/5 ring-2 ring-primary/25" : "border-border hover:border-primary/40"
-                }`}
-              >
-                <span className="block text-sm font-bold">{m.title}</span>
-                <span className="mt-0.5 block text-[11px] leading-relaxed text-muted-foreground">{m.hint}</span>
-              </button>
-            );
-          })}
-        </div>
-        {/*
-          وضعُ «الموادّ» في كورسٍ بلا موادّ لا يفعل شيئاً.
-          الكورسُ غيرُ المقسَّم له مادّةٌ واحدةٌ ملفوفةٌ لا تُباع وحدَها، فمن
-          ضبطه على البيع المفرَّق ولم يقسّمه رأى بوّابةَ الدفع كما كان —
-          وظنّ الإعدادَ معطّلاً. فيُقال له ما ينقص.
-        */}
-        {(subject.entryMode ?? "gateway") === "materials" && !isSplit(subject) && (
-          <p className="mt-3 rounded-2xl bg-rose-500/10 px-3 py-2 text-[11px] font-bold leading-relaxed text-rose-600 dark:text-rose-400">
-            هذا الكورس لم يُقسَّم إلى موادّ بعد — فلا شيءَ يُباع مفرَّقاً، ويبقى الطالبُ
-            يُساق إلى بوّابة الدفع كما كان. أضِف موادَّ من الأسفل أوّلاً.
-          </p>
-        )}
-        {(subject.entryMode ?? "gateway") === "materials" && isSplit(subject) && (
-          <p className="mt-3 rounded-2xl bg-amber-500/10 px-3 py-2 text-[11px] font-bold leading-relaxed text-amber-700 dark:text-amber-400">
-            في هذا الوضع تُفتح للطالب موادُّ الكورس ليشتري ما يحتاج. وتُسعَّر كلُّ مادّةٍ
-            من <b>بوّابة الدفع</b>: أنشئ خطّةً نطاقُها «موادّ مختارة» وأشّر على المادّة.
-            والمادّةُ التي لا تفتحها خطّةٌ تبقى مقفلةً بلا زرِّ شراء.
-          </p>
-        )}
-      </Section>
 
-      {/*
-        الأسعارُ ليست هنا — ولا يُترك مكانُها فارغاً بلا بيان.
-        كانت تُضاف في الكورس وفي المادّة وفي الخطّة معاً، فيصير للشيء
-        الواحد سعران أو ثلاثة لا يُعرف أيُّها يُحصَّل. فصار مصدرُها واحداً:
-        بوّابة الدفع. وهذا السطرُ يدلّ عليه، وإلّا بحث الأستاذُ عن الحقل
-        الذي كان هنا وظنّ أنّه عُطّل.
-      */}
-      <Section
-        className="mb-6"
-        title="السعر ومدّة التفعيل"
-        subtitle="مصدرُهما بوّابةُ الدفع — سعرٌ واحدٌ في موضعٍ واحد"
-        icon={<Wallet className="size-4" />}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="min-w-0">
-            <h3 className="font-display font-extrabold">السعر ومدّة التفعيل</h3>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              تُضبَطان من <b>بوّابة الدفع</b> لا من هنا — سعرٌ واحدٌ في موضعٍ واحد.
-              أنشئ خطّةً هناك وحدّد ما تفتحه: الكورسَ كلَّه، أو موادَّ منه تؤشّر عليها،
-              وسعرَها ومدّتها.
-            </p>
-          </div>
-          <Link
-            href="/admin/plans"
-            className="btn-glow inline-flex shrink-0 items-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold text-white"
-          >
-            <Wallet className="size-4" /> افتح بوّابة الدفع
-          </Link>
-        </div>
-      </Section>
+
+
+
 
     </>
   );
