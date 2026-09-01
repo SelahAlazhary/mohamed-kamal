@@ -271,7 +271,7 @@ function Inbox_({
                   {r.senderRef && <p><span className="text-muted-foreground">رقم العملية:</span> {r.senderRef}</p>}
                   {r.note && <p><span className="text-muted-foreground">ملاحظة:</span> {r.note}</p>}
                   <p className="text-[11px] text-muted-foreground">
-                    {new Date(r.at).toLocaleString("ar-EG")} · <span className="font-mono">{r.id}</span>
+                    {new Date(r.at).toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })} · <span className="font-mono">{r.id}</span>
                   </p>
                   {r.status === "approved" && r.code && (
                     <p className="rounded-xl bg-emerald-500/10 px-2.5 py-1.5 font-mono text-sm font-bold text-emerald-600">

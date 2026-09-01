@@ -116,7 +116,7 @@ export function sinceText(at?: string, now = Date.now()): string {
   if (h < 24) return `منذ ${h.toLocaleString("ar-EG")} ساعة`;
   const d = Math.floor(h / 24);
   if (d < 30) return `منذ ${d.toLocaleString("ar-EG")} يوماً`;
-  return new Date(at).toLocaleDateString("ar-EG");
+  return new Date(at).toLocaleDateString("ar-EG", { timeZone: "Africa/Cairo" });
 }
 
 /** توزيع أنواع النشاط — لرسم شريط بسيط في التقرير. */

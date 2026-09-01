@@ -329,7 +329,7 @@ export default function ExamsPage() {
                                 </span>
                               </td>
                               <td className="px-4 py-2 text-muted-foreground">{r.tries}</td>
-                              <td className="px-4 py-2 text-muted-foreground">{new Date(r.at).toLocaleDateString("ar-EG")}</td>
+                              <td className="px-4 py-2 text-muted-foreground">{new Date(r.at).toLocaleDateString("ar-EG", { timeZone: "Africa/Cairo" })}</td>
                             </tr>
                           ))}
                         </DataTable>

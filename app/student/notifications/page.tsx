@@ -70,7 +70,7 @@ export default function StudentNotifications() {
                           onDone={refresh}
                         />
                       )}
-                      <p className="mt-1 text-[11px] text-muted-foreground">{new Date(n.createdAt).toLocaleString("ar-EG")}</p>
+                      <p className="mt-1 text-[11px] text-muted-foreground">{new Date(n.createdAt).toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })}</p>
                     </div>
                   </div>
                 </Card>

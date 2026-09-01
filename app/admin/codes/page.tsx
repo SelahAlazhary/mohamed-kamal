@@ -166,7 +166,7 @@ export default function CodesPage() {
             <td className="px-4 py-3 text-muted-foreground">{c.subjectId === "*" ? "كل المواد" : c.subjectName}</td>
             <td className="px-4 py-3 text-muted-foreground">{c.student ?? "—"}</td>
             <td className="px-4 py-3 text-muted-foreground">{c.createdAt}</td>
-            <td className="px-4 py-3 text-muted-foreground">{c.usedAt ? new Date(c.usedAt).toLocaleDateString("ar-EG") : "—"}</td>
+            <td className="px-4 py-3 text-muted-foreground">{c.usedAt ? new Date(c.usedAt).toLocaleDateString("ar-EG", { timeZone: "Africa/Cairo" }) : "—"}</td>
             <td className="px-4 py-3"><StatusBadge status={c.status} /></td>
             <td className="px-4 py-3">
               <div className="flex items-center gap-1">

@@ -123,7 +123,7 @@ export default function BackupPage() {
 
   /** استعادة من نسخة محفوظة في Drive. */
   const restoreFromDrive = async (fileId: string, at: string) => {
-    if (!confirm(`استعادة نسخة ${new Date(at).toLocaleString("ar-EG")}؟ ستُستبدل البيانات الحالية (وتُؤخذ نسخة أمان أولاً).`)) return;
+    if (!confirm(`استعادة نسخة ${new Date(at).toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })}؟ ستُستبدل البيانات الحالية (وتُؤخذ نسخة أمان أولاً).`)) return;
     setBusy("restore"); setMsg(null); setErr(null);
     try {
       const res = await fetch("/api/backup", {
@@ -238,7 +238,7 @@ export default function BackupPage() {
         <DataTable head={["التاريخ", "النوع", "الحجم", "Google Drive", "السحابة", "استعادة"]}>
           {st.items.map((b) => (
             <tr key={b.at} className="transition hover:bg-muted/50">
-              <td className="px-4 py-3">{new Date(b.at).toLocaleString("ar-EG")}</td>
+              <td className="px-4 py-3">{new Date(b.at).toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })}</td>
               <td className="px-4 py-3">
                 <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${b.reason === "auto" ? "bg-sky-500/15 text-sky-600" : "bg-primary/12 text-primary"}`}>
                   {b.reason === "auto" ? "تلقائية" : "يدوية"}

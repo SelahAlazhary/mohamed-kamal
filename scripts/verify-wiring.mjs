@@ -133,6 +133,44 @@ t("ولا ظهورَ مسجَّل ليس غياباً", stateOf({ open: 1, progr
   عند البناء فلا تُفحص.
   ==================================================================
 */
+/*
+  تواريخُ مثبَّتةُ المنطقة — وإلّا سقط الترطيب (React #418).
+  ------------------------------------------------------------------
+  تاريخٌ يُنسَّق بلا `timeZone` يُرسَم على الخادم (UTC) بيومٍ وعلى المتصفّح
+  (القاهرة) بيومٍ آخرَ قربَ منتصف الليل — فيختلف النصُّ ويسقط الترطيب.
+  فكلُّ تنسيقِ تاريخٍ يجب أن يحمل `Africa/Cairo`.
+*/
+console.log("\n== تواريخُ مثبَّتةُ المنطقة ==");
+{
+  const { readFileSync, readdirSync, statSync } = await import("node:fs");
+  const { join } = await import("node:path");
+  const walk = (dir, out = []) => {
+    for (const name of readdirSync(dir)) {
+      const p = join(dir, name);
+      if (/node_modules|[.]next|[.]git/.test(p)) continue;
+      if (statSync(p).isDirectory()) walk(p, out);
+      else if (/[.]tsx?$/.test(p)) out.push(p);
+    }
+    return out;
+  };
+  const files = [...walk("app"), ...walk("components"), ...walk("lib")];
+  const offenders = [];
+  for (const f of files) {
+    const src = readFileSync(f, "utf8");
+    const pats = [
+      /\.toLocaleDateString\("ar-EG"(?:,\s*\{([^}]*)\})?/g,
+      /\.toLocaleTimeString\("ar-EG"(?:,\s*\{([^}]*)\})?/g,
+      /new Date\([^)]*\)\.toLocaleString\("ar-EG"(?:,\s*\{([^}]*)\})?/g,
+    ];
+    for (const re of pats) {
+      for (const m of src.matchAll(re)) {
+        if (!m[1] || !m[1].includes("Africa/Cairo")) offenders.push(f.replace(/\\/g, "/"));
+      }
+    }
+  }
+  t("كلُّ تاريخٍ مثبَّتُ المنطقة", offenders.length ? [...new Set(offenders)].slice(0, 8) : 0, 0);
+}
+
 console.log("\n== أصنافُ الهوية لها قواعدُها ==");
 {
   const { readFileSync, readdirSync, statSync } = await import("node:fs");

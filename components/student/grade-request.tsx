@@ -26,7 +26,7 @@ const arDate = (iso?: string) => {
   const d = new Date(iso);
   return Number.isNaN(d.getTime())
     ? ""
-    : d.toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" });
+    : d.toLocaleDateString("ar-EG", { timeZone: "Africa/Cairo",  year: "numeric", month: "long", day: "numeric" });
 };
 
 export function GradeRequestCard() {

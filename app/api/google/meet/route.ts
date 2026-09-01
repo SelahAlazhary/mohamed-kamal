@@ -10,13 +10,11 @@ export const runtime = "nodejs";
 
 /** صياغة موعد عربي للعرض في البطاقات. */
 function arabicTime(iso: string): string {
-  return new Date(iso).toLocaleString("ar-EG", {
-    weekday: "long",
+  return new Date(iso).toLocaleString("ar-EG", { timeZone: "Africa/Cairo", weekday: "long",
     day: "numeric",
     month: "long",
     hour: "numeric",
-    minute: "2-digit",
-  });
+    minute: "2-digit", });
 }
 
 /**

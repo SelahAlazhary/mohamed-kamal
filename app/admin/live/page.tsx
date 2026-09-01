@@ -121,7 +121,7 @@ export default function LivePage() {
       subjectId: f.subjectId || undefined,
       grade: f.grade,
       track: f.track || undefined,
-      time: new Date(iso).toLocaleString("ar-EG", { weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit" }),
+      time: new Date(iso).toLocaleString("ar-EG", { timeZone: "Africa/Cairo", weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit" }),
       startsAt: iso,
       viewers: 0,
       url: f.url.trim() || undefined,
@@ -227,7 +227,7 @@ export default function LivePage() {
             ) : google.connected ? (
               <p className="text-xs text-muted-foreground">
                 مربوط بحساب <span className="font-bold text-foreground">{google.email ?? "جوجل"}</span>
-                {google.connectedAt && ` · منذ ${new Date(google.connectedAt).toLocaleDateString("ar-EG")}`}
+                {google.connectedAt && ` · منذ ${new Date(google.connectedAt).toLocaleDateString("ar-EG", { timeZone: "Africa/Cairo" })}`}
               </p>
             ) : (
               <p className="text-xs text-muted-foreground">اربط حساب المعلّمة لإنشاء روابط اجتماعات تلقائياً من هنا.</p>

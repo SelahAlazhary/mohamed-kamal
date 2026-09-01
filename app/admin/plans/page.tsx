@@ -171,7 +171,7 @@ export default function PlansPage() {
     if (p.kind === "lifetime") return "دائم — لا ينتهي";
     if (p.kind === "term") {
       const end = p.endsAt || content.termEnd;
-      return end ? `حتى ${new Date(end).toLocaleDateString("ar-EG")}` : `${p.durationDays ?? 120} يوماً`;
+      return end ? `حتى ${new Date(end).toLocaleDateString("ar-EG", { timeZone: "Africa/Cairo" })}` : `${p.durationDays ?? 120} يوماً`;
     }
     if (p.kind === "month") return `${p.durationDays ?? 30} يوماً`;
     return p.durationDays ? `${p.durationDays} يوماً` : "بلا انتهاء";
@@ -692,7 +692,7 @@ export default function PlansPage() {
                         <>
                           <span className="pb-1 text-xs font-bold text-muted-foreground line-through">{priced.original.toLocaleString("ar-EG")}</span>
                           <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-600">
-                            <Tag className="size-3" /> خصم {priced.percent}٪{p.discount?.until ? ` · حتى ${new Date(p.discount.until).toLocaleDateString("ar-EG")}` : ""}
+                            <Tag className="size-3" /> خصم {priced.percent}٪{p.discount?.until ? ` · حتى ${new Date(p.discount.until).toLocaleDateString("ar-EG", { timeZone: "Africa/Cairo" })}` : ""}
                           </span>
                         </>
                       )}

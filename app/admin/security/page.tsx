@@ -141,7 +141,7 @@ export default function SecurityPage() {
               <tr key={b.ip} className="transition hover:bg-muted/50">
                 <td className="px-4 py-3 font-mono text-xs" dir="ltr">{b.ip}</td>
                 <td className="px-4 py-3 text-muted-foreground">{b.reason}</td>
-                <td className="px-4 py-3 text-muted-foreground">{new Date(b.until).toLocaleString("ar-EG")}</td>
+                <td className="px-4 py-3 text-muted-foreground">{new Date(b.until).toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })}</td>
                 <td className="px-4 py-3">
                   <button onClick={() => act("unban", b.ip)} disabled={busy !== null}
                     className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-[11px] font-bold text-primary transition hover:border-primary disabled:opacity-50">
@@ -166,7 +166,7 @@ export default function SecurityPage() {
         <DataTable head={["الوقت", "الحدث", "العنوان", "التفاصيل", "الخطورة"]}>
           {(st?.events ?? []).map((e) => (
             <tr key={e.id} className="transition hover:bg-muted/50">
-              <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">{new Date(e.at).toLocaleString("ar-EG")}</td>
+              <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">{new Date(e.at).toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })}</td>
               <td className="px-4 py-3 font-semibold">{KIND_LABEL[e.kind] ?? e.kind}</td>
               <td className="px-4 py-3">
                 <span className="font-mono text-xs" dir="ltr">{e.ip}</span>

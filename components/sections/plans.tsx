@@ -27,7 +27,7 @@ export function planDuration(p: SitePlan, termEnd?: string): string {
   if (p.kind === "term") {
     const end = p.endsAt || termEnd;
     return end
-      ? `حتى نهاية الترم (${new Date(end).toLocaleDateString("ar-EG", { day: "numeric", month: "long", year: "numeric" })})`
+      ? `حتى نهاية الترم (${new Date(end).toLocaleDateString("ar-EG", { timeZone: "Africa/Cairo",  day: "numeric", month: "long", year: "numeric" })})`
       : "طوال الترم الدراسي";
   }
   if (p.kind === "month") return `لمدة ${(p.durationDays ?? 30).toLocaleString("ar-EG")} يوماً`;

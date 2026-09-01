@@ -122,7 +122,7 @@ export default function StudentReport({ params }: { params: Promise<{ id: string
           <Fact label="المحافظة والمدرسة" value={[u.governorate, u.school].filter(Boolean).join(" · ") || "—"} />
           <Fact label="الجهاز" value={u.deviceLabel || "لم يُربط"} />
 
-          <Fact label="أنشئ الحساب" value={new Date(u.createdAt).toLocaleDateString("ar-EG")} />
+          <Fact label="أنشئ الحساب" value={new Date(u.createdAt).toLocaleDateString("ar-EG", { timeZone: "Africa/Cairo" })} />
           <Fact label="أوّل صفحة دخل منها" value={u.landing || "—"} />
           <Fact label="الحساب" value={u.active ? "مفعّل" : "موقوف"} />
           <Fact label="إشعارات الجهاز" value={(u.pushDevices ?? 0) > 0 ? `${ar(u.pushDevices ?? 0)} جهاز` : "غير مفعّلة"} />
@@ -253,7 +253,7 @@ export default function StudentReport({ params }: { params: Promise<{ id: string
                 <span className="text-muted-foreground">{ar(p.amount)} ج.م · {p.methodName}</span>
                 {p.code && <span className="font-mono text-[10px]">{p.code}</span>}
                 <span className="mr-auto text-[10px] text-muted-foreground">
-                  {new Date(p.at).toLocaleDateString("ar-EG")}
+                  {new Date(p.at).toLocaleDateString("ar-EG", { timeZone: "Africa/Cairo" })}
                 </span>
               </div>
             ))}
@@ -282,7 +282,7 @@ export default function StudentReport({ params }: { params: Promise<{ id: string
                   <Answers
                     key={i}
                     title={ex?.title ?? a.examId}
-                    note={a.at ? new Date(a.at).toLocaleDateString("ar-EG") : ""}
+                    note={a.at ? new Date(a.at).toLocaleDateString("ar-EG", { timeZone: "Africa/Cairo" }) : ""}
                     state={pct === null ? "none" : pct >= 50 ? "pass" : "fail"}
                     score={a.score}
                     total={outOf}
@@ -342,7 +342,7 @@ export default function StudentReport({ params }: { params: Promise<{ id: string
                   {a.ref && <span className="min-w-0 truncate text-muted-foreground">{refName(a.kind, a.ref)}</span>}
                   {a.meta && <span className="truncate text-[10px] text-muted-foreground">· {a.meta}</span>}
                   <span className="mr-auto shrink-0 text-[10px] text-muted-foreground">
-                    {new Date(a.at).toLocaleString("ar-EG")}
+                    {new Date(a.at).toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })}
                   </span>
                 </li>
               ))}

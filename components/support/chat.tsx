@@ -125,7 +125,7 @@ export function SupportChat({
 
 /** فقاعة رسالة — رسائلي على اليمين، والطرف الآخر على اليسار. */
 function Bubble({ m, mine }: { m: ChatMessage; mine: boolean }) {
-  const time = new Date(m.at).toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" });
+  const time = new Date(m.at).toLocaleTimeString("ar-EG", { timeZone: "Africa/Cairo",  hour: "2-digit", minute: "2-digit" });
   return (
     <div className={`flex ${mine ? "justify-start" : "justify-end"}`}>
       <div

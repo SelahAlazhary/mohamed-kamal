@@ -117,7 +117,7 @@ export default function NotificationsPage() {
                     </p>
                     <p className="text-sm text-muted-foreground">{n.body}</p>
                     <p className="mt-1 text-[11px] text-muted-foreground">
-                      {new Date(n.createdAt).toLocaleString("ar-EG")}
+                      {new Date(n.createdAt).toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })}
                       {n.userId && ` · ${nameOf(n.userId) ?? "طالب محذوف"}`}
                       {n.grade && ` · ${n.grade}`}{n.track && ` · ${n.track}`}
                       {!n.grade && !n.track && !n.userId && " · للجميع"}

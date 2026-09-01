@@ -52,7 +52,7 @@ function threadOf(userId: string, name: string, create: boolean): Ticket | null 
       subject: "محادثة الدعم",
       priority: "متوسطة",
       status: "مفتوحة",
-      time: new Date().toLocaleDateString("ar-EG"),
+      time: new Date().toLocaleDateString("ar-EG", { timeZone: "Africa/Cairo" }),
       messages: [],
       lastAt: now(),
     };

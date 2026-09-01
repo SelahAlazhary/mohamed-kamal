@@ -154,7 +154,7 @@ export default function YoutubePage() {
               {yt?.channelId ? (
                 <>
                   <span dir="ltr" className="font-mono">{yt.channelId}</span>
-                  {yt.syncedAt && ` · آخر تحديث ${new Date(yt.syncedAt).toLocaleString("ar-EG")}`}
+                  {yt.syncedAt && ` · آخر تحديث ${new Date(yt.syncedAt).toLocaleString("ar-EG", { timeZone: "Africa/Cairo" })}`}
 
                 </>
               ) : (
@@ -223,7 +223,7 @@ export default function YoutubePage() {
 
                   <p className="line-clamp-2 text-sm font-bold leading-relaxed">{v.title}</p>
                   <p className="mt-1 text-[11px] text-muted-foreground">
-                    {v.publishedAt ? new Date(v.publishedAt).toLocaleDateString("ar-EG") : "—"}
+                    {v.publishedAt ? new Date(v.publishedAt).toLocaleDateString("ar-EG", { timeZone: "Africa/Cairo" }) : "—"}
                     {v.views ? ` · ${v.views.toLocaleString("ar-EG")} مشاهدة` : ""}
                   </p>
 
