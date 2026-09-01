@@ -41,6 +41,8 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
   const [mat, setMat] = useState({ title: "", url: "" });
   const coverRef = useRef<HTMLInputElement>(null);
   const [coverUploading, setCoverUploading] = useState(false);
+  const bannerRef = useRef<HTMLInputElement>(null);
+  const [bannerUploading, setBannerUploading] = useState(false);
   const [quizFor, setQuizFor] = useState<string | null>(null);
   /*
     المادّةُ المفتوحة.
@@ -243,6 +245,15 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
     setCoverUploading(false);
     if (url) save({ subjects: subjects.map((s) => (s.id === id ? { ...subject, cover: url } : s)) });
     if (coverRef.current) coverRef.current.value = "";
+  };
+
+  /** رفعُ لافتة صفحة الكورس — مستقلّةٌ عن غلاف البطاقة. */
+  const uploadBanner = async (file: File) => {
+    setBannerUploading(true);
+    const url = await uploadImage(file);
+    setBannerUploading(false);
+    if (url) save({ subjects: subjects.map((x) => (x.id === id ? { ...subject, banner: url } : x)) });
+    if (bannerRef.current) bannerRef.current.value = "";
   };
   /*
     الترتيبُ داخل المادّة لا عبرها.
@@ -465,8 +476,90 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
             الكورس ثمّ لا تُمسّ شهراً — والدروسُ تُضاف كلَّ أسبوع.
           */}
           <Collapse className="mb-3" title="مظهر بطاقة الكورس" subtitle="الغلافُ ونصُّه وملصقاتُه — تُضبط مرّةً ثمّ تُترك" icon={<Palette className="size-4" />} storageKey="crs-look">
+          {/*
+            لافتةُ صفحة الكورس — مستقلّةٌ عن غلاف البطاقة.
+            ------------------------------------------------------------
+            المقاسان مختلفان اختلافاً لا يُصلحه قصّ: البطاقةُ مربّعةٌ
+            تقريباً، وصدرُ الصفحة شريطٌ نسبتُه ٢١:٨. فغلافٌ مربّعٌ يُقصّ
+            إلى الشريط يفقد أعلاه وأسفلَه — والوجوهُ والعناوينُ فيهما.
+
+            وقد وقع ذلك فعلاً قبل هذا القسم: كورسٌ غلافُه رسمٌ مربّعٌ خرج
+            في صدر صفحته قلنسوةً ممدودةً بلا معنى.
+
+            والمعاينةُ هنا بنسبة الصفحة نفسِها لا بنسبةٍ أخرى: معاينةٌ
+            تكذب أسوأُ من ألّا تكون.
+          */}
+          <Collapse className="mb-3" title="لافتة صفحة الكورس" subtitle="شريطٌ عريضٌ يُرى في صدر صفحة الكورس — غيرُ غلاف البطاقة" icon={<ImageIcon className="size-4" />} storageKey="crs-banner">
+            <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
+              نسبتُها <b>٢١:٨</b> — أي عريضةٌ قصيرة. وأنسبُ مقاسٍ نحو <b>١٦٨٠×٦٤٠</b>.
+              وإن تُركت فارغةً فلا يُعرض شريطٌ أصلاً، ويبقى اسمُ الكورس في ترويسة الصفحة.
+            </p>
+
+            {subject.banner?.trim() ? (
+              <div className="mb-4 overflow-hidden rounded-2xl border border-border">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={subject.banner}
+                  alt="معاينة اللافتة"
+                  className="block w-full"
+                  style={{ aspectRatio: "21 / 8", objectFit: "cover", objectPosition: `center ${subject.bannerY ?? 35}%` }}
+                />
+              </div>
+            ) : (
+              <div className="mb-4 grid place-items-center rounded-2xl border border-dashed border-border text-xs text-muted-foreground"
+                style={{ aspectRatio: "21 / 8" }}>
+                لا لافتةَ — لن يُعرض شريطٌ في صدر الصفحة
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-end gap-3">
+              <label className="min-w-56 flex-1">
+                <span className="mb-1 block text-xs font-semibold text-muted-foreground">رابط اللافتة</span>
+                <input defaultValue={subject.banner ?? ""} dir="ltr" className="inp text-right"
+                  onBlur={(e) => save({ subjects: subjects.map((x) => (x.id === id ? { ...subject, banner: e.target.value.trim() } : x)) })}
+                  placeholder="https://…" />
+              </label>
+              <input ref={bannerRef} type="file" accept="image/*" hidden
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadBanner(f); }} />
+              <Button variant="outline" className="px-5 py-2.5" onClick={() => bannerRef.current?.click()} disabled={bannerUploading}>
+                {bannerUploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+                {bannerUploading ? "جارٍ الرفع…" : "رفع لافتة"}
+              </Button>
+              {subject.banner && (
+                <button onClick={() => save({ subjects: subjects.map((x) => (x.id === id ? { ...subject, banner: "" } : x)) })}
+                  className="rounded-full border border-border px-4 py-2.5 text-xs font-bold text-rose-500 transition hover:border-rose-500">
+                  إزالة اللافتة
+                </button>
+              )}
+            </div>
+
+            {/*
+              موضعُ القصّ الرأسيّ.
+              الشريطُ يقتطع من الصورة قدرَ ارتفاعه، والمقتطَعُ من وسطها
+              افتراضاً — والوجوهُ والعناوينُ في أعلى أغلفة الكورسات غالباً.
+              فيُترك للمشرف أن يقول: من أين يُقتطع.
+            */}
+            {subject.banner?.trim() && (
+              <label className="mt-4 block max-w-md">
+                <span className="mb-1.5 flex items-center justify-between text-xs font-semibold text-muted-foreground">
+                  <span>موضع القصّ الرأسيّ</span>
+                  <span className="font-mono">{(subject.bannerY ?? 35).toLocaleString("ar-EG")}٪</span>
+                </span>
+                <input
+                  type="range" min={0} max={100} step={1}
+                  value={subject.bannerY ?? 35}
+                  onChange={(e) => save({ subjects: subjects.map((x) => (x.id === id ? { ...subject, bannerY: Number(e.target.value) } : x)) })}
+                  className="w-full accent-[color:var(--brand-primary)]"
+                />
+                <span className="mt-1 flex justify-between text-[10px] text-muted-foreground">
+                  <span>أعلى الصورة</span><span>أسفلُها</span>
+                </span>
+              </label>
+            )}
+          </Collapse>
+
           {/* غلاف الكورس */}
-          <Collapse className="mb-3" title="غلاف الكورس" subtitle="الصورةُ التي تُرى على بطاقة الكورس" icon={<ImageIcon className="size-4" />} storageKey="crs-cover">
+          <Collapse className="mb-3" title="غلاف بطاقة الكورس" subtitle="الصورةُ التي تُرى على بطاقة الكورس في القوائم" icon={<ImageIcon className="size-4" />} storageKey="crs-cover">
             <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
               مقاس البطاقة ثابت ولا يتمدّد. عند التكبير ١٠٠٪ تظهر صورتك <b>كاملة</b>؛ ولو أردت ملء الإطار
               كبّرها وحرّكها بنفسك — ما يخرج عن الإطار يُقصّ بإرادتك أنت لا تلقائياً.

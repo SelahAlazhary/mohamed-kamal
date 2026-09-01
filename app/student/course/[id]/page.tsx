@@ -159,17 +159,23 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
         لأنّ `aspect-ratio` على حاويةٍ عرضُها ألفٌ وستُّ مئةٍ يُخرج ارتفاعاً
         بقدرها، والرسمُ البديلُ يُقصّ ويُكبَّر ليملأه.
 
-        و**غيابُ الغلاف ليس عطلاً يُسدّ برسمٍ بديل**: هو قولُ المشرف إنّه لم
-        يضع صورة. فالأولى ألّا يُعرض لوحٌ أصلاً — والاسمُ والصفُّ في ترويسة
-        الصفحة فوقه، فلا يضيع شيء.
+        و**اللافتةُ غيرُ غلاف البطاقة**: البطاقةُ مربّعةٌ تقريباً وهذه
+        شريطٌ نسبتُه ٢١:٨، فقصُّ المربّع إلى الشريط يفقد أعلاه وأسفلَه.
+        فتُرفع اللافتةُ وحدَها من اللوحة، وفراغُها = لا لافتةَ أصلاً —
+        والاسمُ والصفُّ في ترويسة الصفحة فوقه، فلا يضيع شيء.
 
         وارتفاعُه مسقوفٌ بمقدارٍ ثابت مع نسبةٍ عريضة: الغلافُ شريطُ تعريفٍ
         لا شاشةٌ تُملأ.
       */}
-      {subject.cover?.trim() && (
+      {subject.banner?.trim() && (
         <div className="ch">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={subject.cover} alt="" className="ch-art" />
+          <img
+            src={subject.banner}
+            alt=""
+            className="ch-art"
+            style={{ objectPosition: `center ${subject.bannerY ?? 35}%` }}
+          />
           <span className="ch-scrim" aria-hidden="true" />
           <span className="ch-body">
             {subject.grade && <span className="ch-g">{subject.grade}</span>}
