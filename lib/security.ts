@@ -3,6 +3,7 @@ import { getDB, saveDB } from "./db";
 import { clientIp, isTrustedIp } from "./guard";
 import { headers } from "next/headers";
 import type { SecurityEvent, SecurityBan, SecurityKind } from "./types";
+import { AUTH_SECRET_IS_EPHEMERAL, ADMIN_PASSWORD_UNSET } from "./secrets";
 
 /**
  * سجلّ الأمان والحظر التلقائي.
@@ -124,6 +125,18 @@ export function securityOverview() {
       last24h: events.filter((e) => new Date(e.at).getTime() > day).length,
       high: events.filter((e) => e.severity === "high").length,
       activeBans: (s.bans ?? []).filter((b) => new Date(b.until).getTime() > now).length,
+    },
+    /*
+      حالةُ التحصين — تُقرأ من الخادم، لا تُخمَّن.
+      ------------------------------------------------------------------
+      هذه أعلامٌ كانت تُطبع في سجلّ الخادم وحدَه، فلا يراها المشرفُ في
+      اللوحة — فلا يعرف أمحميٌّ هو أم على سرٍّ مؤقّت. فتُرفع إلى هنا:
+      كلٌّ `true` = مضبوطٌ وقويّ، و`false` = ناقصٌ يحتاج ضبطاً.
+    */
+    hardening: {
+      authSecret: !AUTH_SECRET_IS_EPHEMERAL,   // سرُّ توقيع الجلسات مضبوطٌ ودائم
+      adminPassword: !ADMIN_PASSWORD_UNSET,     // كلمةُ مرور الأدمن مضبوطة
+      cookieSecure: process.env.COOKIE_SECURE === "1" || process.env.VERCEL === "1",
     },
   };
 }

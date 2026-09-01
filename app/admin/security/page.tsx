@@ -5,7 +5,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import {
-  ShieldCheck, ShieldAlert, RefreshCw, Ban, Undo2, Loader2, Activity, Lock,
+  ShieldCheck, ShieldAlert, RefreshCw, Ban, Undo2, Loader2, Activity, Lock, KeyRound, TriangleAlert,
 } from "lucide-react";
 import { PageHeader, Card, StatCard, DataTable } from "@/components/dashboard/ui";
 import { Button } from "@/components/ui/primitives";
@@ -19,6 +19,7 @@ type State = {
   events: Event[];
   bans: BanRow[];
   stats: { total: number; last24h: number; high: number; activeBans: number };
+  hardening?: { authSecret: boolean; adminPassword: boolean; cookieSecure: boolean };
 };
 
 const KIND_LABEL: Record<string, string> = {
@@ -71,6 +72,38 @@ export default function SecurityPage() {
         subtitle="كل محاولة مشبوهة مسجّلة — والتكرار الخطير يُحظر تلقائياً"
         action={<Button variant="outline" className="px-4 py-2.5" onClick={() => void load()}><RefreshCw className="size-4" /> تحديث</Button>}
       />
+
+      {/*
+        حالةُ التحصين — أوّلُ ما يُرى، فهو أهمُّ من عدّاد الأحداث.
+        المشرفُ يسأل «أنا محميّ؟» — فيُجاب بنظرة: أخضرُ = مضبوط، وأحمرُ =
+        ناقصٌ يحتاج ضبطاً في إعدادات النشر. ولا يُكشف السرُّ نفسُه، بل
+        وجودُه من عدمه.
+      */}
+      {st?.hardening && (
+        <div className="mb-6 grid gap-3 sm:grid-cols-3">
+          <Guard
+            ok={st.hardening.authSecret}
+            title="سرّ توقيع الجلسات"
+            good="مضبوطٌ ودائم — الجلساتُ لا تُزوَّر ولا تسقط"
+            bad="مؤقّت — اضبط AUTH_SECRET، وإلا سقطت الجلسات عند كل نشر"
+            icon={<KeyRound className="size-5" />}
+          />
+          <Guard
+            ok={st.hardening.adminPassword}
+            title="كلمة مرور الأدمن"
+            good="مضبوطة — الحساب محميّ"
+            bad="غير مضبوطة — الحساب مقفلٌ بكلمة عشوائية حتى تضبط ADMIN_PASSWORD"
+            icon={<Lock className="size-5" />}
+          />
+          <Guard
+            ok={st.hardening.cookieSecure}
+            title="كوكي آمنة (HTTPS)"
+            good="مفعّلة — الكوكي لا تُرسَل إلا على اتصالٍ مشفّر"
+            bad="غير مفعّلة — اضبط COOKIE_SECURE=1 عند النشر على HTTPS"
+            icon={<ShieldCheck className="size-5" />}
+          />
+        </div>
+      )}
 
       {st && (
         <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -175,6 +208,36 @@ export default function SecurityPage() {
  * **والمفتاحُ يُكتب ولا يُقرأ.** الخادمُ يقول «مضبوطٌ» ولا يقول ما هو،
  * فلو سُرقت جلسةُ مشرفٍ لم يُسرق معها مفتاحُ المكتبة.
  */
+/** بطاقةُ حالة تحصينٍ واحدة — خضراءُ إن كانت مضبوطةً وحمراءُ إن نقصت. */
+function Guard({
+  ok, title, good, bad, icon,
+}: {
+  ok: boolean;
+  title: string;
+  good: string;
+  bad: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <Card className={`!p-4 ${ok ? "" : "ring-1 ring-rose-500/40"}`}>
+      <div className="flex items-start gap-3">
+        <span className={`grid size-10 shrink-0 place-items-center rounded-2xl ${ok ? "bg-emerald-500/12 text-emerald-600" : "bg-rose-500/12 text-rose-500"}`}>
+          {ok ? icon : <TriangleAlert className="size-5" />}
+        </span>
+        <div className="min-w-0">
+          <p className="flex items-center gap-1.5 text-sm font-bold">
+            {title}
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${ok ? "bg-emerald-500/15 text-emerald-600" : "bg-rose-500/15 text-rose-500"}`}>
+              {ok ? "مضبوط" : "ناقص"}
+            </span>
+          </p>
+          <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">{ok ? good : bad}</p>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 function BunnyCard() {
   const [st, setSt] = useState<{ configured: boolean; keyFromEnv: boolean; libraryId: string | null; ttl: number } | null>(null);
   const [key, setKey] = useState("");
