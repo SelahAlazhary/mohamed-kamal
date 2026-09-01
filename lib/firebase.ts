@@ -260,6 +260,51 @@ export async function fbSet(path: string, value: unknown): Promise<void> {
   }
 }
 
+/**
+ * مطالبةٌ ذرّيّةٌ على عقدةٍ — تنجح مرّةً واحدةً في العالم كلِّه.
+ * ------------------------------------------------------------------
+ * **لماذا؟** المخزنُ يكتب الشجرةَ كاملةً بـ`PUT` (آخرُ كاتبٍ يفوز)،
+ * وله مخبأٌ عمرُه خمسَ عشرةَ ثانية. فعلى Vercel — نُسخٌ متعدّدة، كلٌّ
+ * بمخبئها — يقرأ اثنان الكودَ «متاحاً» في نافذةٍ واحدةٍ فيُستهلك مرّتين،
+ * أو يُصفّى قبولُ دفعةٍ بكتابةٍ من نسخةٍ قديمة.
+ *
+ * وحلُّه ذرّيّةٌ على مستوى Firebase نفسِه: تُنشأ العقدةُ من العدم بكتابةٍ
+ * **مشروطةٍ بـETag**. من يكتب أوّلاً يفوز (200)، والثاني يُرفض (412) —
+ * جُرّب حيّاً على قاعدة الإنتاج. فالمفتاحُ يُطالَب مرّةً واحدة مهما تعدّدت
+ * النُّسخ.
+ *
+ * يعيد `true` إن طالبتَه أنت الآن، و`false` إن كان مطالَباً — سواءٌ من
+ * قبلُ أو في السباق نفسِه.
+ */
+export async function fbClaimOnce(path: string, payload: unknown): Promise<boolean> {
+  const c = readConfig();
+  if (!c) return true; // بلا فايربيز: عمليّةٌ واحدة، لا سباقَ عبر نُسخ
+  // ١) ETag الحاليّ (وقيمتُه) — `null_etag` للعقدة الفارغة
+  const getRes = await fetch(await url(path), { headers: { "X-Firebase-ETag": "true" }, cache: "no-store" });
+  if (getRes.ok) {
+    const cur = await getRes.json();
+    if (cur !== null && cur !== undefined) return false; // مطالَبٌ من قبل
+  }
+  const etag = getRes.headers.get("etag") ?? "null_etag";
+  // ٢) كتابةٌ مشروطة: تنجح فقط إن لم تتغيّر العقدةُ منذ القراءة
+  const putRes = await fetch(await url(path), {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", "if-match": etag },
+    body: JSON.stringify(encodeForFirebase(payload) ?? null),
+    cache: "no-store",
+  });
+  if (putRes.status === 412) return false; // فاز غيرُك في السباق
+  if (!putRes.ok) throw new Error(`فايربيز: فشل المطالبة (${putRes.status})`);
+  return true;
+}
+
+/** إلغاءُ مطالبةٍ — للتراجع إن فشل ما بعدها. */
+export async function fbReleaseClaim(path: string): Promise<void> {
+  const c = readConfig();
+  if (!c) return;
+  await fetch(await url(path), { method: "DELETE", cache: "no-store" }).catch(() => {});
+}
+
 export async function fbUpdate(path: string, value: Record<string, unknown>): Promise<void> {
   const res = await fetch(await url(path), {
     method: "PATCH",

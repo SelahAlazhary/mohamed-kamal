@@ -12,7 +12,7 @@ import { resolvePlan } from "./plans";
 import { allLessons, courseUnits, findLesson, isSplit, lessonCount } from "./course-units";
 import { parsePick } from "./picks";
 import { dropActivity } from "./activity-store";
-import { firebaseConfigured } from "./firebase";
+import { firebaseConfigured, fbClaimOnce } from "./firebase";
 import { pushConfigured } from "./push";
 import { ensureStore, peek, commit, flushStore, storeState, invalidate, readLocal } from "./store";
 
@@ -433,9 +433,10 @@ export function sessionUser(session: { uid: string } | null | undefined): User |
 /* ---------- الخطط والاشتراكات ---------- */
 
 /** تفعيل خطة بكود: يُنشئ اشتراكاً للطالب وحده بمدّة الخطة، ويُبطل الكود بعد استخدامه. */
-export function redeemCode(userId: string, rawCode: string, subjectId?: string):
+export async function redeemCode(userId: string, rawCode: string, subjectId?: string): Promise<
   | { ok: true; subjectId: string; plan: string; planName: string; expiresAt: string | null }
-  | { ok: false; error: string } {
+  | { ok: false; error: string }
+> {
   const db = getDB();
   const user = db.users.find((u) => u.id === userId);
   if (!user || user.role !== "student") return { ok: false, error: "المستخدم غير موجود" };
@@ -499,6 +500,28 @@ export function redeemCode(userId: string, rawCode: string, subjectId?: string):
   const expiresAt = planExpiry(plan, db.content.termEnd, now);
   if (plan.kind === "term" && expiresAt && new Date(expiresAt).getTime() <= now.getTime()) {
     return { ok: false, error: "انتهت مدّة هذه الخطة — تواصل مع الدعم" };
+  }
+
+  /*
+    المطالبةُ الذرّيّةُ بالكود — تُستهلَك مرّةً واحدةً في العالم كلِّه.
+    ------------------------------------------------------------------
+    فحصُ `code.status` أعلاه يحمي داخلَ النسخةِ الواحدة (شيفرةٌ متزامنة
+    لا تتداخل). لكنّ Vercel يشغّل نُسخاً متعدّدةً كلٌّ بمخبئها، فقد ترى
+    نسختان الكودَ «متاحاً» في النافذة نفسِها فتُستهلكه مرّتين.
+
+    فتُطلب مطالبةٌ ذرّيّةٌ على `claims/<code>` قبل كتابةِ أيّ اشتراك: من
+    يفوز بها يُفعّل، ومن يخسرها يُردّ «مستخدم». والمطالبةُ **قبل** أوّل
+    تعديلٍ على المستخدم، فلا اشتراكَ يُكتب ثمّ يُتراجَع عنه.
+
+    وبلا فايربيز (تشغيلٌ محلّيّ) تعيد `true` دائماً — النسخةُ واحدةٌ
+    والفحصُ المتزامنُ يكفيها.
+  */
+  const claimKey = code.code.trim().toUpperCase().replace(/[.$#[\]/]/g, "-");
+  const claimed = await fbClaimOnce(`claims/${claimKey}`, {
+    by: user.id, name: user.name, at: now.toISOString(),
+  });
+  if (!claimed) {
+    return { ok: false, error: "هذا الكود مستخدم أو منتهٍ" };
   }
 
   user.progress = user.progress ?? {};

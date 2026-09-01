@@ -43,7 +43,7 @@ export async function POST(req: Request) {
   const { code, subjectId } = await req.json();
   if (!code) return NextResponse.json({ error: "أدخل كود التفعيل" }, { status: 400 });
 
-  const result = redeemCode(session.uid, String(code), subjectId ? String(subjectId) : undefined);
+  const result = await redeemCode(session.uid, String(code), subjectId ? String(subjectId) : undefined);
   if (!result.ok) {
     await recordEvent("bad_code", `كود مرفوض: ${result.error}`, { userId: session.uid });
     return NextResponse.json({ error: result.error }, { status: 400 });
