@@ -104,6 +104,26 @@ export function DashboardShell({
   const activeGroup = groups.find((g) => g.items.some((i) => isActive(i.href)))?.id;
 
   /*
+    موضعُ الصفحة في الشريط.
+    ------------------------------------------------------------------
+    كان الشريطُ ألفاً وخمسَ مئةِ بكسلٍ فيها ثلاثةُ أزرارٍ صغيرةٍ في
+    الطرفين وفراغٌ بينها. وشريطٌ يشغل أعلى كلِّ شاشةٍ ولا يقول شيئاً
+    ضريبةٌ تُدفع من ارتفاع الصفحة بلا مقابل.
+
+    فيحمل ما يُغني عنه: أين أنت. والاسمُ يُؤخذ من القائمة نفسِها لا
+    يُكتب ثانيةً — فما يُضاف إلى القائمة يظهر هنا بلا عمل.
+
+    و**أطولُ مطابقةٍ** لا أوّلُها: `/student` تسبق `/student/subjects`
+    في القائمة وكلتاهما تُطابق المسار، فأخذُ الأولى يقول «الرئيسية» على
+    صفحة الكورسات.
+  */
+  const here = useMemo(() => {
+    const hits = nav.filter((i) => isActive(i.href));
+    return hits.sort((a2, b2) => b2.href.length - a2.href.length)[0];
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, [nav, pathname]);
+
+  /*
     `null` تعني «لم يُقرأ المحفوظ بعد».
     وقراءةُ التخزين في مُهيّئ الحالة تُخرج على الخادم غيرَ ما تُخرج في
     المتصفّح فتشتكي React من اختلاف الترطيب. فالأولُ يُرسم بالمجموعة
@@ -340,8 +360,18 @@ export function DashboardShell({
             <IconMenu className="size-5" />
           </button>
 
-          {/* موبايل: الهوية · سطح المكتب: بحث سريع */}
+          {/* موبايل: الهوية · سطح المكتب: موضعُ الصفحة ثمّ بحثٌ سريع */}
           <span className="lg:hidden"><Brand role={role} /></span>
+
+          {/*
+            أين أنت — يملأ الفراغَ بما يُغني، لا بزخرفة.
+            ويُخفى على الجوّال: الهويةُ هناك أولى بالمساحة الضيّقة.
+          */}
+          {here && (
+            <span className="tb-here hidden lg:flex">
+              <span className="tb-here-t">{here.label}</span>
+            </span>
+          )}
           {/*
             الصندوقُ يفتح لوحَ الأوامر ولا يكتب فيه.
             كان حقلاً حقيقيّاً بلا حالةٍ ولا معالج: يُكتب فيه ولا يبحث —
@@ -392,9 +422,27 @@ export function DashboardShell({
               <IconBell anim={hasNotif ? "swing" : undefined} className="size-5" />
               {hasNotif && <span className="absolute right-2 top-2 size-2 rounded-full bg-rose-500" />}
             </Link>
-            <span className="grid size-11 place-items-center rounded-full btn-glow text-sm font-bold text-white sm:size-10">
-              {user.avatar}
-            </span>
+            {/*
+              الحسابُ بطاقةٌ لا قرصٌ مجرَّد.
+              ------------------------------------------------------------
+              كان قرصاً فيه حرفٌ واحد. وحرفٌ في قرصٍ لا يقول لمن يفتح
+              اللوحةَ على جهازٍ يشاركه غيرُه **بحساب مَن هو داخل** — وذلك
+              يقع فعلاً: أخٌ يفتح على حساب أخيه فيرى دروساً ليست له.
+
+              فيُكتب الاسمُ والصفةُ بجانبه حيث يتّسع، ويبقى القرصُ وحدَه
+              على الضيّق — والحرفُ فيه مرساةٌ يعرفها صاحبُها بلمحة.
+            */}
+            <Link
+              href={role === "admin" ? "/admin" : "/student/account"}
+              className="tb-me"
+              aria-label={`الحساب: ${user.name}`}
+            >
+              <span className="tb-me-a">{user.avatar}</span>
+              <span className="tb-me-n">
+                <span className="tb-me-t">{user.name}</span>
+                <span className="tb-me-s">{user.sub}</span>
+              </span>
+            </Link>
           </div>
         </header>
 
