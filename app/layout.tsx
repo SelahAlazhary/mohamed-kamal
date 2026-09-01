@@ -6,6 +6,7 @@ import { ContentProvider } from "@/components/content/content-provider";
 import { glowCss } from "@/lib/glow";
 import { brandCss } from "@/lib/brand-theme";
 import { artFilter } from "@/lib/art-tint";
+import { safeJsonForScript } from "@/lib/safe-json";
 import { depthFilter, depthLit } from "@/lib/art-depth";
 import { AzhariBackdrop } from "@/components/brand/azhari-backdrop";
 import { ToTop } from "@/components/brand/to-top";
@@ -205,8 +206,16 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       suppressHydrationWarning
     >
       <head>
+        {/*
+          بياناتُ الفهرسة تُفلَّت قبل الحقن.
+          `JSON.stringify` لا يُفلّت `<` — فحقلٌ فيه `</script>` يُغلق
+          الوسمَ باكراً وما بعده يُقرأ كوداً. وحقولُ هذه البيانات تُكتب من
+          اللوحة (اسمُ الأستاذ وأسماءُ الكورسات والخطط)، ومشرفٌ بصلاحيةِ
+          قسمٍ واحدٍ يبلغ بها كلَّ صفحةٍ في الموقع العامّ.
+          انظر `lib/safe-json.ts`.
+        */}
         {jsonLd.map((block, i) => (
-          <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(block) }} />
+          <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonForScript(block) }} />
         ))}
         {/*
           الوهج — يُترجَم من القواعد مرّةً على الخادم ويُحقن في الجذر،

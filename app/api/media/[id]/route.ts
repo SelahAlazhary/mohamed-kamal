@@ -58,6 +58,26 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
     if (v) headers.set(h, v);
   });
   headers.set("Cache-Control", "public, max-age=86400, immutable");
+
+  /*
+    **الوسيطُ يخدم ملفّاتِ المستعملين بأصل هذه المنصّة.**
+    ------------------------------------------------------------------
+    ونوعُ المحتوى يُمرَّر كما جاء من المصدر. فملفٌّ نوعُه `image/svg+xml`
+    أو `text/html` يعمل ما فيه من نصوصٍ برمجيّةٍ حين يُفتح رابطُه في
+    تبويب — **بأصلنا لا بأصلٍ غريب**، فيبلغ ما تبلغه صفحاتُنا.
+
+    و`nosniff` لا يمنعه: النوعُ معلَنٌ صحيحاً والمتصفّحُ يُشغّله لأنّه
+    كذلك لا رغماً عنه.
+
+    فتُكتب سياسةٌ تُبطل التنفيذ: لا مصدرَ لشيء، ولا نصوصَ برمجيّة، وصندوقٌ
+    معزول. وهي غيرُ ضارّةٍ بالصور والفيديو والمستندات — تلك لا تُنفّذ
+    شيئاً أصلاً — فتُكتب على الكلّ ولا تُستثنى أنواعٌ قد تُنسى.
+  */
+  headers.set("X-Content-Type-Options", "nosniff");
+  headers.set(
+    "Content-Security-Policy",
+    "default-src 'none'; style-src 'unsafe-inline'; img-src data:; media-src 'self'; sandbox"
+  );
   headers.set("Accept-Ranges", headers.get("accept-ranges") ?? "bytes");
 
   return new NextResponse(upstream.body, { status: upstream.status, headers });

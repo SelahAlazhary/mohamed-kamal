@@ -33,6 +33,30 @@ export async function GET(req: Request, { params }: { params: Promise<{ name: st
   }
   const ext = (safe.split(".").pop() || "").toLowerCase();
   const type = MIME[ext] || "application/octet-stream";
+
+  /*
+    **SVG ملفُّ برمجةٍ لا صورة.**
+    ------------------------------------------------------------------
+    يقبل `<script>` و`onload` و`<foreignObject>`، ويعمل ما فيه حين
+    يُفتح في تبويبٍ مباشرةً — بأصل هذه المنصّة لا بأصلٍ غريب. فمن رفع
+    شعاراً أو ملصقَ غلافٍ يستطيع أن يُودعه كوداً يعمل عند كلّ من يفتح
+    رابطَ الملفّ.
+
+    و`X-Content-Type-Options: nosniff` لا يمنعه: النوعُ معلَنٌ صحيحاً
+    وهو `image/svg+xml`، والمتصفّحُ يُشغّله لأنّه كذلك لا رغماً عنه.
+
+    فتُكتب له سياسةٌ خاصّةٌ تُبطل ما فيه: لا مصدرَ لأيّ شيء، ولا نصوصَ
+    برمجيّة، وصندوقٌ معزولٌ بلا نصوصٍ ولا مُلاحة. وتبقى الصورةُ تُعرض في
+    `<img>` كما كانت — الوسمُ لا يُشغّل ما بداخلها أصلاً.
+  */
+  const guard: Record<string, string> =
+    type === "image/svg+xml"
+      ? {
+          "Content-Security-Policy":
+            "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox",
+          "X-Content-Type-Options": "nosniff",
+        }
+      : {};
   const size = fs.statSync(file).size;
   const range = req.headers.get("range");
 
@@ -52,6 +76,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ name: st
     return new NextResponse(new Uint8Array(buf), {
       status: 206,
       headers: {
+      ...guard,
         "Content-Type": type,
         "Content-Range": `bytes ${start}-${end}/${size}`,
         "Accept-Ranges": "bytes",
@@ -63,6 +88,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ name: st
 
   return new NextResponse(new Uint8Array(fs.readFileSync(file)), {
     headers: {
+      ...guard,
       "Content-Type": type,
       "Accept-Ranges": "bytes",
       "Content-Length": String(size),
