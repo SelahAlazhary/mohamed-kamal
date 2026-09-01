@@ -80,19 +80,75 @@ export function targetName(target: string, subjects: Subject[]): string {
   return subjects.find((s) => s.id === target)?.name ?? "كورس";
 }
 
+/**
+ * ما يُطلب من المحوِّل يتبع طريقةَ التحويل.
+ * ------------------------------------------------------------------
+ * كان الحقلُ واحداً لكلّ الطرق: «الرقم أو الحساب الذي حوّلت منه»
+ * بلوحةٍ رقميّة. وهو صحيحٌ للمحفظة وحدَها.
+ *
+ * فمن حوّل بإنستاباي أو بحوالةٍ بنكيّة ليس عنده «رقمٌ» يكتبه: عنده
+ * رقمُ حسابٍ، أو اسمُ مستخدمٍ فيه نقطةٌ وحروفٌ لاتينيّة، أو اسمُه
+ * كما ظهر في الحوالة. ولوحةٌ رقميّةٌ تفتح له لا تكتب شيئاً من ذلك.
+ */
+export function senderIsPhone(kind?: string): boolean {
+  return kind === "wallet" || kind === "fawry";
+}
+
+/** عنوانُ الحقل بحسب الطريقة. */
+export function senderLabel(kind?: string): string {
+  return senderIsPhone(kind)
+    ? "رقم الهاتف الذي حوّلت منه"
+    : "حسابك أو اسم المستخدم أو اسمك";
+}
+
+/** ما يُكتب في الحقل مثالاً. */
+export function senderPlaceholder(kind?: string): string {
+  switch (kind) {
+    case "wallet":
+    case "fawry": return "01xxxxxxxxx";
+    case "instapay": return "name@instapay أو اسمك كما في الحوالة";
+    case "bank": return "رقم الحساب أو IBAN أو اسمك كما في الحوالة";
+    default: return "حسابك أو اسمك كما ظهر في التحويل";
+  }
+}
+
+/**
+ * فحصُ ما كُتب.
+ * رقمُ الهاتف المصريّ أحدَ عشرَ رقماً لا أقلَّ ولا أكثر — وعشرةٌ أو اثنا
+ * عشرَ خطأُ كتابةٍ يُبطل مطابقةَ التحويل في كشف الحساب، فيُردّ الطلبُ
+ * وقد دفع الطالبُ فعلاً. والفحصُ هنا يمنعه قبل الإرسال لا بعده.
+ *
+ * وغيرُ الهاتف لا يُقاس بعدد: رقمُ حسابٍ واسمُ مستخدمٍ واسمٌ عربيٌّ
+ * أطوالُها مختلفة، فيكفي ألّا يكون فارغاً ولا حرفاً واحداً.
+ */
+export function senderProblem(kind: string | undefined, raw: string): string | null {
+  const v = (raw ?? "").trim();
+  if (!v) return senderIsPhone(kind)
+    ? "اكتب رقم الهاتف الذي حوّلت منه"
+    : "اكتب حسابك أو اسم المستخدم أو اسمك";
+
+  if (senderIsPhone(kind)) {
+    const digits = normalizeDigits(v).replace(/\D/g, "");
+    if (digits.length !== 11) return "رقم الهاتف أحدَ عشرَ رقماً — راجِعه";
+    return null;
+  }
+  if (v.length < 3) return "اكتب حسابك أو اسم المستخدم أو اسمك كاملاً";
+  return null;
+}
+
 /** ما ينقص الطلب — نصّ عربي واحد أو null إن كان سليماً. */
 export function requestProblem(
-  f: { methodId?: string; senderName?: string; senderAccount?: string; receipt?: string },
+  f: { methodId?: string; methodKind?: string; senderName?: string; senderAccount?: string; receipt?: string },
   rules: { requireReceipt?: boolean; requireSender?: boolean }
 ): string | null {
   if (!(f.methodId ?? "").trim()) return "اختر طريقة الدفع";
   /*
     الرقم المُحوَّل منه هو ما يُطابَق به التحويل في كشف الحساب — بدونه
-    تبقى المراجعة تخميناً، فهو مطلوب دائماً لا بحسب الإعداد.
+    تبقى المراجعة تخميناً، فهو مطلوب دائماً لا بحسب الإعداد. وشكلُه
+    يتبع الطريقة — انظر `senderProblem`.
   */
-  if (!(f.senderAccount ?? "").trim()) {
-    return "اكتب الرقم أو الحساب الذي حوّلت منه";
-  }
+  const sender = senderProblem(f.methodKind, f.senderAccount ?? "");
+  if (sender) return sender;
   if (rules.requireSender !== false && !(f.senderName ?? "").trim()) {
     return "اكتب اسم من حوّل المبلغ";
   }

@@ -35,7 +35,10 @@ import {
 } from "@/components/brand/icons";
 import { useContent } from "@/components/content/content-provider";
 import { findPayStyle, payClass, payColorVars } from "@/lib/pay-styles";
-import { activeMethods, numberLabel, requestProblem } from "@/lib/payments";
+import {
+  activeMethods, numberLabel, requestProblem,
+  senderIsPhone, senderLabel, senderPlaceholder, senderProblem,
+} from "@/lib/payments";
 import { planPrice, planColor } from "@/lib/plans";
 import { planDuration, planScopeLabel } from "@/components/sections/plans";
 import type { PayMethod, PayRequest, SitePlan, Subject } from "@/lib/types";
@@ -81,6 +84,9 @@ export function PayGate({
   const [err, setErr] = useState<string | null>(null);
   const [done, setDone] = useState<PayRequest | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  /* خطأُ حقل المحوِّل يُعرض تحته لا في شريط الأخطاء العامّ — الخطأُ
+     يُقرأ عند موضعه أو لا يُقرأ. */
+  const [senderErr, setSenderErr] = useState<string | null>(null);
   /* اختيار الطريقة صار إقراراً «حوّلتُ عليها» لا انتقالاً، فالانتقال
      يحتاج ضغطةً صريحة — وإلا قفزت الشاشة قبل أن يقرأ الأرقام. */
   const [stepDone, setStepDone] = useState(false);
@@ -109,7 +115,7 @@ export function PayGate({
   const submit = async () => {
     setErr(null);
     const problem = requestProblem(
-      { methodId: method?.id, senderName, senderAccount, receipt },
+      { methodId: method?.id, methodKind: method?.kind, senderName, senderAccount, receipt },
       { requireReceipt: cfg.requireReceipt, requireSender: cfg.requireSender }
     );
     if (problem) { setErr(problem); return; }
@@ -366,7 +372,10 @@ export function PayGate({
             <div className="pay-details mb-4">
               <Row label={numberLabel(method.kind)} value={method.number} onCopy={copy} copied={copied} big />
               {method.holder && <Row label="اسم صاحب الحساب" value={method.holder} onCopy={copy} copied={copied} />}
-              {method.extra && <Row label="بيانات إضافية" value={method.extra} onCopy={copy} copied={copied} />}
+              {/* لا تُعاد إن كانت هي صاحبَ الحساب — كان «محمد» يُكتب مرّتين */}
+              {method.extra && method.extra.trim() !== (method.holder ?? "").trim() && (
+                <Row label="بيانات إضافية" value={method.extra} onCopy={copy} copied={copied} />
+              )}
             </div>
 
             {method.note && (
@@ -376,20 +385,43 @@ export function PayGate({
             )}
 
             <p className="pay-sec-t mb-2">بيانات من حوّل:</p>
-            <div className="pay-stack">
+            {/*
+              الحقولُ القصيرةُ تصطفّ اثنين اثنين.
+              رقمُ الهاتف واسمُ المحوِّل لا يحتاج أحدُهما سطراً كاملاً —
+              وعمودٌ من حقولٍ كلُّها بعرض اللوح يُطيل الشاشةَ بلا فائدة
+              ويجعل الاستمارةَ تبدو أطولَ ممّا هي، فيُحجم من يملؤها.
+            */}
+            <div className="pay-stack pay-stack-2">
               {/*
                 الرقم المُحوَّل منه هو ما تُطابَق به العملية في كشف
                 الحساب، فهو مطلوب دائماً لا بحسب الإعداد.
               */}
-              <Field label="الرقم أو الحساب الذي حوّلت منه" required>
+              {/*
+                الحقلُ يتبع الطريقة.
+                ------------------------------------------------------
+                كان عنواناً واحداً ولوحةً رقميّةً لكلّ الطرق. ومن حوّل
+                بإنستاباي أو بحوالةٍ بنكيّة ليس عنده «رقمٌ» يكتبه: عنده
+                رقمُ حسابٍ، أو اسمُ مستخدمٍ فيه نقطةٌ وحروفٌ لاتينيّة، أو
+                اسمُه كما ظهر في الحوالة — ولوحةٌ رقميّةٌ لا تكتب ذلك.
+
+                والخطأُ يُقال عند الكتابة لا عند الإرسال: من كتب عشرةَ
+                أرقامٍ يعرف الآن، لا بعد أن يضغط «إرسال».
+              */}
+              <Field label={senderLabel(method.kind)} required>
                 <input
                   value={senderAccount}
-                  onChange={(e) => setSenderAccount(e.target.value)}
-                  dir="ltr"
-                  inputMode="numeric"
-                  placeholder="01xxxxxxxxx"
-                  className="pay-f-i text-right font-mono"
+                  onChange={(e) => {
+                    setSenderAccount(e.target.value);
+                    if (senderErr) setSenderErr(senderProblem(method.kind, e.target.value));
+                  }}
+                  onBlur={() => setSenderErr(senderProblem(method.kind, senderAccount))}
+                  dir={senderIsPhone(method.kind) ? "ltr" : "auto"}
+                  inputMode={senderIsPhone(method.kind) ? "numeric" : "text"}
+                  placeholder={senderPlaceholder(method.kind)}
+                  aria-invalid={senderErr ? true : undefined}
+                  className={`pay-f-i text-right ${senderIsPhone(method.kind) ? "font-mono" : ""} ${senderErr ? "pay-f-bad" : ""}`}
                 />
+                {senderErr && <span className="pay-f-msg">{senderErr}</span>}
               </Field>
 
               <Field label="اسم من حوّل المبلغ" required={cfg.requireSender !== false}>
@@ -401,7 +433,7 @@ export function PayGate({
                 />
               </Field>
 
-              <Field label="رقم العملية" hint="اختياري">
+              <Field wide label="رقم العملية" hint="اختياري">
                 <input
                   value={senderRef}
                   onChange={(e) => setSenderRef(e.target.value)}
@@ -411,7 +443,7 @@ export function PayGate({
               </Field>
 
               {/* صورة الإيصال — منطقةٌ كاملةٌ لا زرٌّ صغير */}
-              <Field label="صورة إيصال التحويل" required={cfg.requireReceipt !== false}>
+              <Field wide label="صورة إيصال التحويل" required={cfg.requireReceipt !== false}>
                 <label className="pay-drop">
                   {receipt ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -435,7 +467,7 @@ export function PayGate({
                 </label>
               </Field>
 
-              <Field label="ملاحظة" hint="اختياري">
+              <Field wide label="ملاحظة" hint="اختياري">
                 <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className="pay-f-i" />
               </Field>
             </div>
@@ -529,12 +561,12 @@ function Empty({ children }: { children: React.ReactNode }) {
 
 /** حقلٌ واحدٌ تُبنى منه الاستمارة — فيستوي إيقاعُها. */
 function Field({
-  label, required, hint, children,
+  label, required, hint, wide, children,
 }: {
-  label: string; required?: boolean; hint?: string; children: React.ReactNode;
+  label: string; required?: boolean; hint?: string; wide?: boolean; children: React.ReactNode;
 }) {
   return (
-    <label className="pay-f">
+    <label className={`pay-f ${wide ? "pay-f-wide" : ""}`}>
       <span className="pay-f-l">
         {label}
         {required && <b className="pay-f-r"> *</b>}

@@ -80,8 +80,13 @@ export async function POST(req: Request) {
   const receipt = clip(body.receipt, 600);
   const note = clip(body.note, MAX_NOTE);
 
+  /*
+    والنوعُ يُؤخذ من الطريقة المخزَّنة لا ممّا أرسله المتصفّح.
+    قاعدةُ «أحدَ عشرَ رقماً» تخصّ المحفظةَ وحدَها، فلو صُدِّق النوعُ من
+    الطلب لكفى أن يُرسل `bank` مع طريقةِ محفظةٍ لتُتخطّى القاعدةُ كلُّها.
+  */
   const problem = requestProblem(
-    { methodId: method.id, senderName, senderAccount, receipt },
+    { methodId: method.id, methodKind: method.kind, senderName, senderAccount, receipt },
     { requireReceipt: cfg.requireReceipt, requireSender: cfg.requireSender }
   );
   if (problem) return NextResponse.json({ error: problem }, { status: 400 });

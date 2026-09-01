@@ -183,11 +183,22 @@
   **والثاني أنّ النسخَ لا يُرى.** `title` لا يظهر باللمس أصلاً، فالطالبُ
   يقرأ الرقمَ ويكتبه بيده ولا يعلم أنّ ضغطةً تكفي. فتُوضع أيقونةٌ ظاهرة.
 */
+/*
+  والعنوانُ في عمودٍ بمقاسه، والقيمةُ تليه.
+  ------------------------------------------------------------------
+  كان `justify-between` يدفع الاثنين إلى الحافّتين. وهو صحيحٌ في صندوقٍ
+  ضيّق؛ أمّا في لوحٍ عرضُه ألفٌ ومئةُ بكسل فيقع «اسم صاحب الحساب» في
+  أقصى اليمين و«محمد» في أقصى اليسار بينهما تسعُ مئةِ بكسلٍ خواء —
+  فلا يُقرآن زوجاً، ويُضطرّ البصرُ أن يقطع اللوحَ ليعرف قيمةَ ما قرأ.
+
+  فالعنوانُ عمودٌ بعرض أطولِ عنوان، والقيمةُ تبدأ بعده مباشرة — يُقرآن
+  معاً مهما اتّسع اللوح.
+*/
 .pay-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(6rem, max-content) minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.85rem;
   width: 100%;
   /* لا هامشَ سالب: هيئةُ «العادي» تُصفّر حشوةَ اللوح الأفقيّة
      (`.pg-details-plain`)، فالسالبُ يُخرج الصفَّ من حدّه. */
@@ -209,7 +220,9 @@
   gap: 0.4rem;
   min-width: 0;
   font-weight: 700;
-  text-align: end;
+  /* تبدأ بعد عنوانها لا في الحافّة المقابلة */
+  justify-content: flex-start;
+  text-align: start;
 }
 /* لا قصَّ — الرقمُ يلتفّ ولا يُبتر */
 .pay-row-v .pay-value {
@@ -499,6 +512,15 @@
 }
 .pay-f-i:focus { box-shadow: inset 0 0 0 2px var(--pg-a); }
 .pay-f-i::placeholder { color: hsl(var(--muted-foreground) / 0.7); }
+/* الحقلُ الخاطئُ يُعلَّم عند موضعه، ورسالتُه تحته */
+.pay-f-i.pay-f-bad { box-shadow: inset 0 0 0 1.5px hsl(0 72% 51%); }
+.pay-f-msg {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(0 72% 45%);
+}
 textarea.pay-f-i { min-height: 4.5rem; resize: vertical; }
 
 /* رفعُ الإيصال — منطقةٌ تُسقط فيها الصورةُ لا زرٌّ صغير */
@@ -547,6 +569,19 @@ textarea.pay-f-i { min-height: 4.5rem; resize: vertical; }
 
 /* ٨ ــ الإيقاع — فاصلٌ واحدٌ في البوّابة كلّها */
 .pay-stack { display: grid; gap: 0.85rem; }
+
+/*
+  والقصيرُ يصطفّ اثنين اثنين حيث يتّسع.
+  رقمُ الهاتف واسمُ المحوِّل لا يحتاج أحدُهما سطراً كاملاً، وعمودٌ من
+  حقولٍ كلُّها بعرض اللوح يُطيل الشاشةَ بلا فائدة ويجعل الاستمارةَ تبدو
+  أطولَ ممّا هي — فيُحجم من يملؤها قبل أن يبدأ.
+
+  والسؤالُ للحاوية لا للشاشة: البوّابةُ في عمودٍ عرضُه غيرُ عرض النافذة.
+*/
+@container paygate (min-width: 30rem) {
+  .pay-stack-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pay-stack-2 .pay-f-wide { grid-column: 1 / -1; }
+}
 .pay-sec-t {
   font-size: 0.7rem;
   font-weight: 700;
