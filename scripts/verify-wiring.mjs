@@ -84,5 +84,67 @@ t("المسطّحةُ بلا مرشّح", depthFilter("flat"), "");
 t("والمجسَّمةُ تُضيء", depthLit("deep"), true);
 t("والظلُّ الخفيفُ لا يُضيء", depthLit("soft"), false);
 
+/*
+  ==================================================================
+  أصنافٌ في الترميز بلا قاعدةٍ في الأنماط
+  ------------------------------------------------------------------
+  وقع هذا فعلاً: استُبدل قسمٌ في `lesson-ui.css` بالقصّ من موضعه **إلى
+  آخر الملفّ**، فذهب معه ما بعده — وبقيت أصنافُ شريط الأدوات مكتوبةً في
+  الترميز بلا أنماط، فخرج اسمُ الطالب وصفُّه ملتصقَين بلا قرص.
+
+  **ولم يظهر في بناءٍ ولا في فحصِ أنواع**: صنفٌ بلا قاعدةٍ ليس خطأً في
+  CSS ولا في TypeScript — لا يُرى إلّا في الشاشة. فيُفحص هنا.
+
+  والفحصُ مقصورٌ على البادئات المكتوبة بأيدينا؛ وأصنافُ Tailwind تُولَّد
+  عند البناء فلا تُفحص.
+  ==================================================================
+*/
+console.log("\n== أصنافُ الهوية لها قواعدُها ==");
+{
+  const { readFileSync, readdirSync, statSync } = await import("node:fs");
+  const { join } = await import("node:path");
+
+  const walk = (dir, out = []) => {
+    for (const name of readdirSync(dir)) {
+      const p = join(dir, name);
+      if (/node_modules|[.]next|[.]git/.test(p)) continue;
+      if (statSync(p).isDirectory()) walk(p, out);
+      else out.push(p);
+    }
+    return out;
+  };
+
+  const files = [...walk("app"), ...walk("components")];
+  const css = files
+    .filter((f) => f.endsWith(".css"))
+    .map((f) => readFileSync(f, "utf8"))
+    .join("\n");
+  const code = files
+    .filter((f) => /[.]tsx?$/.test(f))
+    .map((f) => readFileSync(f, "utf8"))
+    .join("\n");
+
+  /*
+    الأصنافُ تُقرأ من `className` وحدَها لا من الملفّ كلِّه.
+    فمسحُ الملفّ كلِّه يلتقط ما ليس صنفاً: أسماءَ الوحدات في الاستيراد
+    (`lib/pay-styles`) وأسماءَ متغيّرات CSS (`--pg-a`) — فتُعدّ يتيمةً
+    وهي ليست أصنافاً أصلاً.
+  */
+  const ATTR = /className\s*=\s*(?:"([^"]*)"|'([^']*)'|\{`([^`]*)`\})/g;
+  const PREFIX = /\b((?:lp|uc|cu|ch|tb|pay|pg|sp|lm|pnl)-[a-z0-9-]+)\b/g;
+  const used = new Set();
+  for (const a of code.matchAll(ATTR)) {
+    const value = a[1] ?? a[2] ?? a[3] ?? "";
+    for (const m of value.matchAll(PREFIX)) used.add(m[1]);
+  }
+
+  const orphans = [...used].filter((c) => !css.includes("." + c)).sort();
+  t(
+    `كلُّ صنفٍ مستعملٍ له قاعدة (فُحص ${used.size})`,
+    orphans.length ? orphans.slice(0, 12) : 0,
+    0,
+  );
+}
+
 console.log(`\n${fail === 0 ? "كلُّها سليمة" : "فيها خلل"} — نجح ${pass} · فشل ${fail}`);
 process.exit(fail ? 1 : 0);
