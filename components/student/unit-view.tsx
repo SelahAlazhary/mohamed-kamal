@@ -100,6 +100,22 @@ export function useDone(courseId: string, uid?: string) {
 
 type NodeState = "done" | "current" | "open" | "locked";
 
+/**
+ * صفٌّ في مسار الدروس.
+ * ------------------------------------------------------------------
+ * كان قرصاً كبيراً وبطاقةً بينهما فجوة، وكلُّ منجَزٍ قرصٌ أخضرُ مصمت —
+ * فأغرقت الخضرةُ اللوحَ وصار **ما تمّ** أصرخَ ممّا لم يتمّ، وهو قلبٌ
+ * للأولويّة: المنجَزُ يُطمئن ولا يُنادى عليه.
+ *
+ * والرقمُ كان يُمحى عند الإنجاز ويحلّ محلَّه ✓، فيضيع ترتيبُ الدرس ولا
+ * يجد من يبحث عن «الثالث» ثالثاً.
+ *
+ * فصار صفّاً واحداً: قضيبٌ شعرةٌ بعلامةٍ صغيرة، ثمّ متنٌ ملاصقٌ فيه
+ * الرقمُ باقياً والحالةُ مقولةً في سطر الوصف. والحاليُّ وحدَه يُبرَز —
+ * بسطحٍ وحدٍّ وشريطٍ على حافّته، ثلاثةُ دلائلَ لا لونٌ وحدَه.
+ *
+ * والأنماطُ في `app/lesson-ui.css`.
+ */
 function PathNode({
   n, title, duration, state, isFree, onPick, last,
 }: {
@@ -109,66 +125,37 @@ function PathNode({
   state: NodeState;
   isFree?: boolean;
   onPick: () => void;
-  last: boolean;
+  /** يُبقى في الواجهة: القضيبُ يُقصّ بالمحدِّد `:last-child` لا بهذا. */
+  last?: boolean;
 }) {
-  /*
-    العمودُ يُرسم في العنصر لا بين العناصر.
-    خطٌّ مستقلٌّ بينها يحتاج قياسَ ارتفاعِ كلّ بطاقةٍ ليصلها — وهو يتغيّر
-    بطول العنوان. وجعلُه في العنصر نفسِه يجعله يمتدّ بامتداده مهما طال.
-  */
-  const ring =
-    state === "done" ? "bg-emerald-500 text-white ring-emerald-500/30"
-      : state === "current" ? "btn-glow text-white ring-[hsl(var(--gold)/0.45)]"
-        : state === "locked" ? "bg-muted text-muted-foreground ring-border"
-          : "bg-[hsl(var(--gold)/0.18)] text-primary ring-[hsl(var(--gold)/0.35)]";
+  void last;
+  const locked = state === "locked";
 
   return (
-    <li className="relative flex gap-4 pb-3 last:pb-0">
-      {/* العمود — يبهت بعد ما وصلتَ إليه */}
-      {!last && (
-        <span
-          aria-hidden="true"
-          className={`absolute top-11 h-[calc(100%-2.75rem)] w-0.5 rounded-full ${
-            state === "done" ? "bg-emerald-500/60" : "bg-border"
-          }`}
-          style={{ insetInlineStart: "1.375rem" }}
-        />
-      )}
-
-      <button
-        onClick={onPick}
-        disabled={state === "locked"}
-        className={`grid size-11 shrink-0 place-items-center rounded-full text-sm font-extrabold ring-4 transition ${ring} ${
-          state === "locked" ? "cursor-not-allowed" : "hover:scale-105"
-        }`}
-        aria-label={title}
-      >
-        {state === "done" ? <IconCheckCircle className="size-5" />
-          : state === "locked" ? <IconLock className="size-4" />
-            : n.toLocaleString("ar-EG")}
-      </button>
-
-      <button
-        onClick={onPick}
-        disabled={state === "locked"}
-        className={`min-w-0 flex-1 rounded-2xl border p-3 text-right transition ${
-          state === "current"
-            ? "border-[hsl(var(--gold)/0.55)] bg-[hsl(var(--gold)/0.08)]"
-            : state === "locked"
-              ? "cursor-not-allowed border-border/60 opacity-70"
-              : "border-border hover:border-primary/40"
-        }`}
-      >
-        <span className="flex items-center gap-2">
-          <span className="min-w-0 flex-1 truncate text-sm font-bold">{title}</span>
-          {isFree && <IconGift className="size-3.5 shrink-0 text-emerald-500" />}
-          {state !== "locked" && <IconPlay className={`size-4 shrink-0 ${state === "current" ? "text-primary" : "text-muted-foreground"}`} />}
+    <li className="lp-row" data-state={state} data-passed={state === "done" ? "1" : "0"}>
+      <span className="lp-rail" aria-hidden="true">
+        <span className="lp-dot">
+          {state === "done" && <IconCheckCircle className="size-2.5" />}
         </span>
-        <span className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
-          {duration && <span>{duration}</span>}
-          {state === "done" && <span className="text-emerald-500">تمّت المشاهدة</span>}
-          {state === "current" && <span className="font-bold text-[hsl(var(--gold))]">الدرس الحالي</span>}
-          {state === "locked" && <span>يُفتح بالاشتراك</span>}
+      </span>
+
+      <button type="button" onClick={onPick} disabled={locked} className="lp-card">
+        <span className="lp-n">{n.toLocaleString("ar-EG")}</span>
+
+        <span className="lp-b">
+          <span className="lp-t">{title}</span>
+          <span className="lp-m">
+            {duration && <span>{duration}</span>}
+            {duration && (state !== "open" || isFree) && <span className="lp-m-sep">·</span>}
+            {state === "done" && <span className="lp-m-done">تمّت المشاهدة</span>}
+            {state === "current" && <span className="lp-m-now">تُشاهده الآن</span>}
+            {locked && <span>يُفتح بالاشتراك</span>}
+            {isFree && <span className="lp-chip">مجّاني</span>}
+          </span>
+        </span>
+
+        <span className="lp-go" aria-hidden="true">
+          {locked ? <IconLock className="size-3.5" /> : <IconPlay className="size-3.5" />}
         </span>
       </button>
     </li>
@@ -295,8 +282,8 @@ export function UnitView({
         أطولُ من النافذة يُثبَّت بأعلاها فلا يُبلَغ أسفلُه أبداً. فالشرطُ
         `min-height` كذلك — انظر `.lesson-stick` في `globals.css`.
       */}
-      <div className="lesson-stick">
-        <div className="relative -mx-4 aspect-video overflow-hidden border-y border-border bg-black shadow-bento sm:mx-0 sm:rounded-3xl sm:border">
+      <div className="lesson-pane">
+        <div className="lesson-video relative -mx-4 aspect-video overflow-hidden border-y border-border bg-black shadow-bento sm:mx-0 sm:rounded-3xl sm:border">
           {!current ? null : !canPlay(current.isFree) ? (
             <div className="grid size-full place-items-center bg-slate-900 p-6 text-center">
               <div className="flex flex-col items-center gap-3">
@@ -416,19 +403,32 @@ export function UnitView({
         )}
       </div>
 
-      {/* المسار */}
-      <Card className="!p-4">
-        <div className="mb-1 flex items-center justify-between">
-          <p className="inline-flex items-center gap-2 font-display font-extrabold">
-            <IconListChecks className="size-5 text-primary" /> مسار الدروس
+      {/*
+        المسار — لوحٌ مستقلُّ الحركة.
+        كلُّ لوحٍ يتمرّر وحدَه: من يقلّب الدروسَ لا يُزيح المشغّل، ومن ينزل
+        إلى الواجب لا يُزيح القائمة. انظر `.lesson-pane` في `globals.css`.
+      */}
+      <Card className="lesson-pane !p-4">
+        {/*
+          النسبةُ تُفهم بالطول قبل أن تُقرأ بالرقم — فرقمٌ عائمٌ في الطرف
+          المقابل يُقرأ ولا يُحسّ. والشريطُ يُري كم بقي بنظرة.
+        */}
+        <div className="lp-head">
+          <div className="lp-head-r">
+            <p className="inline-flex items-center gap-2 font-display font-extrabold">
+              <IconListChecks className="size-5 text-primary" /> مسار الدروس
+            </p>
+            <span className="lp-head-n">{percent.toLocaleString("ar-EG")}٪</span>
+          </div>
+          <p className="lp-head-s">
+            {doneHere.toLocaleString("ar-EG")} من {lessons.length.toLocaleString("ar-EG")} درساً في هذه المادّة
           </p>
-          <span className="text-xs font-bold text-primary">{percent.toLocaleString("ar-EG")}٪</span>
+          <div className="lp-bar">
+            <div className="lp-bar-i" style={{ inlineSize: `${percent}%` }} />
+          </div>
         </div>
-        <p className="mb-4 text-xs text-muted-foreground">
-          {doneHere.toLocaleString("ar-EG")} من {lessons.length.toLocaleString("ar-EG")} درساً في هذه المادّة
-        </p>
 
-        <ol className="relative">
+        <ol className="lp">
           {lessons.map((l, i) => (
             <PathNode
               key={l.id}

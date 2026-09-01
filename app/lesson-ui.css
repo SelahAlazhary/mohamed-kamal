@@ -1,0 +1,238 @@
+/* ============================================================
+   مسارُ الدروس
+   ------------------------------------------------------------
+   كان صفّاً من قرصٍ كبيرٍ وبطاقةٍ بينهما فجوة: القرصُ أربعٌ وأربعون بكسلاً
+   بحلقةٍ حولَه، والبطاقةُ إلى جانبه — فيُقرآن شيئين لا شيئاً واحداً،
+   والعينُ تقطع الفجوةَ في كلّ سطر.
+
+   وكلُّ درسٍ منجَزٍ قرصٌ أخضرُ مصمت. وخمسةٌ منها في لوحٍ واحد تُغرقه
+   خضرةً، فيصير **ما تمّ** هو الصارخَ في الشاشة و**ما لم يتمّ** — وهو
+   المطلوبُ فعلُه — باهتاً بينها. وهذا قلبٌ للأولويّة: المنجَزُ يُطمئن
+   ولا يُنادى عليه.
+
+   والرقمُ كان يُمحى عند الإنجاز ويحلّ محلَّه ✓، فيضيع ترتيبُ الدرس —
+   ومن يبحث عن «الدرس الثالث» لا يجده.
+
+   فأُعيد بناؤه على ثلاثة:
+
+   ١) **صفٌّ واحدٌ لا شيئان**: قضيبٌ شعرةٌ على الحافّة بعلامةٍ صغيرة، ثمّ
+      متنُ الدرس ملاصقاً — لا فجوةَ تُقطع.
+   ٢) **الرقمُ يبقى**، والحالةُ تُقال في سطر الوصف لا بمحو الرقم.
+   ٣) **الثقلُ لما لم يتمّ**: المنجَزُ يخفت، والحاليُّ وحدَه يُبرز.
+
+   ولا لونَ جديد: كحليُّ الهوية وذهبُها وأخضرُ الإنجاز وورقُ الثيم.
+   ============================================================ */
+
+.lp { position: relative; display: grid; gap: 0.35rem; }
+
+/*
+  الصفُّ: قضيبٌ ثمّ متن.
+  والقضيبُ عمودٌ بعرضٍ ثابتٍ في الشبكة لا عنصرٌ مطلقُ الموضع — فيمتدّ
+  بامتداد الصفّ مهما طال العنوانُ والتفّ، بلا قياسِ ارتفاعٍ بجافاسكربت.
+*/
+.lp-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.25rem minmax(0, 1fr);
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+/* ــ القضيبُ والعلامة ــ */
+.lp-rail {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+/* الخيطُ يملأ ارتفاعَ الصفّ كلَّه ثمّ تُغطّى العلامةُ فوقه */
+.lp-rail::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inline-size: 2px;
+  border-radius: 999px;
+  background: hsl(var(--border));
+}
+/* أوّلُ صفٍّ يبدأ خيطُه من العلامة، وآخرُه ينتهي عندها — فلا يتدلّى */
+.lp-row:first-child .lp-rail::before { inset-block-start: 50%; }
+.lp-row:last-child .lp-rail::before { inset-block-end: 50%; }
+.lp-row:only-child .lp-rail::before { display: none; }
+/* ما مضى من الطريق ملوَّن، وما بقي رماديّ */
+.lp-row[data-passed="1"] .lp-rail::before { background: hsl(160 84% 39% / 0.45); }
+
+.lp-dot {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  inline-size: 0.85rem;
+  block-size: 0.85rem;
+  border-radius: 999px;
+  background: hsl(var(--card));
+  box-shadow: 0 0 0 2px hsl(var(--border));
+  color: #fff;
+  transition: box-shadow 0.18s ease, background 0.18s ease;
+}
+.lp-row[data-state="done"] .lp-dot {
+  background: hsl(160 84% 39%);
+  box-shadow: 0 0 0 2px hsl(160 84% 39%);
+}
+/* الحاليُّ أكبرُ قليلاً وله هالةٌ — علامةُ «أنت هنا» */
+.lp-row[data-state="current"] .lp-dot {
+  inline-size: 1.1rem;
+  block-size: 1.1rem;
+  background: hsl(var(--gold));
+  box-shadow: 0 0 0 2px hsl(var(--gold)), 0 0 0 6px hsl(var(--gold) / 0.22);
+}
+.lp-row[data-state="locked"] .lp-dot {
+  background: hsl(var(--muted));
+  box-shadow: 0 0 0 2px hsl(var(--border));
+}
+
+/* ــ متنُ الصفّ ــ */
+.lp-card {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.9rem;
+  text-align: start;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px transparent;
+  transition: background 0.18s ease, box-shadow 0.18s ease;
+}
+.lp-card:hover { background: hsl(var(--muted) / 0.55); }
+
+/*
+  الحاليُّ وحدَه يُبرَز — بسطحٍ وحدٍّ وشريطٍ ذهبيٍّ على حافّته.
+  وثلاثةُ دلائلَ لا واحد: من لا يميّز الألوانَ يقرأ الشريطَ والنصّ.
+*/
+.lp-row[data-state="current"] .lp-card {
+  background: hsl(var(--gold) / 0.1);
+  box-shadow: inset 0 0 0 1px hsl(var(--gold) / 0.5);
+}
+.lp-row[data-state="current"] .lp-card::before {
+  content: "";
+  position: absolute;
+  inset-block: 0.35rem;
+  inset-inline-start: 0;
+  inline-size: 3px;
+  border-radius: 999px;
+  background: hsl(var(--gold));
+}
+.lp-row[data-state="current"] { isolation: isolate; }
+.lp-row[data-state="current"] .lp-card { position: relative; }
+
+.lp-row[data-state="locked"] .lp-card { opacity: 0.62; cursor: not-allowed; }
+.lp-row[data-state="locked"] .lp-card:hover { background: transparent; }
+
+/* الرقمُ يبقى مهما كانت الحالة — هو ترتيبُ الدرس لا حالتُه */
+.lp-n {
+  font-family: var(--font-display, inherit);
+  font-size: 0.85rem;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: hsl(var(--muted-foreground));
+}
+.lp-row[data-state="done"] .lp-n { color: hsl(160 84% 32%); }
+.lp-row[data-state="current"] .lp-n { color: hsl(var(--primary)); }
+
+.lp-b { min-width: 0; }
+.lp-t {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.4;
+  /* العنوانُ يلتفّ سطرين ثمّ يُقصّ — عنوانٌ مبتورٌ من أوّله لا يُعرف */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.lp-row[data-state="done"] .lp-t { font-weight: 600; color: hsl(var(--muted-foreground)); }
+.lp-row[data-state="current"] .lp-t { font-weight: 800; }
+
+.lp-m {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+.lp-m-sep { opacity: 0.5; }
+.lp-m-done { color: hsl(160 84% 32%); font-weight: 600; }
+.lp-m-now { color: hsl(var(--primary)); font-weight: 700; }
+
+/*
+  «مجّاني» كلمةٌ لا هديّة.
+  كانت أيقونةَ هديّةٍ خضراءَ بلا نصّ — ورمزٌ بلا كلمةٍ يُخمَّن: أهو
+  هديّةٌ أم مكافأةٌ أم علامةُ جديد؟ والكلمةُ تُقرأ ولا تُخمَّن.
+*/
+.lp-chip {
+  flex: none;
+  padding: 0.05rem 0.4rem;
+  border-radius: 0.4rem;
+  background: hsl(160 84% 39% / 0.14);
+  color: hsl(160 84% 30%);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* زرُّ التشغيل — يظهر عند المرور وفي الحاليّ دائماً */
+.lp-go {
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: 1.9rem;
+  block-size: 1.9rem;
+  border-radius: 0.6rem;
+  color: hsl(var(--muted-foreground));
+  opacity: 0;
+  transition: opacity 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+.lp-card:hover .lp-go { opacity: 1; background: hsl(var(--card)); color: hsl(var(--primary)); }
+.lp-row[data-state="current"] .lp-go {
+  opacity: 1;
+  background: hsl(var(--primary));
+  color: #fff;
+}
+.lp-row[data-state="locked"] .lp-go { opacity: 1; background: transparent; color: hsl(var(--muted-foreground)); }
+/* باللمس لا مرورَ بالفأرة — فيظهر دائماً وإلّا لم يُعرف أنّ الصفَّ يُضغط */
+@media (pointer: coarse) {
+  .lp-go { opacity: 1; }
+  .lp-card { min-height: 3.25rem; }
+}
+
+/*
+  ــ ترويسةُ اللوح ــ
+  النسبةُ كانت رقماً عائماً في الطرف المقابل للعنوان. والنسبةُ تُفهم
+  بالطول قبل أن تُقرأ بالرقم — فيُوضع تحتها شريطٌ يمتلئ بها.
+*/
+.lp-head { margin-bottom: 0.9rem; }
+.lp-head-r {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.lp-head-n { font-size: 0.8rem; font-weight: 800; color: hsl(var(--primary)); font-variant-numeric: tabular-nums; }
+.lp-head-s { margin-top: 0.15rem; font-size: 0.75rem; color: hsl(var(--muted-foreground)); }
+.lp-bar {
+  margin-top: 0.6rem;
+  block-size: 0.3rem;
+  border-radius: 999px;
+  background: hsl(var(--muted));
+  overflow: hidden;
+}
+.lp-bar-i {
+  block-size: 100%;
+  border-radius: 999px;
+  background: linear-gradient(to left, hsl(160 84% 39%), hsl(var(--gold)));
+  transition: inline-size 0.4s ease;
+}
