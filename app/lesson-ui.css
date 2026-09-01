@@ -522,19 +522,35 @@
 .ch {
   position: relative;
   display: block;
-  aspect-ratio: 16 / 7;
+  /*
+    نسبةٌ عريضةٌ **بسقفٍ ثابت**.
+    `aspect-ratio` وحدَها تُخرج الارتفاعَ من العرض: حاويةٌ عرضُها ألفٌ
+    وستُّ مئةٍ بنسبة ١٦:٧ ترتفع سبعَ مئةٍ — شاشةً كاملةً لصورةِ تعريف.
+    فالسقفُ يمنع ذلك على الواسع، والنسبةُ تعمل على الضيّق.
+  */
+  /*
+    و`inline-size: 100%` صريحٌ لا زائد: بدونه يبقى العرضُ `auto`، فإذا
+    قُيّد الارتفاعُ بالسقف اشتقّ المتصفّحُ **العرضَ من الارتفاع** حفظاً
+    للنسبة — فقُيس اللوحُ ٦٣٠ بكسلاً في حاويةٍ عرضُها ١١٥٢، وانكمش عن
+    عرض الصفحة بدل أن يُقصّ. والعرضُ يُثبَّت أوّلاً ثمّ يُقصّ ما زاد.
+  */
+  inline-size: 100%;
+  aspect-ratio: 21 / 8;
+  max-block-size: 15rem;
   margin-block-end: 1.5rem;
   border-radius: 1.25rem;
   overflow: hidden;
   background: hsl(var(--muted));
   box-shadow: inset 0 0 0 1px hsl(var(--border));
 }
-.ch-art,
-.ch-art img,
-.ch-art svg {
+.ch-art {
+  display: block;
   inline-size: 100%;
   block-size: 100%;
   object-fit: cover;
+  /* موضعُ القصّ أعلى الصورة: أغلفةُ الكورسات وجوهٌ وعناوينُ في أعلاها،
+     والقصُّ من المنتصف يقطعها. */
+  object-position: center 35%;
 }
 /*
   الظلُّ يحمل النصّ.

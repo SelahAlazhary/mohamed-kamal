@@ -22,7 +22,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { IconArrowLeft, IconCheckCircle, IconListVideo, IconGift, IconPlay } from "@/components/brand/icons";
 import { EmptyLock } from "@/components/brand/illustrations";
-import { CourseArt } from "@/components/brand/course-art";
 import { PageHeader, Card } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
 import { UnitView, useDone } from "@/components/student/unit-view";
@@ -152,30 +151,32 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
       {buyBanner}
 
       {/*
-        لوحُ الكورس — غلافُه واسمُه وصفُّه.
+        لوحُ الغلاف — صورتُه وحدَها، وإن لم تكن فلا لوح.
         ------------------------------------------------------------------
-        الغلافُ يُرسم بـ`CourseArt` نفسِها التي تُرسم بها بطاقةُ الكورس،
-        فما ضُبط في اللوحة يظهر هنا كما يظهر هناك.
+        كُتب أوّلاً بـ`CourseArt`، وهي تَرسم لوحاً كاملاً: صورةً إن وُجدت،
+        وإلّا **رسماً بديلاً** بزخرفةٍ وشمسةٍ وقلنسوةِ تخرّج. فكورسٌ لم
+        يُضبط غلافُه خرج بقلنسوةٍ بنفسجيّةٍ ممدودةٍ إلى سبعِ مئةِ بكسل —
+        لأنّ `aspect-ratio` على حاويةٍ عرضُها ألفٌ وستُّ مئةٍ يُخرج ارتفاعاً
+        بقدرها، والرسمُ البديلُ يُقصّ ويُكبَّر ليملأه.
+
+        و**غيابُ الغلاف ليس عطلاً يُسدّ برسمٍ بديل**: هو قولُ المشرف إنّه لم
+        يضع صورة. فالأولى ألّا يُعرض لوحٌ أصلاً — والاسمُ والصفُّ في ترويسة
+        الصفحة فوقه، فلا يضيع شيء.
+
+        وارتفاعُه مسقوفٌ بمقدارٍ ثابت مع نسبةٍ عريضة: الغلافُ شريطُ تعريفٍ
+        لا شاشةٌ تُملأ.
       */}
-      <div className="ch">
-        <CourseArt
-          seed={subject.id}
-          title={subject.name}
-          cover={subject.cover}
-          coverFit={subject.coverFit}
-          coverRatio={subject.coverRatio}
-          coverColor={subject.coverColor}
-          coverPattern={subject.coverPattern}
-          coverText={subject.coverText}
-          coverStickers={subject.coverStickers}
-          className="ch-art"
-        />
-        <span className="ch-scrim" aria-hidden="true" />
-        <span className="ch-body">
-          {subject.grade && <span className="ch-g">{subject.grade}</span>}
-          <span className="ch-t">{subject.name}</span>
-        </span>
-      </div>
+      {subject.cover?.trim() && (
+        <div className="ch">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={subject.cover} alt="" className="ch-art" />
+          <span className="ch-scrim" aria-hidden="true" />
+          <span className="ch-body">
+            {subject.grade && <span className="ch-g">{subject.grade}</span>}
+            <span className="ch-t">{subject.name}</span>
+          </span>
+        </div>
+      )}
 
       <p className="ch-h">
         <IconListVideo className="size-5 text-primary" /> محتوى الكورس
