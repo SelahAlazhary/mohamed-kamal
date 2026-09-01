@@ -35,7 +35,7 @@ import {
 } from "@/components/brand/icons";
 import { useContent } from "@/components/content/content-provider";
 import { findPayStyle, payClass, payColorVars } from "@/lib/pay-styles";
-import { activeMethods, numberLabel, requestProblem, STATUS_LABEL } from "@/lib/payments";
+import { activeMethods, numberLabel, requestProblem } from "@/lib/payments";
 import { planPrice, planColor } from "@/lib/plans";
 import { planDuration, planScopeLabel } from "@/components/sections/plans";
 import type { PayMethod, PayRequest, SitePlan, Subject } from "@/lib/types";
@@ -137,7 +137,6 @@ export function PayGate({
     return (
       <div className="pay-gate" style={payColorVars(cfg.colors)}>
         <Pending r={openOne} subject={subject} onClose={onDone} onRefresh={refresh} />
-        <RecentList list={mine.filter((r) => r.id !== openOne.id)} />
       </div>
     );
   }
@@ -462,7 +461,6 @@ export function PayGate({
         )}
       </AnimatePresence>
 
-      {step < 3 && <RecentList list={mine} />}
     </div>
   );
 }
@@ -671,36 +669,14 @@ function Pending({
   );
 }
 
-/** طلباتي السابقة — يطمئنّ الطالب أن تحويله مسجَّل ولم يضِع. */
-function RecentList({ list }: { list: PayRequest[] }) {
-  if (list.length === 0) return null;
-  return (
-    <div className="mt-6 border-t border-border pt-4">
-      <p className="pay-sec-t mb-2">طلباتي السابقة</p>
-      <div className="grid gap-2">
-        {list.slice(0, 4).map((r) => (
-          <div key={r.id} className="flex items-center justify-between gap-3 rounded-xl border border-border px-3 py-2">
-            <span className="min-w-0">
-              <span className="block truncate text-[11px] font-bold">{r.planName}</span>
-              <span className="block text-[10px] text-muted-foreground">
-                {new Date(r.at).toLocaleDateString("ar-EG")} · {ar(r.amount)} ج.م
-              </span>
-            </span>
-            <span className="shrink-0 text-left">
-              <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
-                r.status === "approved" ? "bg-emerald-500/15 text-emerald-600"
-                  : r.status === "rejected" ? "bg-rose-500/15 text-rose-500"
-                    : "bg-amber-500/15 text-amber-600"
-              }`}>
-                {STATUS_LABEL[r.status]}
-              </span>
-              {r.status === "approved" && r.code && (
-                <span className="mt-0.5 block font-mono text-[10px] font-bold">{r.code}</span>
-              )}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+/*
+  «طلباتي السابقة» رُفعت من البوّابة.
+  ------------------------------------------------------------------
+  كانت تسرد آخرَ أربعة طلباتٍ بمبالغها وأكوادِ تفعيلها المقبولة. وهي
+  حشوٌ في شاشةٍ غرضُها إتمامُ عمليةٍ واحدة: من فتح البوّابةَ ليدفع لا
+  يُعرض عليه سجلُّ ما دفع، والطلبُ القائمُ يُعرض وحدَه في `Pending`
+  فيبقى الاطمئنانُ الذي كانت تؤدّيه.
+
+  ورفعُها يُخفي معها أكوادَ التفعيل المقبولة من الشاشة — وهي أسرارٌ
+  لا يُحسن بثُّها في قائمةٍ تُقرأ من فوق الكتف.
+*/
