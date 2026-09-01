@@ -237,31 +237,118 @@
 .pay-m-head {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.65rem;
   min-width: 0;
 }
 .pay-m-name { min-width: 0; flex: 1 1 auto; }
-.pay-m-t { display: block; font-size: 0.875rem; font-weight: 700; line-height: 1.3; }
-.pay-m-h { display: block; font-size: 0.7rem; color: hsl(var(--muted-foreground)); }
-.pay-m-body { margin-top: 0.7rem; padding-top: 0.6rem; border-top: 1px solid hsl(var(--border)); }
-.pay-m-pick {
+.pay-m-t { display: block; font-size: 0.9rem; font-weight: 800; line-height: 1.3; }
+.pay-m-h { display: block; margin-top: 0.05rem; font-size: 0.75rem; color: hsl(var(--muted-foreground)); }
+
+/* علامةُ الاختيار في الرأس — تُغني عن تلوين البطاقة كلِّها */
+.pay-m-on {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: var(--pg-a);
+  color: #fff;
+}
+
+/*
+  الرقمُ — بطلُ البطاقة.
+  ------------------------------------------------------------------
+  كان صفّاً بوزن «بيانات إضافية» داخل شريطٍ رماديّ، فبدا حقلاً معطّلاً
+  لا رقماً يُؤخذ. وهو **الغرضُ من البطاقة كلِّها**: من فتح هذه الشاشة
+  جاء ليأخذه.
+
+  فيُرفع إلى أكبر خطٍّ فيها، بخطٍّ ثابتٍ متساوي الأرقام — فيُقرأ رقماً
+  رقماً ولا تتشابه خانتان — وبجانبه زرُّ نسخٍ **مكتوبٌ نصُّه**: أيقونةٌ
+  وحدَها تُفسَّر، وكلمةُ «نسخ» لا تُفسَّر.
+*/
+.pay-m-num {
+  margin-top: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--pg-a) 6%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pg-a) 18%, transparent);
+}
+.pay-m-num-l {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+}
+.pay-m-num-r {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.pay-m-num-v {
+  min-width: 0;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  /* لا يُبتر: يلتفّ إن ضاق — رقمٌ ناقصٌ يُحوَّل به إلى غير أهله */
+  overflow-wrap: anywhere;
+}
+/* والطولُ يُنقص الخطَّ لا يُنقص الرقم */
+.pay-m-num-v[data-len="l"] { font-size: 1rem; letter-spacing: 0.02em; }
+.pay-m-num-v[data-len="xl"] { font-size: 0.85rem; letter-spacing: 0; }
+.pay-m-copy {
   flex: none;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 0.3rem;
-  min-height: 2.25rem;
-  padding: 0 0.9rem;
-  border-radius: 0.75rem;
-  /* نصُّ زرٍّ يُقرأ لا شارةٌ تُلمح — فلا ينزل عن ١٢ بكسلاً */
+  min-height: 2rem;
+  padding: 0 0.65rem;
+  border-radius: 0.6rem;
+  background: hsl(var(--card));
+  box-shadow: inset 0 0 0 1px hsl(var(--border));
   font-size: 0.75rem;
   font-weight: 700;
-  white-space: nowrap;
-  box-shadow: inset 0 0 0 1px hsl(var(--border));
   color: hsl(var(--muted-foreground));
   transition: color 0.15s ease, box-shadow 0.15s ease;
 }
-.pay-m-pick:hover { color: hsl(var(--foreground)); box-shadow: inset 0 0 0 1px var(--pg-a); }
+.pay-m-copy:hover { color: hsl(var(--foreground)); box-shadow: inset 0 0 0 1px var(--pg-a); }
+.pay-m-copy[data-copied="1"] { color: var(--pg-a); box-shadow: inset 0 0 0 1px var(--pg-a); }
+
+.pay-m-body { margin-top: 0.55rem; }
+.pay-m-note {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: hsl(var(--muted-foreground));
+}
+
+/*
+  والفعلُ آخرَ البطاقة بعرضها.
+  كان في الصفّ الأوّل يزاحم الاسمَ ويُعرض قبل الرقم — والزرُّ إقرارٌ
+  بتحويلٍ وقع، فلا يُعرض قبل ما يُحوَّل عليه.
+*/
+.pay-m-pick {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 100%;
+  min-height: 2.5rem;
+  margin-top: 0.75rem;
+  border-radius: 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px hsl(var(--border));
+  color: hsl(var(--muted-foreground));
+  transition: color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.pay-m-pick:hover { color: hsl(var(--foreground)); box-shadow: inset 0 0 0 1.5px var(--pg-a); }
 .pay-method[data-on="1"] .pay-m-pick {
   background: var(--pg-a);
   color: #fff;
@@ -284,7 +371,10 @@
 @container paygate (max-width: 30rem) {
   .pay-m-head { flex-wrap: wrap; }
   .pay-m-name { flex: 1 1 8rem; }
-  .pay-m-pick { width: 100%; margin-top: 0.6rem; }
+  /* والرقمُ يصغر قليلاً كي يبقى في سطرٍ واحدٍ ما أمكن */
+  .pay-m-num-v { font-size: 1.05rem; }
+  .pay-m-num-v[data-len="l"] { font-size: 0.95rem; }
+  .pay-m-num-v[data-len="xl"] { font-size: 0.8rem; }
 }
 
 /*
@@ -482,6 +572,7 @@ textarea.pay-f-i { min-height: 4.5rem; resize: vertical; }
    ============================================================ */
 @media (pointer: coarse) {
   .pay-m-pick { min-height: 2.75rem; }
+  .pay-m-copy { min-height: 2.75rem; padding-inline: 0.9rem; }
   .pay-row { min-height: 2.75rem; }
   .pay-plan { padding-block: 1rem; }
 }

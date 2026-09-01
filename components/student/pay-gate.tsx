@@ -262,35 +262,88 @@ export function PayGate({
                       data-on={method?.id === m.id ? "1" : "0"}
                       style={m.color ? ({ "--pg-accent": m.color } as React.CSSProperties) : undefined}
                     >
+                      {/*
+                        الترتيبُ: تعريفٌ ← رقمٌ ← فعل.
+                        ------------------------------------------------------
+                        كان الزرُّ في الصفّ الأوّل يزاحم الاسمَ، والرقمُ تحته
+                        صفّاً بوزن «بيانات إضافية». وهو مقلوب: الطالبُ جاء
+                        ليأخذ الرقمَ لا ليضغط زرّاً، والزرُّ إقرارٌ بما فعل
+                        فلا يُعرض قبل أن يفعله.
+
+                        فالرقمُ صار بطلَ البطاقة — أكبرَ خطٍّ فيها بخطٍّ
+                        ثابتٍ مجزّأ — والزرُّ نزل إلى قاعها بعرضها.
+                      */}
                       <div className="pay-m-head">
                         <PayMark
                           kind={m.kind}
                           name={m.name}
                           logo={m.logo}
                           color={m.color}
-                          className="pay-method-icon size-10 shrink-0"
+                          className="pay-method-icon size-9 shrink-0"
                         />
                         <span className="pay-m-name">
                           <span className="pay-m-t">{m.name}</span>
                           {m.holder && <span className="pay-m-h">{m.holder}</span>}
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => setMethod(m)}
-                          className="pay-m-pick"
-                        >
-                          {method?.id === m.id ? <><IconCheck className="size-3" /> حوّلت عليها</> : "حوّلت عليها"}
-                        </button>
-                      </div>
-
-                      {/* بيانات التحويل — ظاهرة لكل طريقة بلا ضغط */}
-                      <div className="pay-m-body">
-                        <Row label={numberLabel(m.kind)} value={m.number} onCopy={copy} copied={copied} big />
-                        {m.extra && <Row label="بيانات إضافية" value={m.extra} onCopy={copy} copied={copied} />}
-                        {m.note && (
-                          <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">{m.note}</p>
+                        {method?.id === m.id && (
+                          <span className="pay-m-on" aria-hidden>
+                            <IconCheck className="size-3.5" />
+                          </span>
                         )}
                       </div>
+
+                      {/* الرقمُ — بطلُ البطاقة، ونسخُه زرٌّ يُرى لا تلميح */}
+                      <div className="pay-m-num">
+                        <span className="pay-m-num-l">{numberLabel(m.kind)}</span>
+                        <span className="pay-m-num-r">
+                          {/*
+                            الطويلُ يصغر خطُّه.
+                            «عنوانُ إنستاباي» يبلغ أربعةً وثلاثين حرفاً بلا
+                            موضعِ قطعٍ طبيعيّ، فيُكسر في منتصف كلمةٍ
+                            («instapa/y») بخطّ ١٫١٥rem. والرقمُ لا يُبتر —
+                            فيبقى كاملاً ويصغر بدل أن يُقطع قطعاً قبيحاً.
+                          */}
+                          <span
+                            className="pay-m-num-v"
+                            dir="ltr"
+                            data-len={m.number.length > 26 ? "xl" : m.number.length > 16 ? "l" : "m"}
+                          >
+                            {m.number}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => copy(m.number)}
+                            className="pay-m-copy"
+                            data-copied={copied === m.number ? "1" : "0"}
+                            aria-label={`انسخ ${numberLabel(m.kind)}`}
+                          >
+                            {copied === m.number
+                              ? <><IconCheck className="size-3.5" /> نُسخ</>
+                              : <><IconCopy className="size-3.5" /> نسخ</>}
+                          </button>
+                        </span>
+                      </div>
+
+                      {/*
+                        «بيانات إضافية» لا تُعاد إن كانت هي صاحبَ الحساب —
+                        كان الاسمُ يُكتب مرّتين في البطاقة الواحدة.
+                      */}
+                      {m.extra && m.extra.trim() !== (m.holder ?? "").trim() && (
+                        <div className="pay-m-body">
+                          <Row label="بيانات إضافية" value={m.extra} onCopy={copy} copied={copied} />
+                        </div>
+                      )}
+                      {m.note && <p className="pay-m-note">{m.note}</p>}
+
+                      <button
+                        type="button"
+                        onClick={() => setMethod(m)}
+                        className="pay-m-pick"
+                      >
+                        {method?.id === m.id
+                          ? <><IconCheck className="size-3.5" /> حوّلتُ على هذه</>
+                          : "حوّلتُ على هذه"}
+                      </button>
                     </div>
                   ))}
                 </div>
