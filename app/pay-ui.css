@@ -1,0 +1,498 @@
+/* ============================================================
+   بوّابة الدفع — البنية
+   ------------------------------------------------------------
+   الهيئاتُ العشرون في `globals.css` تُبدّل **السطحَ والحافّة**: زجاجٌ
+   أو لوحٌ مقصوصٌ أو حدٌّ وحدَه. وهذا الملفُّ يُبدّل ما هو أسبقُ منها —
+   **الترتيبَ والوزن**: أين يقع البصرُ أوّلاً، وما الذي يُقرأ قبل ما،
+   وأيُّ رقمٍ يكبر.
+
+   ولا يُلمس محدِّدٌ من محدّدات الهيئات: `.pay-method` و`.pay-step`
+   و`.pay-details` تبقى بأسمائها، فتظلّ العشرون تعمل. والمضافُ هنا
+   أصنافٌ جديدةٌ حولَها لا بدلاً منها.
+
+   ولا لونَ جديد: كلُّه من `--pg-a` وورقِ الثيم.
+   ============================================================ */
+
+/*
+  ١ ــ الخطوات تُسمَّى.
+  ------------------------------------------------------------------
+  كان المؤشّرُ ثلاثَ نقاطٍ بلا اسم، والاسمُ في `title` لا يظهر إلّا
+  بمرور الفأرة — ولا فأرةَ في الجوّال. فالطالبُ يرى «●●●» ولا يعرف أين
+  هو ولا كم بقي.
+
+  **والدفعُ أحوجُ ما يكون إلى ذلك**: من لا يعرف كم بقي يظنّ أنّه التزم
+  بما لم يلتزم، فيتردّد أو ينصرف. فيُكتب الاسمُ تحت العلامة، ويُوصل
+  بينها بقضيبٍ يمتلئ بما تمّ.
+
+  والعلامةُ نفسُها تبقى `.pay-step` — فهيئاتُ اللوحة تُلوّنها وتُشكّلها
+  كما كانت، والمضافُ غلافٌ حولها واسمٌ تحتها.
+*/
+/* `.pay-gate` بادئةً لا زينة: هذا الملفُّ يُستورَد في أوّل
+   `globals.css`، فقواعدُه تسبق قواعدَ الهيئات فيه. وعند تساوي القوّة
+   يفوز المتأخّر — أي الهيئات. فما أُريد له أن يغلب تُرفع قوّتُه. */
+.pay-gate .pay-steps { align-items: flex-start; gap: 0; }
+.pay-stepi {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.45rem;
+  flex: 1 1 0;
+  min-width: 0;
+}
+/* القضيبُ بين علامتين — يُرسم خلفَ العلامة لا فوقها */
+.pay-stepi::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0.7rem;
+  /* من منتصف هذه إلى منتصف التالية — والاتّجاهُ منطقيٌّ فيصحّ في RTL */
+  inset-inline-start: calc(50% + 1.1rem);
+  inline-size: calc(100% - 2.2rem);
+  block-size: 2px;
+  background: hsl(var(--border));
+  border-radius: 999px;
+}
+.pay-stepi:last-child::before { display: none; }
+.pay-stepi[data-done="1"]::before { background: var(--pg-a); }
+
+.pay-step-t {
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  color: hsl(var(--muted-foreground));
+  transition: color 0.2s ease;
+}
+.pay-stepi[data-at="1"] .pay-step-t { color: hsl(var(--foreground)); }
+
+/* العلامةُ الافتراضيّةُ قرصٌ مرقَّم — والهيئاتُ تغلبه حيث تشاء */
+.pay-steps .pay-step {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+}
+.pay-steps .pay-step[data-on="1"] { background: var(--pg-a); color: #fff; }
+.pay-steps .pay-step-num { display: block; }
+
+/*
+  والهيئاتُ الصغيرةُ تبقى صغيرة.
+  «النقاط» و«الشريط» اختارهما المشرفُ ليخفّ المؤشّر، فلا تُكبَّر علامتُهما
+  — لكنّ الاسمَ يبقى تحتها، فهو ليس زينةً بل موضعُ الطالب.
+*/
+.pg-steps-dots .pay-steps .pay-step,
+.pg-steps-bar .pay-steps .pay-step { font-size: 0; }
+.pg-steps-dots .pay-steps .pay-step {
+  width: 0.5rem; height: 0.5rem;
+  background: hsl(var(--border));
+}
+.pg-steps-dots .pay-steps .pay-step[data-on="1"] { background: var(--pg-a); }
+.pg-steps-dots .pay-stepi::before { inset-block-start: 0.24rem; }
+
+.pay-gate.pg-steps-bar .pay-stepi { justify-items: stretch; gap: 0.4rem; }
+.pg-steps-bar .pay-steps .pay-step {
+  width: auto; height: 0.28rem; border-radius: 999px;
+  background: hsl(var(--border));
+}
+.pg-steps-bar .pay-steps .pay-step[data-on="1"] { background: var(--pg-a); }
+/* الشريطُ يصل بنفسه، فلا قضيبَ بين علاماته */
+.pg-steps-bar .pay-stepi::before { display: none; }
+
+/* «بلا مؤشّر» يُخفي الكلَّ — والقرارُ قرارُ المشرف */
+.pg-steps-none .pay-steps { display: none; }
+
+
+/*
+  ٢ ــ ملخّصُ الطلب — ما يُشترى وبكم.
+  ------------------------------------------------------------------
+  كان اسمُ الخطة ومبلغُها سطراً صغيراً `text-xs` مقصوصاً بـ`truncate`
+  في رأس الخطوة — وهو **أهمُّ ما في الشاشة**: من يدفع يريد أن يرى ما
+  يدفع مقابله وكم، في كلّ لحظةٍ حتّى الإرسال.
+
+  فيُرفع إلى لوحٍ أعلى البوّابة: الاسمُ والمدّةُ في جهة، والمبلغُ في
+  الأخرى بحجمٍ يليق برقمٍ يُدفع. ويبقى معروضاً في الخطوتين معاً، فلا
+  يُسأل الطالبُ أن يتذكّر.
+*/
+.pay-sum {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.85rem 1rem;
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--pg-a) 7%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pg-a) 22%, transparent);
+}
+.pay-sum-n { min-width: 0; }
+.pay-sum-t {
+  display: block;
+  font-family: var(--font-display, inherit);
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.pay-sum-s {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-top: 0.15rem;
+  font-size: 0.7rem;
+  color: hsl(var(--muted-foreground));
+}
+/* المبلغُ لا يُقصّ ولا يلتفّ — رقمٌ يُدفع يُقرأ كاملاً أو لا يُعرض */
+.pay-amt {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  flex: none;
+  white-space: nowrap;
+}
+.pay-amt-v {
+  font-family: var(--font-display, inherit);
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--pg-a);
+}
+.pay-amt-c { font-size: 0.72rem; font-weight: 700; color: hsl(var(--muted-foreground)); }
+.pay-amt-was {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: hsl(var(--muted-foreground));
+  text-decoration: line-through;
+}
+
+
+/*
+  ٣ ــ صفُّ بياناتٍ يُنسخ.
+  ------------------------------------------------------------------
+  عطلان في الصفّ القديم: `truncate` على القيمة، و`title` وحدَه دليلاً
+  على أنّها تُنسخ.
+
+  **والقصُّ أخطرُهما.** رقمُ المحفظة يُقصّ إلى «٠١٠١٢٣…» على شاشةٍ
+  ضيّقة، ومن يقرؤه ليحوّل عليه يقرأ رقماً ناقصاً — والنسخُ يُعطيه كاملاً
+  لكنّ من كتبه بيده حوّل إلى غير أهله. فالرقمُ لا يُقصّ: يلتفّ إن ضاق.
+
+  **والثاني أنّ النسخَ لا يُرى.** `title` لا يظهر باللمس أصلاً، فالطالبُ
+  يقرأ الرقمَ ويكتبه بيده ولا يعلم أنّ ضغطةً تكفي. فتُوضع أيقونةٌ ظاهرة.
+*/
+.pay-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  /* لا هامشَ سالب: هيئةُ «العادي» تُصفّر حشوةَ اللوح الأفقيّة
+     (`.pg-details-plain`)، فالسالبُ يُخرج الصفَّ من حدّه. */
+  padding: 0.5rem 0.55rem;
+  border-radius: 0.7rem;
+  text-align: start;
+  transition: background 0.15s ease;
+}
+.pay-row:hover { background: color-mix(in srgb, var(--pg-a) 8%, transparent); }
+.pay-row-l {
+  flex: none;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+}
+.pay-row-v {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  font-weight: 700;
+  text-align: end;
+}
+/* لا قصَّ — الرقمُ يلتفّ ولا يُبتر */
+.pay-row-v .pay-value {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+.pay-row-big .pay-value { font-size: 0.95rem; letter-spacing: 0.02em; }
+.pay-row-i { flex: none; opacity: 0.45; transition: opacity 0.15s ease; }
+.pay-row:hover .pay-row-i { opacity: 0.9; }
+.pay-row[data-copied="1"] { background: color-mix(in srgb, var(--pg-a) 14%, transparent); }
+.pay-row[data-copied="1"] .pay-row-i { opacity: 1; color: var(--pg-a); }
+
+
+/*
+  ٤ ــ بطاقةُ الطريقة.
+  ------------------------------------------------------------------
+  كانت العلامةُ والاسمُ والزرُّ في صفٍّ واحد، ونصُّ الزرّ «حوّلت عليها»
+  — فيُضغط الصفُّ كلُّه على ٣٧٥ بكسلاً ولا يبقى للاسم إلّا حرفان.
+
+  فيُنزل الزرُّ سطراً وحدَه تحت البيانات على الضيّق، ويرجع إلى الصفّ
+  حيث يتّسع. والرقمُ يبقى ظاهراً بلا ضغط — فمن جاء ليحوّل يجد ما يحوّل
+  عليه من أوّل نظرة.
+*/
+.pay-m-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+.pay-m-name { min-width: 0; flex: 1 1 auto; }
+.pay-m-t { display: block; font-size: 0.875rem; font-weight: 700; line-height: 1.3; }
+.pay-m-h { display: block; font-size: 0.7rem; color: hsl(var(--muted-foreground)); }
+.pay-m-body { margin-top: 0.7rem; padding-top: 0.6rem; border-top: 1px solid hsl(var(--border)); }
+.pay-m-pick {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  min-height: 2.25rem;
+  padding: 0 0.9rem;
+  border-radius: 0.75rem;
+  /* نصُّ زرٍّ يُقرأ لا شارةٌ تُلمح — فلا ينزل عن ١٢ بكسلاً */
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: inset 0 0 0 1px hsl(var(--border));
+  color: hsl(var(--muted-foreground));
+  transition: color 0.15s ease, box-shadow 0.15s ease;
+}
+.pay-m-pick:hover { color: hsl(var(--foreground)); box-shadow: inset 0 0 0 1px var(--pg-a); }
+.pay-method[data-on="1"] .pay-m-pick {
+  background: var(--pg-a);
+  color: #fff;
+  box-shadow: none;
+}
+/*
+  والضيّقُ يُنزل الزرَّ سطراً — **بعرض البوّابة لا بعرض الشاشة**.
+  ------------------------------------------------------------------
+  كُتبت هذه القاعدةُ أوّلاً بـ`@media (max-width: 30rem)` فلم تعمل: البوّابةُ
+  تُعرض في عمودٍ من `lg:grid-cols-[1fr,20rem]`، فعرضُها نحو ٤٤٠ بكسلاً
+  والشاشةُ ٩٨٠ — والاستعلامُ يسأل الشاشةَ فيقول «واسعة» والبطاقةُ ضيّقة.
+
+  والقياسُ أثبته: اسمُ «فودافون كاش» عرضُ محتواه ٤٨ بكسلاً في صندوقٍ
+  عرضُه ١٢ — مسحوقٌ بين الأيقونة والزرّ.
+
+  فالسؤالُ يُوجَّه إلى الحاوية: `@container` يقيس البوّابةَ نفسَها، فتصحّ
+  في العمود الضيّق وفي الصفحة العريضة معاً.
+*/
+.pay-gate { container-type: inline-size; container-name: paygate; }
+@container paygate (max-width: 30rem) {
+  .pay-m-head { flex-wrap: wrap; }
+  .pay-m-name { flex: 1 1 8rem; }
+  .pay-m-pick { width: 100%; margin-top: 0.6rem; }
+}
+
+/*
+  والأضيقُ من ذلك يُنزل القيمةَ سطراً.
+  ------------------------------------------------------------------
+  قيست البوّابةُ بعرض ٣٠١ بكسلاً فبقي رقمُ المحفظة مقصوصاً: العنوانُ
+  والقيمةُ والأيقونةُ في سطرٍ واحد، فما بقي للرقم أضيقُ منه. و`رقمٌ
+  مقصوصٌ` هو العطلُ الذي أُصلح أوّلاً — فلا يُترك يعود من باب الضيق.
+
+  فالعنوانُ يصعد سطراً والقيمةُ تنزل بعرض الصفّ كلِّه: أطولُ رقمٍ يُقرأ.
+*/
+@container paygate (max-width: 22rem) {
+  .pay-row { flex-direction: column; align-items: flex-start; gap: 0.15rem; }
+  .pay-row-v { width: 100%; justify-content: space-between; }
+  /* وشبكةُ الخطط تعود عموداً — بطاقتان في ٣٠٠ بكسلٍ لا تسعان اسماً */
+  .pay-gate.pg-list-grid .pay-methods { grid-template-columns: minmax(0, 1fr); }
+
+/* قائمةُ الخطط — عمودٌ دائماً، لا تتبع «ترتيبَ طرق الدفع» */
+.pay-plans { display: grid; gap: 0.65rem; }
+
+}
+/* الاسمُ لا يُسحق مهما ضاق: يلتفّ ولا يُبتر */
+.pay-m-t { overflow-wrap: anywhere; }
+
+
+/*
+  ٥ ــ بطاقةُ الخطة.
+  ------------------------------------------------------------------
+  السعرُ في جهةٍ والاسمُ في الأخرى، والمسافةُ بينهما تتّسع فيتباعدان
+  حتّى لا يُقرآ معاً. فيُثبَّت السعرُ في عمودٍ بعرضه، ويبقى ملاصقاً.
+*/
+.pay-plan {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  padding: 0.9rem;
+  text-align: start;
+}
+.pay-plan-n { min-width: 0; }
+.pay-plan-t {
+  display: block;
+  font-family: var(--font-display, inherit);
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.pay-plan-d {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: hsl(var(--muted-foreground));
+}
+.pay-plan-m {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.35rem;
+  font-size: 0.68rem;
+  color: hsl(var(--muted-foreground));
+}
+.pay-plan-p { flex: none; text-align: end; }
+.pay-plan-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-bottom: 0.3rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: hsl(var(--primary));
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+/*
+  والخطةُ في العمود الضيّق تصير عموداً واحداً: السعرُ تحت اسمه لا بجانبه.
+  ------------------------------------------------------------------
+  وموضعُ هذه الكتلة مقصود. كُتبت أوّلاً مع كتلة القسم الرابع — أي **قبل**
+  تعريف `.pay-plan` — وقوّتُهما سواء، فغلب المتأخّرُ وهو التعريفُ نفسُه،
+  وبقيت البطاقةُ عمودين في حاويةٍ عرضُها ٢٨٦ بكسلاً. والقياسُ كشفه:
+  `grid-template-columns` تقرأ `176.95px 65.88px` حيث يُنتظر عمودٌ واحد.
+
+  فالكتلةُ تُوضع بعد ما تغلبه — لا تُرفع قوّتُها. ورفعُ القوّة يُصلح
+  الأثرَ ويُبقي الفخّ: من يضيف قاعدةً بعدها يقع فيه ثانية.
+*/
+@container paygate (max-width: 30rem) {
+  .pay-plan { grid-template-columns: minmax(0, 1fr); gap: 0.5rem; }
+  .pay-plan-p { text-align: start; }
+  .pay-plan-badge { margin-bottom: 0; }
+}
+
+
+/*
+  ٦ ــ الحقول.
+  ------------------------------------------------------------------
+  كانت خمسةَ حقولٍ كلٌّ منها بسلسلة أصنافٍ مكتوبةٍ بيدها — فاختلفت
+  حشواتُها ومقاساتُ نصّها. والاستمارةُ يُقرأ اتّساقُها قبل أن يُقرأ
+  محتواها: ما اختلف ارتفاعُه يبدو معطوباً ولو عمل.
+*/
+.pay-f { display: block; }
+.pay-f-l {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: hsl(var(--muted-foreground));
+}
+.pay-f-r { color: hsl(0 72% 51%); }
+.pay-f-i {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, hsl(var(--card)) 60%, transparent);
+  box-shadow: inset 0 0 0 1px hsl(var(--border));
+  font-size: 0.875rem;
+  outline: none;
+  transition: box-shadow 0.15s ease;
+}
+.pay-f-i:focus { box-shadow: inset 0 0 0 2px var(--pg-a); }
+.pay-f-i::placeholder { color: hsl(var(--muted-foreground) / 0.7); }
+textarea.pay-f-i { min-height: 4.5rem; resize: vertical; }
+
+/* رفعُ الإيصال — منطقةٌ تُسقط فيها الصورةُ لا زرٌّ صغير */
+.pay-drop {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 0.9rem;
+  border: 1.5px dashed hsl(var(--border));
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.pay-drop:hover { border-color: var(--pg-a); background: color-mix(in srgb, var(--pg-a) 5%, transparent); }
+.pay-drop-t { font-size: 0.78rem; font-weight: 700; }
+.pay-drop-s { display: block; font-size: 0.68rem; font-weight: 400; color: hsl(var(--muted-foreground)); }
+.pay-drop img { flex: none; width: 2.75rem; height: 2.75rem; border-radius: 0.6rem; object-fit: cover; }
+
+
+/* ٧ ــ الإجراءُ الأخير — زرٌّ بعرض اللوح لا يُخطئه أحد */
+.pay-go {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  min-height: 3rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #fff;
+}
+.pay-go:disabled { opacity: 0.6; }
+
+.pay-err {
+  padding: 0.55rem 0.8rem;
+  border-radius: 0.8rem;
+  background: hsl(0 72% 51% / 0.1);
+  color: hsl(0 72% 45%);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* ٨ ــ الإيقاع — فاصلٌ واحدٌ في البوّابة كلّها */
+.pay-stack { display: grid; gap: 0.85rem; }
+.pay-sec-t {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: hsl(var(--muted-foreground));
+}
+
+
+/* ============================================================
+   ٩ ــ اللمسُ والقراءةُ — ما قِيس فأُصلح
+   ------------------------------------------------------------
+   قيست البوّابةُ بهيئاتها الخمس على عرضٍ ضيّق، فخرج عطلان:
+
+   **أهدافُ لمسٍ دون الأربعين.** زرُّ «حوّلت عليها» ٣٦ بكسلاً، وصفُّ نسخِ
+   رقم المحفظة ٣٩ — وهما أكثرُ ما يُضغط في الشاشة. والإصبعُ يُصيب نحوَ
+   ٤٤، فما دونها يُصاب بالتقريب: تُضغط الطريقةُ الخطأ، ويُنسخ الرقمُ
+   الخطأ، ويُحوَّل إلى غير أهله.
+
+   **ونصوصٌ بحجم ١٠٫٩.** اسمُ الخطوة ووصفُ الخطة — وهما ممّا يُقرأ لا
+   ممّا يُلمح. والعربيّةُ تحتاج حجماً أكبرَ من اللاتينيّة عند القياس
+   نفسِه: تفاصيلُها في النقاط والهمزات.
+
+   والشاراتُ تبقى صغيرةً — `--badge` و«ج.م» والمشطوب: تلك تُلمح.
+   ============================================================ */
+@media (pointer: coarse) {
+  .pay-m-pick { min-height: 2.75rem; }
+  .pay-row { min-height: 2.75rem; }
+  .pay-plan { padding-block: 1rem; }
+}
+
+/* أصغرُ ما يُقرأ في البوّابة ١٢ بكسلاً — والشاراتُ خارجَها */
+.pay-step-t,
+.pay-plan-m,
+.pay-plan-d,
+.pay-sum-s,
+.pay-sec-t,
+.pay-row-l,
+.pay-f-l,
+.pay-m-h,
+.pay-drop-s { font-size: 0.75rem; }

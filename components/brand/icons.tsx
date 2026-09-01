@@ -120,6 +120,20 @@ export function IconArrowLeft(p: IconProps) {
   );
 }
 
+/**
+ * النسخ — ورقتان إحداهما خلف الأخرى.
+ * تُوضع بجانب ما يُنسخ في بوّابة الدفع: `title` لا يظهر باللمس، فبلا
+ * أيقونةٍ ظاهرةٍ لا يعلم الطالبُ أنّ رقمَ المحفظة يُنسخ بضغطة فيكتبه بيده.
+ */
+export function IconCopy(p: IconProps) {
+  return (
+    <Icon {...p}>
+      <rect x="9" y="9" width="11.2" height="11.2" rx="2" />
+      <path d="M15 6.4V5.8a2 2 0 0 0-2-2H5.8a2 2 0 0 0-2 2V13a2 2 0 0 0 2 2h.6" />
+    </Icon>
+  );
+}
+
 function IconPlayRaw(p: IconProps) {
   return (
     <Icon {...p}>

@@ -1,6 +1,7 @@
 @import "./admin-ui.css";
 @import "./panel-styles.css";
 @import "./mobile.css";
+@import "./pay-ui.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -3,18 +3,35 @@
 /**
  * بوّابة الدفع كما يراها الطالب.
  * ------------------------------------------------------------------
- * أربع خطوات: الخطة ← طريقة الدفع ← بيانات التحويل والإيصال ← النتيجة.
- * الشكل كلّه أصنافٌ من `lib/pay-styles` على الغلاف، فالتصميم يتغيّر من
- * اللوحة دون أن يُمسّ هذا الملف.
+ * أربع خطوات: الخطة ← طريقة الدفع ← التحويل ← النتيجة. والشكلُ أصنافٌ
+ * من `lib/pay-styles` على الغلاف، فالهيئةُ تتغيّر من اللوحة دون أن
+ * يُمسّ هذا الملفّ.
  *
- * السعر يُعاد حسابه على الخادم عند الإرسال — ما يُعرض هنا للطالب لا
+ * السعرُ يُعاد حسابُه على الخادم عند الإرسال — ما يُعرض هنا للطالب لا
  * يُصدَّق منه شيء.
+ *
+ * ------------------------------------------------------------------
+ * **والترتيبُ أُعيد.** كانت الشاشةُ تعمل ولا تُقرأ: ثلاثُ نقاطٍ بلا
+ * أسماء، واسمُ الخطة ومبلغُها سطراً مقصوصاً بحجم `text-xs`، ورقمُ
+ * المحفظة يُبتر على الجوّال، وخمسةُ حقولٍ كلٌّ بحشوةٍ تخالف أختَها.
+ *
+ * فالمعروضُ الآن مرتَّبٌ على ما يُقرأ أوّلاً:
+ *
+ *   ١) **الخطواتُ مسمّاة** بقضيبٍ يمتلئ — يعرف الطالبُ أين هو وكم بقي.
+ *   ٢) **ملخّصٌ ثابت** يحمل ما يُشترى ومبلغَه بحجمٍ يليق برقمٍ يُدفع،
+ *      يبقى معروضاً حتّى الإرسال.
+ *   ٣) **الأرقامُ لا تُقصّ** وتحمل أيقونةَ نسخٍ ظاهرة.
+ *   ٤) **حقلٌ واحدٌ** يُبنى منه الخمسة، فيستوي إيقاعُ الاستمارة.
+ *
+ * ولا لونَ جديد ولا محدِّدَ محذوف: `.pay-method` و`.pay-step`
+ * و`.pay-details` بأسمائها، فهيئاتُ اللوحة العشرون تعمل كما كانت.
  */
 
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  IconCheck, IconCheckCircle, IconSpinner, IconCalendar, IconSparkle, IconArrowLeft,
+  IconCheck, IconCheckCircle, IconSpinner, IconCalendar, IconSparkle,
+  IconArrowLeft, IconCopy,
 } from "@/components/brand/icons";
 import { useContent } from "@/components/content/content-provider";
 import { findPayStyle, payClass, payColorVars } from "@/lib/pay-styles";
@@ -24,7 +41,8 @@ import { planDuration, planScopeLabel } from "@/components/sections/plans";
 import type { PayMethod, PayRequest, SitePlan, Subject } from "@/lib/types";
 import { PayMark } from "@/components/brand/pay-marks";
 
-const STEPS = ["الخطة", "طريقة الدفع", "التحويل"];
+const STEPS = ["اختر الخطة", "طريقة التحويل", "بيانات التحويل"];
+const ar = (n: number) => n.toLocaleString("ar-EG");
 
 export function PayGate({
   plans, subject, onDone,
@@ -127,30 +145,55 @@ export function PayGate({
   return (
     <div className={`pay-gate ${payClass(style)}`} style={payColorVars(cfg.colors)}>
       {/* العنوان والوصف من اللوحة */}
-      <div className="mb-3">
+      <div className="mb-4">
         <p className="font-display text-base font-extrabold">{cfg.title || "ادفع واستلم كود التفعيل"}</p>
-        {cfg.desc && <p className="mt-0.5 text-[11px] text-muted-foreground">{cfg.desc}</p>}
+        {cfg.desc && <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">{cfg.desc}</p>}
       </div>
 
-      {/* مؤشّر الخطوات */}
-      <div className="pay-steps mb-4">
+      {/*
+        مؤشّرُ الخطوات — مسمّى.
+        `data-on` للعلامة (تُلوّنها هيئاتُ اللوحة)، و`data-done` للقضيب
+        الواصل، و`data-at` للاسم فيَسودّ اسمُ الخطوة الحاليّة وحدَه.
+      */}
+      <div className="pay-steps mb-5">
         {STEPS.map((s, i) => (
-          <span key={s} className="pay-step" data-on={i <= step ? "1" : "0"} title={s}>
-            <span className="pay-step-num">{(i + 1).toLocaleString("ar-EG")}</span>
+          <span key={s} className="pay-stepi" data-done={i < step ? "1" : "0"} data-at={i === step ? "1" : "0"}>
+            <span className="pay-step" data-on={i <= step ? "1" : "0"}>
+              <span className="pay-step-num">{i < step ? "✓" : ar(i + 1)}</span>
+            </span>
+            <span className="pay-step-t">{s}</span>
           </span>
         ))}
       </div>
+
+      {/*
+        ملخّصُ الطلب — يظهر بمجرّد اختيار الخطة ويبقى حتّى الإرسال.
+        فما يُدفع ومقابلُه أمام العين في كلّ خطوة، ولا يُطالَب الطالبُ
+        بأن يتذكّر ما اختاره قبل شاشتين.
+      */}
+      {plan && step < 3 && (
+        <Summary plan={plan} subject={subject} termEnd={content.termEnd} />
+      )}
 
       <AnimatePresence mode="wait">
         {/* ---------- ١ · الخطة ---------- */}
         {step === 0 && (
           <Step key="plan">
             {plans.length === 0 ? (
-              <p className="rounded-2xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
-                لم تُضَف خطط لهذا الكورس بعد.
-              </p>
+              <Empty>لم تُضَف خطط لهذا الكورس بعد.</Empty>
             ) : (
-              <div className="pay-methods">
+              /*
+                قائمةُ الخطط لها غلافُها `pay-plans` لا `pay-methods`.
+                ------------------------------------------------------------
+                إعدادُ اللوحة اسمُه «ترتيب **طرق الدفع**»، وهيئتُه «ألسنة»
+                تجعل كلَّ بطاقةٍ قرصاً بعرض ٨rem — وهو مقاسٌ يسع «فودافون
+                كاش» ولا يسع «وحدةُ التفسير». وكانت الخططُ تلبَس الغلافَ
+                نفسَه، فقيس عنوانُ الخطة مقصوصاً في هيئة «الألسنة».
+
+                فالخططُ تستقلّ بغلافها ويبقى `pay-method` على البطاقة —
+                فتأخذ سطحَ الهيئة وحافّتَها ولا تأخذ ترتيبَ الطرق.
+              */
+              <div className="pay-plans">
                 {plans.map((p) => {
                   const priced = planPrice(p);
                   const tone = planColor(p);
@@ -159,33 +202,29 @@ export function PayGate({
                       key={p.id}
                       type="button"
                       onClick={() => setPlan(p)}
-                      className="pay-method flex w-full items-start justify-between gap-3 p-3.5 text-right"
+                      className="pay-method pay-plan"
                       style={tone ? ({ "--pg-accent": tone } as React.CSSProperties) : undefined}
                     >
-                      <span className="min-w-0">
-                        <span className="font-display block font-extrabold">{p.name}</span>
-                        <span className="pay-method-note block text-[11px] text-muted-foreground">
-                          {p.desc || planScopeLabel(p, subject?.name)}
-                        </span>
-                        <span className="mt-1 inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <span className="pay-plan-n">
+                        <span className="pay-plan-t">{p.name}</span>
+                        <span className="pay-plan-d">{p.desc || planScopeLabel(p, subject?.name)}</span>
+                        <span className="pay-plan-m">
                           <IconCalendar className="size-3" /> {planDuration(p, content.termEnd)}
                         </span>
                       </span>
-                      <span className="shrink-0 text-left">
+                      <span className="pay-plan-p">
                         {p.badge && (
-                          <span className="mb-1 inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[11px] font-bold text-white">
+                          <span className="pay-plan-badge">
                             <IconSparkle className="size-2.5" /> {p.badge}
                           </span>
                         )}
-                        <span className="font-display block text-xl font-extrabold" style={{ color: tone ?? "hsl(var(--primary))" }}>
-                          {priced.price.toLocaleString("ar-EG")}
+                        <span className="pay-amt" style={tone ? ({ "--pg-a": tone } as React.CSSProperties) : undefined}>
+                          <span className="pay-amt-v">{ar(priced.price)}</span>
+                          <span className="pay-amt-c">ج.م</span>
                         </span>
                         {priced.active && (
-                          <span className="block text-[10px] font-bold text-muted-foreground line-through">
-                            {priced.original.toLocaleString("ar-EG")}
-                          </span>
+                          <span className="pay-amt-was mt-0.5 block">{ar(priced.original)} ج.م</span>
                         )}
-                        <span className="block text-[11px] text-muted-foreground">ج.م</span>
                       </span>
                     </button>
                   );
@@ -198,11 +237,9 @@ export function PayGate({
         {/* ---------- ٢ · طريقة الدفع ---------- */}
         {step === 1 && plan && (
           <Step key="method">
-            <Head title={`${plan.name} — ${planPrice(plan).price.toLocaleString("ar-EG")} ج.م`} onBack={() => { setPlan(null); setMethod(null); setStepDone(false); }} />
+            <Head onBack={() => { setPlan(null); setMethod(null); setStepDone(false); }} />
             {methods.length === 0 ? (
-              <p className="rounded-2xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
-                لم تُضَف طرق دفع بعد — تواصل مع الدعم.
-              </p>
+              <Empty>لم تُضَف طرق دفع بعد — تواصل مع الدعم.</Empty>
             ) : (
               <>
                 {/*
@@ -213,7 +250,7 @@ export function PayGate({
                   فصارت كلُّ طريقة تعرض بياناتها في مكانها، والضغطُ يقول
                   «حوّلتُ على هذه» لا «أرني هذه».
                 */}
-                <p className="mb-3 text-[11px] font-bold text-muted-foreground">
+                <p className="pay-sec-t mb-2.5">
                   حوّل المبلغ على أيّ طريقة تناسبك، ثم اختر التي حوّلت عليها:
                 </p>
 
@@ -225,61 +262,41 @@ export function PayGate({
                       data-on={method?.id === m.id ? "1" : "0"}
                       style={m.color ? ({ "--pg-accent": m.color } as React.CSSProperties) : undefined}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="pay-m-head">
                         <PayMark
                           kind={m.kind}
                           name={m.name}
                           logo={m.logo}
                           color={m.color}
-                          className="pay-method-icon size-10"
+                          className="pay-method-icon size-10 shrink-0"
                         />
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-sm font-bold">{m.name}</span>
-                          {m.holder && (
-                            <span className="block text-[11px] text-muted-foreground">{m.holder}</span>
-                          )}
+                        <span className="pay-m-name">
+                          <span className="pay-m-t">{m.name}</span>
+                          {m.holder && <span className="pay-m-h">{m.holder}</span>}
                         </span>
                         <button
                           type="button"
                           onClick={() => setMethod(m)}
-                          className={`shrink-0 rounded-xl px-3.5 py-2 text-[11px] font-bold transition ${
-                            method?.id === m.id
-                              ? "btn-glow text-white"
-                              : "border border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                          }`}
+                          className="pay-m-pick"
                         >
-                          {method?.id === m.id ? "✓ حوّلت عليها" : "حوّلت عليها"}
+                          {method?.id === m.id ? <><IconCheck className="size-3" /> حوّلت عليها</> : "حوّلت عليها"}
                         </button>
                       </div>
 
                       {/* بيانات التحويل — ظاهرة لكل طريقة بلا ضغط */}
-                      <div className="mt-3 grid gap-1.5 border-t border-border pt-2.5">
+                      <div className="pay-m-body">
                         <Row label={numberLabel(m.kind)} value={m.number} onCopy={copy} copied={copied} big />
                         {m.extra && <Row label="بيانات إضافية" value={m.extra} onCopy={copy} copied={copied} />}
                         {m.note && (
-                          <p className="text-[10px] leading-relaxed text-muted-foreground">{m.note}</p>
+                          <p className="mt-1 text-[10px] leading-relaxed text-muted-foreground">{m.note}</p>
                         )}
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <div className="pay-details mt-4 grid gap-2">
-                  <Row
-                    label="المبلغ المطلوب"
-                    value={`${planPrice(plan).price.toLocaleString("ar-EG")} ج.م`}
-                    onCopy={copy}
-                    copied={copied}
-                    big
-                  />
-                </div>
-
                 {method && (
-                  <button
-                    type="button"
-                    onClick={() => setStepDone(true)}
-                    className="btn-glow mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold text-white"
-                  >
+                  <button type="button" onClick={() => setStepDone(true)} className="btn-glow pay-go mt-4">
                     <IconCheckCircle className="size-4" /> تابع — أرفق الإيصال
                   </button>
                 )}
@@ -291,13 +308,13 @@ export function PayGate({
         {/* ---------- ٣ · التحويل ---------- */}
         {step === 2 && plan && method && (
           <Step key="pay">
-            <Head title={`${method.name} — ${planPrice(plan).price.toLocaleString("ar-EG")} ج.م`} onBack={() => setStepDone(false)} />
+            <Head onBack={() => setStepDone(false)} />
 
-            <div className="pay-details mb-4 grid gap-2">
+            <p className="pay-sec-t mb-2">حوّلتَ على «{method.name}» — راجع البيانات:</p>
+            <div className="pay-details mb-4">
               <Row label={numberLabel(method.kind)} value={method.number} onCopy={copy} copied={copied} big />
               {method.holder && <Row label="اسم صاحب الحساب" value={method.holder} onCopy={copy} copied={copied} />}
               {method.extra && <Row label="بيانات إضافية" value={method.extra} onCopy={copy} copied={copied} />}
-              <Row label="المبلغ" value={`${planPrice(plan).price.toLocaleString("ar-EG")} ج.م`} onCopy={copy} copied={copied} />
             </div>
 
             {method.note && (
@@ -306,92 +323,76 @@ export function PayGate({
               </p>
             )}
 
-            <div className="grid gap-3">
+            <p className="pay-sec-t mb-2">بيانات من حوّل:</p>
+            <div className="pay-stack">
               {/*
                 الرقم المُحوَّل منه هو ما تُطابَق به العملية في كشف
                 الحساب، فهو مطلوب دائماً لا بحسب الإعداد.
               */}
-              <label className="block">
-                <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">
-                  الرقم أو الحساب الذي حوّلت منه <b className="text-rose-500">*</b>
-                </span>
+              <Field label="الرقم أو الحساب الذي حوّلت منه" required>
                 <input
                   value={senderAccount}
                   onChange={(e) => setSenderAccount(e.target.value)}
                   dir="ltr"
                   inputMode="numeric"
                   placeholder="01xxxxxxxxx"
-                  className="w-full rounded-2xl border border-border bg-card/60 px-4 py-2.5 text-right font-mono text-sm outline-none focus:border-primary/50"
+                  className="pay-f-i text-right font-mono"
                 />
-              </label>
+              </Field>
 
-              <label className="block">
-                <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">
-                  اسم من حوّل المبلغ {cfg.requireSender !== false && <b className="text-rose-500">*</b>}
-                </span>
+              <Field label="اسم من حوّل المبلغ" required={cfg.requireSender !== false}>
                 <input
                   value={senderName}
                   onChange={(e) => setSenderName(e.target.value)}
                   placeholder="الاسم كما ظهر في رسالة التحويل"
-                  className="w-full rounded-2xl border border-border bg-card/60 px-4 py-2.5 text-sm outline-none focus:border-primary/50"
+                  className="pay-f-i"
                 />
-              </label>
+              </Field>
 
-              <label className="block">
-                <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">رقم العملية (اختياري)</span>
+              <Field label="رقم العملية" hint="اختياري">
                 <input
                   value={senderRef}
                   onChange={(e) => setSenderRef(e.target.value)}
                   placeholder="رقم مرجعي من رسالة التحويل"
-                  className="w-full rounded-2xl border border-border bg-card/60 px-4 py-2.5 font-mono text-sm outline-none focus:border-primary/50"
+                  className="pay-f-i font-mono"
                 />
-              </label>
+              </Field>
 
-              {/* صورة الإيصال */}
-              <div>
-                <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">
-                  صورة إيصال التحويل {cfg.requireReceipt !== false && <b className="text-rose-500">*</b>}
-                </span>
-                <div className="flex flex-wrap items-center gap-3">
-                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-2xl border border-dashed border-border px-4 py-2.5 text-xs font-bold transition hover:border-primary/60">
-                    {uploading ? <IconSpinner className="size-4 animate-spin text-primary" /> : <IconCheck className="size-4 text-primary" />}
-                    {receipt ? "تغيير الصورة" : "اختر صورة"}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      disabled={uploading}
-                      onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void upload(f); }}
-                    />
-                  </label>
-                  {receipt && (
+              {/* صورة الإيصال — منطقةٌ كاملةٌ لا زرٌّ صغير */}
+              <Field label="صورة إيصال التحويل" required={cfg.requireReceipt !== false}>
+                <label className="pay-drop">
+                  {receipt ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={receipt} alt="إيصال التحويل" className="size-16 rounded-xl border border-border object-cover" />
+                    <img src={receipt} alt="إيصال التحويل" />
+                  ) : uploading ? (
+                    <IconSpinner className="size-6 shrink-0 animate-spin text-primary" />
+                  ) : (
+                    <IconCheck className="size-6 shrink-0 text-primary" />
                   )}
-                </div>
-              </div>
+                  <span className="min-w-0">
+                    <span className="pay-drop-t">{receipt ? "تم الرفع — اضغط للتغيير" : "اختر صورة الإيصال"}</span>
+                    <span className="pay-drop-s">لقطةُ شاشةٍ لرسالة التحويل تكفي</span>
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={uploading}
+                    onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void upload(f); }}
+                  />
+                </label>
+              </Field>
 
-              <label className="block">
-                <span className="mb-1 block text-[11px] font-semibold text-muted-foreground">ملاحظة (اختياري)</span>
-                <textarea
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  rows={2}
-                  className="w-full rounded-2xl border border-border bg-card/60 px-4 py-2.5 text-sm outline-none focus:border-primary/50"
-                />
-              </label>
+              <Field label="ملاحظة" hint="اختياري">
+                <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className="pay-f-i" />
+              </Field>
             </div>
 
-            {err && <p className="mt-3 rounded-2xl bg-rose-500/10 px-3 py-2 text-center text-xs font-bold text-rose-500">{err}</p>}
+            {err && <p className="pay-err mt-3">{err}</p>}
 
-            <button
-              type="button"
-              onClick={submit}
-              disabled={busy || uploading}
-              className="btn-glow mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-bold text-white disabled:opacity-60"
-            >
+            <button type="button" onClick={submit} disabled={busy || uploading} className="btn-glow pay-go mt-4">
               {busy ? <IconSpinner className="size-4 animate-spin" /> : <IconCheckCircle className="size-4" />}
-              إرسال طلب التفعيل
+              إرسال طلب التفعيل — {ar(planPrice(plan).price)} ج.م
             </button>
 
             {cfg.note && (
@@ -428,36 +429,96 @@ function Step({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Head({ title, onBack }: { title: string; onBack: () => void }) {
+/**
+ * ملخّصُ الطلب.
+ * ما يُشترى ومبلغُه — والمبلغُ بأكبر خطٍّ في الشاشة، فهو الرقمُ الذي
+ * يُقرَّر عليه. ويُعرض المشطوبُ بجانبه إن كان في الخطة خصم.
+ */
+function Summary({ plan, subject, termEnd }: { plan: SitePlan; subject?: Subject; termEnd?: string }) {
+  const priced = planPrice(plan);
+  const tone = planColor(plan);
   return (
-    <div className="mb-3 flex items-center justify-between gap-3">
-      <p className="min-w-0 truncate text-xs font-bold text-primary">{title}</p>
-      <button
-        type="button"
-        onClick={onBack}
-        className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border px-2.5 py-1 text-[10px] font-bold text-muted-foreground transition hover:text-foreground"
-      >
-        <IconArrowLeft className="size-3 rotate-180" /> رجوع
-      </button>
+    <div className="pay-sum mb-5" style={tone ? ({ "--pg-a": tone } as React.CSSProperties) : undefined}>
+      <span className="pay-sum-n">
+        <span className="pay-sum-t">{plan.name}</span>
+        <span className="pay-sum-s">
+          <IconCalendar className="size-3 shrink-0" />
+          {planDuration(plan, termEnd)}
+          {subject && <>· {subject.name}</>}
+        </span>
+      </span>
+      <span className="pay-amt">
+        {priced.active && <span className="pay-amt-was">{ar(priced.original)}</span>}
+        <span className="pay-amt-v">{ar(priced.price)}</span>
+        <span className="pay-amt-c">ج.م</span>
+      </span>
     </div>
   );
 }
 
+function Head({ onBack }: { onBack: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onBack}
+      className="mb-3 inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-[11px] font-bold text-muted-foreground transition hover:text-foreground"
+    >
+      <IconArrowLeft className="size-3 rotate-180" /> رجوع
+    </button>
+  );
+}
+
+function Empty({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="rounded-2xl border border-dashed border-border p-5 text-center text-xs text-muted-foreground">
+      {children}
+    </p>
+  );
+}
+
+/** حقلٌ واحدٌ تُبنى منه الاستمارة — فيستوي إيقاعُها. */
+function Field({
+  label, required, hint, children,
+}: {
+  label: string; required?: boolean; hint?: string; children: React.ReactNode;
+}) {
+  return (
+    <label className="pay-f">
+      <span className="pay-f-l">
+        {label}
+        {required && <b className="pay-f-r"> *</b>}
+        {hint && !required && <span className="opacity-70"> ({hint})</span>}
+      </span>
+      {children}
+    </label>
+  );
+}
+
+/**
+ * صفُّ بياناتٍ يُنسخ بضغطة.
+ * القيمةُ لا تُقصّ — رقمُ محفظةٍ مبتورٌ يُحوَّل به إلى غير أهله — وأيقونةُ
+ * النسخ ظاهرةٌ لا في `title`، فاللمسُ لا يُظهر `title` أصلاً.
+ */
 function Row({
   label, value, onCopy, copied, big,
 }: {
   label: string; value: string; onCopy: (v: string) => void; copied: string | null; big?: boolean;
 }) {
+  const on = copied === value;
   return (
     <button
       type="button"
       onClick={() => onCopy(value)}
-      className="flex w-full items-center justify-between gap-3 text-right"
-      title="اضغط للنسخ"
+      className={`pay-row ${big ? "pay-row-big" : ""}`}
+      data-copied={on ? "1" : "0"}
+      aria-label={`انسخ ${label}`}
     >
-      <span className="text-[11px] font-semibold text-muted-foreground">{label}</span>
-      <span className={`pay-value min-w-0 truncate font-bold ${big ? "text-sm" : "text-xs"}`}>
-        {copied === value ? "تم النسخ ✓" : value}
+      <span className="pay-row-l">{label}</span>
+      <span className="pay-row-v">
+        <span className="pay-value">{value}</span>
+        {on
+          ? <IconCheck className="pay-row-i size-3.5" />
+          : <IconCopy className="pay-row-i size-3.5" />}
       </span>
     </button>
   );
@@ -544,7 +605,7 @@ function Pending({
         </>
       )}
       <p className="text-[11px] text-muted-foreground">
-        {r.planName} · {r.amount.toLocaleString("ar-EG")} ج.م · <span className="font-mono">{r.id}</span>
+        {r.planName} · {ar(r.amount)} ج.م · <span className="font-mono">{r.id}</span>
       </p>
       <button
         type="button"
@@ -561,15 +622,15 @@ function Pending({
 function RecentList({ list }: { list: PayRequest[] }) {
   if (list.length === 0) return null;
   return (
-    <div className="mt-5">
-      <p className="mb-2 text-[11px] font-bold text-muted-foreground">طلباتي السابقة</p>
+    <div className="mt-6 border-t border-border pt-4">
+      <p className="pay-sec-t mb-2">طلباتي السابقة</p>
       <div className="grid gap-2">
         {list.slice(0, 4).map((r) => (
           <div key={r.id} className="flex items-center justify-between gap-3 rounded-xl border border-border px-3 py-2">
             <span className="min-w-0">
               <span className="block truncate text-[11px] font-bold">{r.planName}</span>
               <span className="block text-[10px] text-muted-foreground">
-                {new Date(r.at).toLocaleDateString("ar-EG")} · {r.amount.toLocaleString("ar-EG")} ج.م
+                {new Date(r.at).toLocaleDateString("ar-EG")} · {ar(r.amount)} ج.م
               </span>
             </span>
             <span className="shrink-0 text-left">
