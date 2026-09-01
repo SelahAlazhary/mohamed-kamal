@@ -2,6 +2,7 @@ import "server-only";
 import { getDB } from "./db";
 import { sendToUsers } from "./push";
 import { targetName, newActivationCode } from "./payments";
+import { fbClaimOnce, fbReleaseClaim } from "./firebase";
 import type { DB, PayRequest, PayRequestStatus, Code, Notification } from "./types";
 
 /**
@@ -23,6 +24,35 @@ function now() {
 
 function clip(v: unknown, max: number): string {
   return String(v ?? "").trim().slice(0, max);
+}
+
+/**
+ * بتٌّ ذرّيٌّ — الطلبُ يُبَتّ فيه مرّةً واحدةً في العالم كلِّه.
+ * ------------------------------------------------------------------
+ * `decide` يفحص `r.status` ويُغيّره، وهو آمنٌ داخل النسخة الواحدة. لكنّ
+ * البتَّ يأتي من مصدرين — اللوحة وبوت تليجرام — وقد يقعان معاً على
+ * نسختي Vercel مختلفتين، أو يبتّ مشرفان في اللحظة نفسِها. فتُولَّد
+ * دفعةٌ واحدةٌ كودين، أو يُصفّى قبولٌ بكتابةٍ كاملةٍ من نسخةٍ قديمة.
+ *
+ * فتُطلب مطالبةٌ ذرّيّةٌ على `decisions/<id>` قبل البتّ: من يفوز يبتّ،
+ * ومن يخسر يُقال له «بُتَّ في هذا الطلب بالفعل». وإن ردّ `decide` خطأً
+ * (ككودٍ مستخدَم) تُحرَّر المطالبةُ ليصحّ إعادةُ المحاولة — فالخطأُ ليس
+ * بتّاً.
+ */
+export async function decideOnce(
+  r: PayRequest,
+  action: string,
+  body: { code?: unknown; reason?: unknown },
+  by: string
+): Promise<{ ok: true; status: PayRequestStatus } | { error: string }> {
+  const claimed = await fbClaimOnce(`decisions/${r.id}`, { by, action, at: now() });
+  if (!claimed) return { error: "بُتَّ في هذا الطلب بالفعل" };
+  const result = decide(r, action, body, by);
+  if ("error" in result) {
+    /* لم يقع بتٌّ — تُحرَّر المطالبةُ فتصحّ إعادةُ المحاولة */
+    await fbReleaseClaim(`decisions/${r.id}`);
+  }
+  return result;
 }
 
 export function decide(

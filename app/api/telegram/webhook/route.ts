@@ -3,7 +3,7 @@ import { loadDB, getDB, saveDB, flushDB } from "@/lib/db";
 import {
   tgConfig, tgAllowed, tgAnswer, tgEdit, tgEditCaption, tgSend, payVerdictText, esc,
 } from "@/lib/telegram";
-import { decide, notifyStudent } from "@/lib/pay-decide";
+import { decideOnce, notifyStudent } from "@/lib/pay-decide";
 import { ticketIdFrom, replyFromTelegram, notifySupportReply } from "@/lib/support-bridge";
 
 export const dynamic = "force-dynamic";
@@ -110,8 +110,8 @@ async function onCallback(q: Callback) {
   if (r.status !== "pending") { await tgAnswer(q.id, "بُتَّ في هذا الطلب بالفعل"); return; }
 
   const result = kind === "ok"
-    ? decide(r, "approve", {}, by)
-    : decide(r, "reject", { reason: REASONS[Number(kind.slice(1))] }, by);
+    ? await decideOnce(r, "approve", {}, by)
+    : await decideOnce(r, "reject", { reason: REASONS[Number(kind.slice(1))] }, by);
 
   if ("error" in result) { await tgAnswer(q.id, result.error); return; }
 

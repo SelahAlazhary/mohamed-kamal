@@ -6,7 +6,7 @@ import { clientIp, limit } from "@/lib/guard";
 import { can } from "@/lib/perms";
 import { sendToUsers } from "@/lib/push";
 import { planPrice, planForStudent, resolvePlan } from "@/lib/plans";
-import { decide, notifyStudent } from "@/lib/pay-decide";
+import { decideOnce, notifyStudent } from "@/lib/pay-decide";
 import {
   activeMethods, planTarget, targetName, requestProblem, normalizeDigits, gatewayOn,
 } from "@/lib/payments";
@@ -201,7 +201,7 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "بُتَّ في هذا الطلب بالفعل" }, { status: 409 });
   }
 
-  const verdict = decide(r, action, body, me?.name ?? "مشرف");
+  const verdict = await decideOnce(r, action, body, me?.name ?? "مشرف");
   if ("error" in verdict) return NextResponse.json({ error: verdict.error }, { status: 400 });
 
   saveDB(db);
