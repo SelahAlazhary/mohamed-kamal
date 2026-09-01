@@ -16,6 +16,24 @@ const PROBES = [
   "/.well-known/security.txt.bak", "/server-status",
 ];
 
+/*
+  بوتاتُ الاختراق والسرقة — تُحجب بوسمِ أداتها.
+  ------------------------------------------------------------------
+  هذه أدواتُ فحصِ ثغراتٍ وكشطِ محتوى تُعلن عن نفسها في `User-Agent`،
+  ولا يستعملها متصفّحٌ بشرٌ ولا محرّكُ بحثٍ نظاميّ. فحجبُها بالوسمِ زهيدٌ
+  ولا يُخطئ على أحد:
+
+  · أدواتُ الهجوم (sqlmap · nikto · nmap · nuclei…) — لا غرضَ لها إلّا
+    كشفُ ثغرةٍ لاستغلالها.
+  · كاشطاتُ المحتوى (HTTrack · Scrapy · wget المرآتيّ) — تنسخ الموقعَ كلَّه.
+
+  **ولا تُحجب محرّكاتُ البحث**: Googlebot و Bingbot يبقيان يفهرسان الصفحةَ
+  العامّة — وإلّا لم يجدك الطلاب. والحجبُ بالوسمِ لا يكفي وحدَه (يُزوَّر)،
+  لكنّه يصدّ الآليَّ الكسولَ — وهو الأكثر — ويُسجّله. والحصنُ الأعمقُ
+  للجلسات والبيانات قائمٌ خلفه: توقيعٌ وربطُ جهازٍ وحدودُ إغراق.
+*/
+const BAD_BOTS = /(sqlmap|nikto|nmap|masscan|zgrab|nuclei|wpscan|acunetix|nessus|openvas|dirbuster|gobuster|ffuf|hydra|havij|arachni|w3af|skipfish|jaeles|xray|metasploit|httrack|scrapy|wget|libwww-perl|python-urllib|semrushbot|ahrefsbot|mj12bot|dotbot|petalbot|blexbot)/i;
+
 const SECURITY_HEADERS: Record<string, string> = {
   "X-Frame-Options": "SAMEORIGIN",
   "X-Content-Type-Options": "nosniff",
@@ -97,6 +115,12 @@ export function middleware(req: NextRequest) {
     return report(req, "probe", pathname);
   }
 
+  /* بوتُ اختراقٍ أو كشطٍ يُعلن عن أداته → يُسجَّل ويُردّ بلا تفصيل. */
+  const ua = req.headers.get("user-agent") ?? "";
+  if (BAD_BOTS.test(ua)) {
+    return report(req, "bot", pathname);
+  }
+
   /* حاجزُ الإغراق — يُصدّ المصدرُ الواحدُ العنيف قبل أن يبلغ المسار. */
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
@@ -133,7 +157,7 @@ export function middleware(req: NextRequest) {
 }
 
 /** تحويل الطلب المصدود إلى مسار التسجيل (Node) ليُدوَّن في سجلّ الأمان. */
-function report(req: NextRequest, kind: "csrf" | "probe", path: string) {
+function report(req: NextRequest, kind: "csrf" | "probe" | "bot", path: string) {
   const url = req.nextUrl.clone();
   url.pathname = "/api/security/report";
   url.search = "";

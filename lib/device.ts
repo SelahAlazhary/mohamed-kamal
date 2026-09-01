@@ -11,6 +11,9 @@ import crypto from "crypto";
 import { AUTH_SECRET as SECRET } from "./secrets";
 const COOKIE = "emz_device";
 const MAX_AGE = 60 * 60 * 24 * 365 * 5; // خمس سنوات
+/* آمنة على HTTPS كأختها كوكي الجلسة — لا تُرسَل على اتصالٍ غير مشفّر،
+   فلا تُلتقط من الشبكة. نفسُ علم الجلسة حرفاً بحرف. */
+const SECURE = process.env.COOKIE_SECURE === "1" || process.env.VERCEL === "1";
 
 function sign(value: string): string {
   return crypto.createHmac("sha256", SECRET).update(value).digest("base64url");
@@ -46,6 +49,7 @@ export async function ensureDeviceId(): Promise<string> {
     sameSite: "lax",
     path: "/",
     maxAge: MAX_AGE,
+    secure: SECURE,
   });
   return id;
 }

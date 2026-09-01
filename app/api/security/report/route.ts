@@ -12,12 +12,15 @@ export const runtime = "nodejs";
  */
 async function handle(req: Request) {
   await loadDB();
-  const kind = req.headers.get("x-blocked-kind") === "probe" ? "path_probe" : "csrf_blocked";
+  const raw = req.headers.get("x-blocked-kind");
+  const kind = raw === "probe" ? "path_probe" : raw === "bot" ? "bot_blocked" : "csrf_blocked";
   const target = (req.headers.get("x-blocked-path") ?? "").slice(0, 120);
   const origin = (req.headers.get("origin") ?? "").slice(0, 120);
-  await recordEvent(kind, `${target}${origin ? ` ← ${origin}` : ""}`);
-  return NextResponse.json({ error: kind === "path_probe" ? "غير موجود" : "طلب غير صالح" },
-    { status: kind === "path_probe" ? 404 : 403 });
+  const ua = (req.headers.get("user-agent") ?? "").slice(0, 120);
+  await recordEvent(kind, `${target}${kind === "bot_blocked" && ua ? ` · ${ua}` : origin ? ` ← ${origin}` : ""}`);
+  /* البوتُ والفحّاصُ يُردّان ٤٠٤ بلا تفصيل — لا يُعلَمان أنّهما عُرفا. */
+  const status = kind === "csrf_blocked" ? 403 : 404;
+  return NextResponse.json({ error: status === 404 ? "غير موجود" : "طلب غير صالح" }, { status });
 }
 
 export const GET = handle;
