@@ -718,7 +718,13 @@ function FilesTab({ mats, onPatch }: { mats: Material[]; onPatch: (p: Partial<Le
 
       <button
         type="button"
-        onClick={() => set([...mats, { id: `M-${Date.now()}`, title: "", url: "" }])}
+        /*
+          السطرُ يُضاف فارغاً ليُملأ — لكنّه **لا يُحفظ فارغاً**.
+          كان الخروجُ قبل ملئه يُبقيه في القاعدة، فتظهر للطالب بطاقةُ ملفٍّ
+          بلا اسمٍ ولا رابط، وضغطُها يُنزّل صفحةَ الموقع نفسَها.
+          فيُصفّى ما لا رابطَ له عند كلّ كتابة.
+        */
+        onClick={() => set([...mats.filter((m) => String(m.url ?? "").trim()), { id: `M-${Date.now()}`, title: "", url: "" }])}
         style={{ color: "var(--brand-primary)" }}
         className="flex w-full items-center justify-center gap-1.5 rounded-2xl border border-dashed border-[color:var(--brand-accent)] py-2.5 text-[12px] font-bold transition hover:bg-[color:var(--brand-accent)]/10"
       >

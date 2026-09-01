@@ -22,14 +22,13 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  IconPlay, IconCheckCircle, IconLock, IconGift, IconFile, IconDownload,
-  IconListChecks, IconXCircle, IconRotate, IconSpinner, IconTrophy,
+  IconPlay, IconCheckCircle, IconLock, IconGift, IconFile,
+  IconListChecks, IconXCircle, IconRotate, IconSpinner, IconTrophy, IconArrowLeft,
 } from "@/components/brand/icons";
 import { Card } from "@/components/dashboard/ui";
-import { LessonQuiz } from "@/components/student/lesson-quiz";
 import { useContent } from "@/components/content/content-provider";
 import { VideoWatermark } from "@/components/student/video-watermark";
-import { allLessons } from "@/lib/course-units";
+import { allLessons, usableMaterials } from "@/lib/course-units";
 import type { Lesson, Material, Subject, Unit } from "@/lib/types";
 import { setPref } from "@/lib/consent";
 
@@ -178,6 +177,55 @@ function PathNode({
 
 /* ---------- العرض ---------- */
 
+/** هل على الدرس واجبٌ فعلاً؟ — مفعَّلٌ وفيه سؤالٌ واحدٌ على الأقلّ. */
+function hasQuiz(l: Lesson): boolean {
+  return Boolean(l.quiz?.enabled) && (l.quiz?.questions.length ?? 0) > 0;
+}
+
+const ar = (n: number) => n.toLocaleString("ar-EG");
+
+/**
+ * صفٌّ يفتح ما وراءه في صفحته.
+ * ------------------------------------------------------------------
+ * يحمل **خبرَ** الشيء لا متنَه: عنوانَه، وسطراً يقول ما فيه، وشارةَ
+ * حالةٍ إن كانت. فمن أراد المتنَ ضغط، ومن أراد أن يعرف فقط قرأ ولم يضغط.
+ *
+ * والصفُّ كلُّه رابطٌ لا الزرُّ وحدَه — هدفُ لمسٍ بعرض اللوح أسهلُ من
+ * زرٍّ في طرفه، والزرُّ يبقى ليُرى أنّه يُفتح.
+ */
+function OpenRow({
+  href, icon, title, note, badge, cta,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  note: string;
+  badge?: React.ReactNode;
+  cta: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="glass flex items-center gap-3 rounded-2xl p-3.5 transition hover:border-primary/40"
+    >
+      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/12 text-primary">
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="flex flex-wrap items-center gap-2">
+          <span className="font-display truncate font-extrabold">{title}</span>
+          {badge}
+        </span>
+        <span className="mt-0.5 block truncate text-xs text-muted-foreground">{note}</span>
+      </span>
+      <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border px-3.5 py-2 text-xs font-bold text-muted-foreground">
+        {cta}
+        <IconArrowLeft className="size-3.5" />
+      </span>
+    </Link>
+  );
+}
+
 export function UnitView({
   course, unit, owned, backHref, backLabel,
 }: {
@@ -213,11 +261,18 @@ export function UnitView({
 
     وتُضاف ولا تُلغي: كلُّ مستوى يزيد ولا يحجب ما فوقه.
   */
-  const files: Material[] = [
+  /* رابطُ صفحة الدرس — المادّةُ في الطريق فيُعرف من أين جاء */
+  const lessonHref = (lessonId: string) =>
+    `/student/course/${course.id}/${encodeURIComponent(unit.id)}/${encodeURIComponent(lessonId)}`;
+  const result = (lessonId: string) => me?.quizResults?.find((r) => r.lessonId === lessonId) ?? null;
+
+  /* والفارغُ منها يُصفّى: مرفقٌ بلا رابطٍ يُرسم `href=""` فيُنزّل صفحةَ
+     الموقع نفسَها. انظر `usableMaterials`. */
+  const files: Material[] = usableMaterials([
     ...(current?.materials ?? []),
     ...(unit.materials ?? []),
     ...(course.materials ?? []),
-  ];
+  ]);
 
   if (lessons.length === 0) {
     return (
@@ -229,9 +284,18 @@ export function UnitView({
   }
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1.7fr_1fr]">
-      {/* المشغّل */}
-      <div>
+    <div className="grid gap-5 lg:grid-cols-[1.7fr_1fr] lg:items-start">
+      {/*
+        المشغّلُ يثبت ولا يمشي مع قائمة الدروس.
+        ------------------------------------------------------------------
+        كان عمودُ المشغّل يمرّ مع الصفحة، فمن نزل يقرأ مسارَ الدروس ذهب
+        عنه الفيديو — وهو الذي جاء لأجله. فيثبت في مكانه ويمرّ ما حولَه.
+
+        **والتثبيتُ مشروطٌ بارتفاع النافذة لا بعرضها وحدَه**: عنصرٌ ثابتٌ
+        أطولُ من النافذة يُثبَّت بأعلاها فلا يُبلَغ أسفلُه أبداً. فالشرطُ
+        `min-height` كذلك — انظر `.lesson-stick` في `globals.css`.
+      */}
+      <div className="lesson-stick">
         <div className="relative -mx-4 aspect-video overflow-hidden border-y border-border bg-black shadow-bento sm:mx-0 sm:rounded-3xl sm:border">
           {!current ? null : !canPlay(current.isFree) ? (
             <div className="grid size-full place-items-center bg-slate-900 p-6 text-center">
@@ -302,31 +366,52 @@ export function UnitView({
           </div>
         )}
 
-        {/* الاختبار التفاعلي على الفيديو (إن فعّله الأدمن) */}
-        {current && canPlay(current.isFree) && current.quiz?.enabled && current.quiz.questions.length > 0 && (
-          <LessonQuiz
-            key={current.id}
-            subjectId={course.id}
-            lesson={current}
-            fem={fem}
-            previous={me?.quizResults?.find((r) => r.lessonId === current.id) ?? null}
-            onGraded={refresh}
-          />
-        )}
+        {/*
+          الواجبُ والملفّاتُ: خبرُهما هنا ومتنُهما في صفحتهما.
+          ------------------------------------------------------------------
+          كانا يُبسطان تحت المشغّل: أسئلةُ الواجب كلُّها بإجاباتها، ثمّ شبكةُ
+          الملفّات، ثمّ مسارُ الدروس. فطالت الشاشةُ حتّى صار المشغّلُ — وهو
+          المقصود — سطراً في أوّلها يُمرَّر عنه.
 
-        {files.length > 0 && (
-          <div className="mt-6">
-            <p className="mb-3 flex items-center gap-2 font-display font-extrabold"><IconFile className="size-5 text-primary" /> ملفّات الدرس والمادّة</p>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {files.map((m) => (
-                <a key={m.id} href={m.url} target="_blank" rel="noreferrer" download
-                  className="glass flex items-center gap-3 rounded-2xl p-3 transition hover:border-primary/40">
-                  <span className="grid size-9 place-items-center rounded-xl bg-primary/12 text-primary"><IconFile className="size-5" /></span>
-                  <span className="min-w-0 flex-1 truncate text-sm font-semibold">{m.title}</span>
-                  <IconDownload className="size-4 text-muted-foreground" />
-                </a>
-              ))}
-            </div>
+          فبقي هنا ما يُعرف بنظرة: هل حُلَّ الواجبُ وبكم، وكم ملفّاً هناك.
+          والمتنُ يُفتح بضغطة في `[lessonId]/page.tsx`.
+
+          **والخبرُ يبقى وإن غاب المتن**: من يريد أن يعرف نتيجتَه لا يُطالَب
+          بفتح صفحةٍ ليقرأ رقماً.
+        */}
+        {current && canPlay(current.isFree) && (hasQuiz(current) || files.length > 0) && (
+          <div className="mt-5 grid gap-2">
+            {hasQuiz(current) && (
+              <OpenRow
+                href={lessonHref(current.id)}
+                icon={<IconListChecks className="size-5" />}
+                title={current.quiz?.title || "واجب الدرس"}
+                note={
+                  result(current.id)
+                    ? `أفضلُ نتيجةٍ لك: ${ar(result(current.id)!.score)}/${ar(result(current.id)!.total)} · ${ar(result(current.id)!.percent)}٪`
+                    : `${ar(current.quiz!.questions.length)} ${current.quiz!.questions.length === 1 ? "سؤال" : "أسئلة"} — لم تُجب بعد`
+                }
+                badge={
+                  result(current.id) ? (
+                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${
+                      result(current.id)!.passed ? "bg-emerald-500/15 text-emerald-600" : "bg-rose-500/15 text-rose-500"
+                    }`}>
+                      {result(current.id)!.passed ? "ناجح" : "لم تنجح"}
+                    </span>
+                  ) : undefined
+                }
+                cta="افتح الواجب"
+              />
+            )}
+            {files.length > 0 && (
+              <OpenRow
+                href={lessonHref(current.id)}
+                icon={<IconFile className="size-5" />}
+                title="ملفّات الدرس والمادّة"
+                note={`${ar(files.length)} ${files.length === 1 ? "ملفّ" : "ملفّات"} للتحميل`}
+                cta="افتح الملفّات"
+              />
+            )}
           </div>
         )}
       </div>
