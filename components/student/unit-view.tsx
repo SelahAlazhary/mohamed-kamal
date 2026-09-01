@@ -139,19 +139,34 @@ function PathNode({
         </span>
       </span>
 
+      {/*
+        الصفُّ أعمدةٌ تصطفّ، لا كتلةٌ في حافّة.
+        ------------------------------------------------------------------
+        كان العنوانُ ووصفُه ملتصقَين بحافّةٍ والزرُّ بالحافّة المقابلة،
+        وبينهما ثلاثُ مئةِ بكسلٍ خواء. والفراغُ في ذاته ليس عطلاً — لكنّه
+        هنا **فراغُ عجزٍ لا فراغُ راحة**: لا شيءَ يشغله، فيُقرأ الصفُّ
+        نصفَ صفّ.
+
+        فتُوزَّع الحالةُ والمدّةُ إلى عمودٍ قبل الزرّ. وفائدتُه ليست ملءَ
+        الفراغ وحدَه: ما استوى في عمودٍ يُمسح بنظرةٍ واحدةٍ نازلة — يُعرف
+        ما تمّ وما بقي من القائمة كلِّها دون قراءة سطرٍ سطراً.
+
+        وعلى الضيّق تعود تحت العنوان: عمودان في ثلاث مئةِ بكسلٍ يسحقان
+        العنوانَ. والسؤالُ للحاوية لا للشاشة.
+      */}
       <button type="button" onClick={onPick} disabled={locked} className="lp-card">
         <span className="lp-n">{n.toLocaleString("ar-EG")}</span>
 
         <span className="lp-b">
           <span className="lp-t">{title}</span>
-          <span className="lp-m">
-            {duration && <span>{duration}</span>}
-            {duration && (state !== "open" || isFree) && <span className="lp-m-sep">·</span>}
-            {state === "done" && <span className="lp-m-done">تمّت المشاهدة</span>}
-            {state === "current" && <span className="lp-m-now">تُشاهده الآن</span>}
-            {locked && <span>يُفتح بالاشتراك</span>}
-            {isFree && <span className="lp-chip">مجّاني</span>}
-          </span>
+        </span>
+
+        <span className="lp-m">
+          {duration && <span className="lp-m-d">{duration}</span>}
+          {state === "done" && <span className="lp-m-done">تمّت المشاهدة</span>}
+          {state === "current" && <span className="lp-m-now">تُشاهده الآن</span>}
+          {locked && <span>يُفتح بالاشتراك</span>}
+          {isFree && <span className="lp-chip">مجّاني</span>}
         </span>
 
         <span className="lp-go" aria-hidden="true">
