@@ -153,6 +153,22 @@ export function middleware(req: NextRequest) {
   const res = NextResponse.next({ request: { headers: forwarded } });
   for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.headers.set(k, v);
   res.headers.set("Content-Security-Policy", CSP);
+
+  /*
+    منعُ فهرسة المناطق الخاصّة نهائيّاً.
+    ------------------------------------------------------------------
+    `robots.txt` يقول للزاحف «لا تزحف»، لكنّ رابطاً مُنِع في `robots.txt`
+    قد يظهر في نتائج البحث **عنواناً بلا وصف** إن وُجد له رابطٌ من مكان.
+    والمنعُ القاطعُ من الظهور هو `noindex` — وأقواه ترويسةُ
+    `X-Robots-Tag`: يقرؤها Google على كلّ استجابةٍ ولو لم يقرأ HTML.
+
+    فتُوضع على اللوحة وبوّابة الطالب والدخول والـAPI: لا فهرسةَ، ولا
+    اتّباعَ روابط، ولا أرشفة. والصفحةُ العامّةُ وحدَها تبقى مفهرسةً —
+    وإلّا لم يجدك الطلاب.
+  */
+  if (/^\/(admin|student|login|api)(\/|$)/.test(pathname)) {
+    res.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive, nosnippet");
+  }
   return res;
 }
 
