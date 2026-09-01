@@ -83,7 +83,19 @@ export function DashboardShell({
   // نقطة الإشعارات: للطالب = إشعارات غير مقروءة، للأدمن = وجود إشعارات
   const notifs = db?.notifications ?? [];
   const readIds = new Set(db?.users?.find((u) => u.id === session?.uid)?.readNotifications ?? []);
-  const hasNotif = role === "student" ? notifs.some((n) => !readIds.has(n.id)) : notifs.length > 0;
+  /*
+    جرسُ الأدمن لا يرنّ لرسائل الطلاب الخاصّة.
+    ------------------------------------------------------------------
+    إشعارُ «تم قبول تحويلك» يحمل `userId` طالبٍ بعينه — رسالةٌ إليه لا
+    إلى المشرف. وكان جرسُ الأدمن يرنّ لأيّ إشعارٍ موجود (`length > 0`)،
+    فيضيء لرسائلِ الطلاب الآليّة ويبدو أنّها مُوجَّهةٌ إليه. فيرنّ الآن
+    لما ليس موجَّهاً لطالبٍ بعينه فقط — والطالبُ يرى رسالتَه في جرسه هو
+    (حمولتُه مصفّاةٌ على الخادم أصلاً).
+  */
+  const adminBellItems = notifs.filter((n) => !n.userId);
+  const hasNotif = role === "student"
+    ? notifs.some((n) => !readIds.has(n.id))
+    : adminBellItems.length > 0;
 
   const doLogout = async () => { await logout(); router.push("/login"); };
 

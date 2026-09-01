@@ -106,7 +106,15 @@ export default function NotificationsPage() {
                 <div className="flex items-start gap-3">
                   <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-primary/12 text-primary"><Bell className="size-5" /></span>
                   <div className="min-w-0 flex-1">
-                    <p className="font-bold">{n.title}</p>
+                    <p className="flex flex-wrap items-center gap-1.5 font-bold">
+                      {n.title}
+                      {/* رسالةٌ إلى طالبٍ بعينه لا إلى المشرف — تُعلَّم صراحةً */}
+                      {n.userId && (
+                        <span className="rounded-full bg-primary/12 px-2 py-0.5 text-[10px] font-bold text-primary">
+                          إلى الطالب
+                        </span>
+                      )}
+                    </p>
                     <p className="text-sm text-muted-foreground">{n.body}</p>
                     <p className="mt-1 text-[11px] text-muted-foreground">
                       {new Date(n.createdAt).toLocaleString("ar-EG")}
