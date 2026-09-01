@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { gradeQuiz, loadDB, flushDB } from "@/lib/db";
 import { getSession } from "@/lib/session";
+import { limit } from "@/lib/guard";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -13,6 +14,13 @@ export async function POST(req: Request) {
   const session = await getSession();
   if (!session || session.role !== "student") {
     return NextResponse.json({ error: "غير مصرّح" }, { status: 401 });
+  }
+
+  /* كبحُ الإغراق — بالحساب لا بالعنوان، فالمدرسةُ تُخرج عشراتِ الطلاب من
+     عنوانٍ واحد ولا يُقفل على البريء. والطالبُ لا يسلّم ثلاثين واجباً في خمس دقائق. */
+  const flood = limit(`quiz:${session.uid}`, 30, 5 * 60_000, 5 * 60_000);
+  if (!flood.ok) {
+    return NextResponse.json({ error: "محاولاتٌ كثيرة — انتظر قليلاً" }, { status: 429 });
   }
   const body = await req.json().catch(() => null);
   const subjectId = String(body?.subjectId ?? "");

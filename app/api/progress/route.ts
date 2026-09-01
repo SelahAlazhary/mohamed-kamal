@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { setUserProgress, getDB, userOwnsSubject, loadDB, flushDB } from "@/lib/db";
 import { getSession } from "@/lib/session";
+import { limit } from "@/lib/guard";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -11,6 +12,13 @@ export async function POST(req: Request) {
   const session = await getSession();
   if (!session || session.role !== "student") {
     return NextResponse.json({ error: "غير مصرّح" }, { status: 401 });
+  }
+
+  /* كبحُ الإغراق — بالحساب لا بالعنوان، فالمدرسةُ تُخرج عشراتِ الطلاب من
+     عنوانٍ واحد ولا يُقفل على البريء. والحدُّ كريمٌ لأنّ التقدّمَ يُرسَل مراراً أثناء المشاهدة. */
+  const flood = limit(`progress:${session.uid}`, 120, 5 * 60_000, 2 * 60_000);
+  if (!flood.ok) {
+    return NextResponse.json({ error: "محاولاتٌ كثيرة — انتظر قليلاً" }, { status: 429 });
   }
   const { subjectId, value } = await req.json();
   const me = getDB().users.find((u) => u.id === session.uid);

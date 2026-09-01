@@ -48,6 +48,46 @@ const CSP = [
   "upgrade-insecure-requests",
 ].join("; ");
 
+/*
+  ============================================================
+  حاجزُ الإغراق الحجميّ (طبقةٌ أماميّة)
+  ------------------------------------------------------------
+  الحدودُ في المسارات تمنع إساءةً بعينها — تخمينَ كلمةِ مرورٍ أو استهلاكَ
+  كودٍ — بحسابٍ أو عنوان. وهذا يمنع **الحجمَ** وحدَه: سيلاً من الطلبات على
+  أيّ مسارٍ كان، حتّى العامّ منه، من مصدرٍ واحد.
+
+  **وعتبتُه عاليةٌ عمداً.** المدرسةُ والجامعةُ تُخرجان عشراتِ الطلاب من
+  عنوانٍ واحد، فحدٌّ ضيّقٌ يُقفل على البريء. فستُّ مئةِ طلبٍ في عشر ثوانٍ
+  — ستّون في الثانية — لا يبلغها متصفّحٌ بشرٌ ولا فصلٌ يتصفّح، ويبلغها
+  السكربتُ الذي يُغرق. فمن دونها لا يُمَسّ أحد، ومن فوقها يُصدّ عشرين
+  ثانية.
+
+  **وهو أفضلُ جهدٍ لا حصنٌ مطلق**: الوسيطُ يعمل على حافّة Edge، ولكلّ
+  نسخةٍ عدّادُها — فالإغراقُ الموزَّعُ على نسخٍ كثيرةٍ يتخطّاه. والحصنُ
+  الحقيقيُّ ضدّ الإغراق الموزَّع طبقةُ Vercel/CDN الأماميّة، وهي قائمةٌ
+  دون هذا. وهذا يُوقف المصدرَ الواحدَ العنيف — وهو الأشيع.
+  ============================================================
+*/
+const HITS = new Map<string, { n: number; first: number }>();
+const FLOOD_MAX = 600;
+const FLOOD_WINDOW = 10_000;
+const FLOOD_BLOCK = 20_000;
+
+function floodBlocked(ip: string): boolean {
+  const now = Date.now();
+  // كنسٌ كسولٌ يمنع نموَّ الخريطة بلا حدّ
+  if (HITS.size > 5000) {
+    for (const [k, v] of HITS) if (now - v.first > FLOOD_BLOCK) HITS.delete(k);
+  }
+  const h = HITS.get(ip);
+  if (!h || now - h.first > FLOOD_WINDOW) {
+    HITS.set(ip, { n: 1, first: now });
+    return false;
+  }
+  h.n += 1;
+  return h.n > FLOOD_MAX;
+}
+
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
@@ -55,6 +95,18 @@ export function middleware(req: NextRequest) {
   const lower = pathname.toLowerCase();
   if (PROBES.some((p) => lower.startsWith(p) || lower.includes(p))) {
     return report(req, "probe", pathname);
+  }
+
+  /* حاجزُ الإغراق — يُصدّ المصدرُ الواحدُ العنيف قبل أن يبلغ المسار. */
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+    req.headers.get("x-real-ip") ||
+    "unknown";
+  if (floodBlocked(ip)) {
+    return new NextResponse("Too Many Requests", {
+      status: 429,
+      headers: { "Retry-After": String(FLOOD_BLOCK / 1000), "Cache-Control": "no-store" },
+    });
   }
 
   // الطلبات المعدِّلة يجب أن تأتي من نفس الموقع

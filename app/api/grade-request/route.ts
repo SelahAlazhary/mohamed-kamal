@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { loadDB, getDB, saveDB, flushDB } from "@/lib/db";
 import { getSession } from "@/lib/session";
-import { sameOrigin } from "@/lib/guard";
+import { sameOrigin, limit, clientIp } from "@/lib/guard";
 import { can } from "@/lib/perms";
 import type { GradeRequest } from "@/lib/types";
 
@@ -29,10 +29,18 @@ function list(): GradeRequest[] {
 
 /* ---------- الطالب يطلب ---------- */
 export async function POST(req: Request) {
-  if (!sameOrigin(req)) return NextResponse.json({ error: "طلب غير مسموح" }, { status: 403 });
+  if (!(await sameOrigin(req))) return NextResponse.json({ error: "طلب غير مسموح" }, { status: 403 });
 
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "غير مسجّل الدخول" }, { status: 401 });
+
+  /* طلبُ تغيير الصفّ نادرٌ — خمسةٌ في الساعة تكفي، وحدٌّ على العنوان
+     يجمع محاولاتِ الحسابات من جهازٍ واحد. */
+  const ip = await clientIp();
+  if (!limit(`grade-req:${session.uid}`, 5, 60 * 60_000, 60 * 60_000).ok ||
+      !limit(`grade-req:ip:${ip}`, 20, 60 * 60_000, 60 * 60_000).ok) {
+    return NextResponse.json({ error: "طلباتٌ كثيرة — انتظر قليلاً" }, { status: 429 });
+  }
 
   await loadDB();
   const db = getDB();
@@ -76,7 +84,7 @@ export async function POST(req: Request) {
 
 /* ---------- الأستاذ يقرّر ---------- */
 export async function PATCH(req: Request) {
-  if (!sameOrigin(req)) return NextResponse.json({ error: "طلب غير مسموح" }, { status: 403 });
+  if (!(await sameOrigin(req))) return NextResponse.json({ error: "طلب غير مسموح" }, { status: 403 });
 
   const session = await getSession();
   if (!session || session.role !== "admin") {

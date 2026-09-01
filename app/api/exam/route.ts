@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { gradeExam, loadDB, flushDB } from "@/lib/db";
 import { getSession } from "@/lib/session";
+import { limit } from "@/lib/guard";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -14,6 +15,13 @@ export async function POST(req: Request) {
   const session = await getSession();
   if (!session || session.role !== "student") {
     return NextResponse.json({ error: "غير مصرّح" }, { status: 401 });
+  }
+
+  /* كبحُ الإغراق — بالحساب لا بالعنوان، فالمدرسةُ تُخرج عشراتِ الطلاب من
+     عنوانٍ واحد ولا يُقفل على البريء.  */
+  const flood = limit(`exam:${session.uid}`, 20, 5 * 60_000, 5 * 60_000);
+  if (!flood.ok) {
+    return NextResponse.json({ error: "محاولاتٌ كثيرة — انتظر قليلاً" }, { status: 429 });
   }
   const b = await req.json().catch(() => null);
   const examId = String(b?.examId ?? "");
