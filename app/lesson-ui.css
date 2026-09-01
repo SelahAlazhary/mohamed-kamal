@@ -20,7 +20,17 @@
    ٢) **الرقمُ يبقى**، والحالةُ تُقال في سطر الوصف لا بمحو الرقم.
    ٣) **الثقلُ لما لم يتمّ**: المنجَزُ يخفت، والحاليُّ وحدَه يُبرز.
 
-   ولا لونَ جديد: كحليُّ الهوية وذهبُها وأخضرُ الإنجاز وورقُ الثيم.
+   ــــــــــــــــــــــــــــــــــــــــــــــــــــــــــــــــــــــــ
+   **والألوانُ من الهوية وحدَها: كحليٌّ وذهبٌ وورق.**
+
+   كُتب هذا الملفُّ أوّلَ مرّةٍ بأخضرَ زمرّديٍّ للإنجاز — أخذاً بعرفٍ عامٍّ
+   يجعل الأخضرَ علامةَ التمام. وهو لونٌ رابعٌ ليس في هذه الهوية، فبدا
+   المسارُ قطعةً من موقعٍ آخرَ رُكّبت في هذا.
+
+   والعرفُ لا يُقدَّم على الهوية: **الذهبُ في هذه المنصّة هو لونُ التمام**
+   — به تُذهَّب المخطوطاتُ وتُعلَّم مواضعُ الوقف. فصار المنجَزُ ذهباً،
+   والحاليُّ كحليّاً بهالةٍ ذهبيّة، وسطرُ «تمّت المشاهدة» رماديّاً هادئاً
+   — فالمنجَزُ يُطمئن ولا يُنادى عليه.
    ============================================================ */
 
 .lp {
@@ -65,7 +75,7 @@
 .lp-row:last-child .lp-rail::before { inset-block-end: 50%; }
 .lp-row:only-child .lp-rail::before { display: none; }
 /* ما مضى من الطريق ملوَّن، وما بقي رماديّ */
-.lp-row[data-passed="1"] .lp-rail::before { background: hsl(160 84% 39% / 0.45); }
+.lp-row[data-passed="1"] .lp-rail::before { background: hsl(var(--gold) / 0.7); }
 
 .lp-dot {
   position: relative;
@@ -81,15 +91,16 @@
   transition: box-shadow 0.18s ease, background 0.18s ease;
 }
 .lp-row[data-state="done"] .lp-dot {
-  background: hsl(160 84% 39%);
-  box-shadow: 0 0 0 2px hsl(160 84% 39%);
+  background: hsl(var(--gold));
+  box-shadow: 0 0 0 2px hsl(var(--gold));
+  color: hsl(var(--primary));
 }
 /* الحاليُّ أكبرُ قليلاً وله هالةٌ — علامةُ «أنت هنا» */
 .lp-row[data-state="current"] .lp-dot {
   inline-size: 1.1rem;
   block-size: 1.1rem;
-  background: hsl(var(--gold));
-  box-shadow: 0 0 0 2px hsl(var(--gold)), 0 0 0 6px hsl(var(--gold) / 0.22);
+  background: hsl(var(--primary));
+  box-shadow: 0 0 0 2px hsl(var(--primary)), 0 0 0 6px hsl(var(--gold) / 0.4);
 }
 .lp-row[data-state="locked"] .lp-dot {
   background: hsl(var(--muted));
@@ -174,7 +185,7 @@
   font-variant-numeric: tabular-nums;
   color: hsl(var(--muted-foreground));
 }
-.lp-row[data-state="done"] .lp-n { color: hsl(160 84% 32%); }
+.lp-row[data-state="done"] .lp-n { color: hsl(var(--gold-deep, var(--gold))); }
 .lp-row[data-state="current"] .lp-n { color: hsl(var(--primary)); }
 
 .lp-b { min-width: 0; }
@@ -226,7 +237,7 @@
   .lp-m-d { font-variant-numeric: tabular-nums; }
 }
 .lp-m-sep { opacity: 0.5; }
-.lp-m-done { color: hsl(160 84% 32%); font-weight: 600; }
+.lp-m-done { color: hsl(var(--muted-foreground)); font-weight: 600; }
 .lp-m-now { color: hsl(var(--primary)); font-weight: 700; }
 
 /*
@@ -238,8 +249,8 @@
   flex: none;
   padding: 0.05rem 0.4rem;
   border-radius: 0.4rem;
-  background: hsl(160 84% 39% / 0.14);
-  color: hsl(160 84% 30%);
+  background: hsl(var(--gold) / 0.2);
+  color: hsl(var(--primary));
   font-size: 0.7rem;
   font-weight: 700;
 }
@@ -300,7 +311,7 @@
 .lp-bar-i {
   block-size: 100%;
   border-radius: 999px;
-  background: linear-gradient(to left, hsl(160 84% 39%), hsl(var(--gold)));
+  background: linear-gradient(to left, hsl(var(--primary)), hsl(var(--gold)));
   transition: inline-size 0.4s ease;
 }
 
@@ -400,8 +411,8 @@
   backdrop-filter: blur(6px);
 }
 .uc-tag.is-lock { background: hsl(220 43% 8% / 0.7); color: #fff; }
-.uc-tag.is-done { background: hsl(160 84% 39% / 0.92); color: #fff; }
-.uc-tag.is-free { background: hsl(160 84% 39% / 0.92); color: #fff; }
+.uc-tag.is-done { background: hsl(var(--gold)); color: hsl(var(--primary)); }
+.uc-tag.is-free { background: hsl(var(--gold)); color: hsl(var(--primary)); }
 
 /* العنوانُ على حافّة الغلاف السفلى */
 .uc-t {
@@ -445,8 +456,8 @@
   color: hsl(var(--muted-foreground));
 }
 .uc-meta-i { display: inline-flex; align-items: center; gap: 0.3rem; }
-.uc-meta-i.is-done,
-.uc-meta-i.is-free { color: hsl(160 84% 32%); }
+.uc-meta-i.is-done { color: hsl(var(--muted-foreground)); }
+.uc-meta-i.is-free { color: hsl(var(--primary)); }
 
 /* القدمُ يلتصق بأسفل البطاقة — فتستوي البطاقاتُ في الصفّ مهما اختلفت
    أوصافُها طولاً */
@@ -493,7 +504,7 @@
   display: block;
   block-size: 100%;
   border-radius: 999px;
-  background: linear-gradient(to left, hsl(160 84% 39%), hsl(var(--gold)));
+  background: linear-gradient(to left, hsl(var(--primary)), hsl(var(--gold)));
   transition: inline-size 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .uc-pct {
