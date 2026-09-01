@@ -22,6 +22,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { IconArrowLeft, IconCheckCircle, IconListVideo, IconGift, IconPlay } from "@/components/brand/icons";
 import { EmptyLock } from "@/components/brand/illustrations";
+import { CourseArt } from "@/components/brand/course-art";
 import { PageHeader, Card } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
 import { UnitView, useDone } from "@/components/student/unit-view";
@@ -176,37 +177,79 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
                     ? `/student/course/${id}/${encodeURIComponent(u.id)}`
                     : `/student/pay?subject=${id}&unit=${encodeURIComponent(u.id)}`
                 }
-                className="block h-full"
+                className="uc"
               >
-                <Card className="group flex h-full flex-col !p-4 transition hover:border-primary/40">
-                  <div className="flex items-start gap-3">
-                    {/*
-                      رقمُ المادّة في ترتيب الكورس — لا معرّفُها.
-                      المنهجُ يُدرَّس مرتَّباً، والرقمُ يقول أين تقع المادّةُ
-                      منه قبل أن يُقرأ عنوانُها.
-                    */}
-                    <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-[hsl(var(--gold)/0.18)] text-sm font-extrabold text-primary">
-                      {(i + 1).toLocaleString("ar-EG")}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-display truncate text-base font-extrabold">{u.title}</p>
-                      {u.desc && <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{u.desc}</p>}
-                    </div>
-                  </div>
+                {/*
+                  غلافُ الكورس على رأس كلّ مادّة.
+                  ------------------------------------------------------------
+                  كانت البطاقةُ نصّاً على ورقٍ أبيض: رقمٌ وعنوانٌ وسطرُ
+                  عدادٍ وشريطٌ — ولا شيءَ يُميّز مادّةً من أختها إلّا حرفٌ في
+                  العنوان. فالبصرُ لا يجد ما يمسك به، ويقرأ البطاقاتِ كلَّها
+                  ليعرف أيَّها يريد.
 
-                  <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-                    <span className="inline-flex items-center gap-1"><IconPlay className="size-3" /> {inUnit.length.toLocaleString("ar-EG")} درساً</span>
-                    {freeCount > 0 && (
-                      <span className="inline-flex items-center gap-1 text-emerald-500">
-                        <IconGift className="size-3" /> {freeCount.toLocaleString("ar-EG")} مجاناً
-                      </span>
-                    )}
+                  والغلافُ يُرسم بـ`CourseArt` نفسِها التي تُرسم بها بطاقةُ
+                  الكورس — لا نسخةً ثانيةً منها: فما ضبطه المشرفُ من قصٍّ
+                  وإزاحةٍ ولونٍ وزخرفةٍ ونصٍّ وملصقات يظهر هنا كما يظهر هناك،
+                  ولا يفترق الغلافُ باختلاف الشاشة التي يُعرض فيها.
+
+                  والرقمُ والحالةُ يُلصقان فوقه: الرقمُ في ركنٍ والقفلُ في
+                  المقابل — فيُقرآن قبل النصّ.
+                */}
+                <span className="uc-art">
+                  <CourseArt
+                    seed={`${subject.id}-${u.id}`}
+                    title={u.title}
+                    cover={subject.cover}
+                    coverFit={subject.coverFit}
+                    coverRatio={subject.coverRatio}
+                    coverColor={subject.coverColor}
+                    coverPattern={subject.coverPattern}
+                    coverText={subject.coverText}
+                    coverStickers={subject.coverStickers}
+                    locked={!mine && freeCount === 0}
+                    className="uc-art-i"
+                  />
+                  <span className="uc-scrim" aria-hidden="true" />
+
+                  <span className="uc-n">
+                    المادّة {(i + 1).toLocaleString("ar-EG")}
+                  </span>
+
+                  {!mine ? (
+                    <span className="uc-tag is-lock">
+                      <IconLock className="size-3" /> مقفلة
+                    </span>
+                  ) : pct === 100 ? (
+                    <span className="uc-tag is-done">
+                      <IconCheckCircle className="size-3" /> اكتملت
+                    </span>
+                  ) : freeCount > 0 ? (
+                    <span className="uc-tag is-free">
+                      <IconGift className="size-3" /> {freeCount.toLocaleString("ar-EG")} مجاناً
+                    </span>
+                  ) : null}
+
+                  <span className="uc-t">{u.title}</span>
+                </span>
+
+                <span className="uc-body">
+                  {u.desc && <span className="uc-d">{u.desc}</span>}
+
+                  <span className="uc-meta">
+                    <span className="uc-meta-i">
+                      <IconPlay className="size-3.5" /> {inUnit.length.toLocaleString("ar-EG")} درساً
+                    </span>
                     {doneHere > 0 && (
-                      <span className="inline-flex items-center gap-1 text-emerald-500">
-                        <IconCheckCircle className="size-3" /> {doneHere.toLocaleString("ar-EG")} تمّت
+                      <span className="uc-meta-i is-done">
+                        <IconCheckCircle className="size-3.5" /> {doneHere.toLocaleString("ar-EG")} تمّت
                       </span>
                     )}
-                  </div>
+                    {mine && freeCount > 0 && (
+                      <span className="uc-meta-i is-free">
+                        <IconGift className="size-3.5" /> {freeCount.toLocaleString("ar-EG")} مجاناً
+                      </span>
+                    )}
+                  </span>
 
                   {/*
                     المقفلةُ تعرض سعرَها لا تقدّمَها: التقدّمُ صفرٌ دائماً في
@@ -214,34 +257,30 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
                     ما يلزم لفتحها.
                   */}
                   {!mine ? (
-                    <div className="mt-auto flex items-center gap-2 pt-4">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-[11px] font-bold text-muted-foreground">
-                        <IconLock className="size-3" /> مقفلة
-                      </span>
+                    <span className="uc-foot">
                       {cheapest ? (
-                        <span className="ms-auto inline-flex items-center gap-1.5 rounded-full btn-glow px-3 py-1.5 text-[11px] font-bold text-white">
-                          <IconCart className="size-3" />
-                          {planPrice({ price: cheapest.price, discount: cheapest.discount }).price.toLocaleString("ar-EG")} ج.م
-                        </span>
+                        <>
+                          <span className="uc-price">
+                            {planPrice({ price: cheapest.price, discount: cheapest.discount }).price.toLocaleString("ar-EG")}
+                            <b className="uc-price-c">ج.م</b>
+                          </span>
+                          <span className="uc-cta is-buy">
+                            <IconCart className="size-3.5" /> اشترِ المادّة
+                          </span>
+                        </>
                       ) : (
-                        <span className="ms-auto text-[10px] text-muted-foreground">تُفتح باشتراك الكورس</span>
+                        <span className="uc-note">تُفتح باشتراك الكورس</span>
                       )}
-                    </div>
+                    </span>
                   ) : (
-                  <div className="mt-auto pt-4">
-                    <div className="mb-1 flex items-center justify-between text-[11px] font-bold">
-                      <span className="text-muted-foreground">التقدّم</span>
-                      <span className="text-primary">{pct.toLocaleString("ar-EG")}٪</span>
-                    </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-[hsl(var(--gold)/0.22)]">
-                      <span
-                        className="block h-full rounded-full transition-[width] duration-700"
-                        style={{ width: `${pct}%`, background: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--gold)))" }}
-                      />
-                    </div>
-                  </div>
+                    <span className="uc-foot is-prog">
+                      <span className="uc-bar">
+                        <span className="uc-bar-i" style={{ inlineSize: `${pct}%` }} />
+                      </span>
+                      <span className="uc-pct">{pct.toLocaleString("ar-EG")}٪</span>
+                    </span>
                   )}
-                </Card>
+                </span>
               </Link>
             </motion.div>
           );
