@@ -287,7 +287,7 @@ export function Plans() {
             <p className="text-sm">لم تُضَف خطط بعد.</p>
           </div>
         ) : (
-          <div className={`grid items-stretch gap-6 ${plansGridClass(PS.grid, plans.length)}`}>
+          <div className={`plans-grid grid items-stretch gap-6 ${plansGridClass(PS.grid, plans.length)}`}>
             {plans.map((p, i) => (
               <PlanCard
                 key={p.id}
