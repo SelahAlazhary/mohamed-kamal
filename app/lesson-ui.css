@@ -500,3 +500,254 @@
 @media (pointer: coarse) {
   .uc-cta { min-block-size: 2.75rem; }
 }
+
+
+/* ============================================================
+   صفحةُ الكورس — لوحُه ومحتواه
+   ------------------------------------------------------------
+   كانت الموادُّ بطاقاتٍ تُضغط فتُفتح صفحةُ المادّة ثمّ تُقرأ دروسُها. وذلك
+   يُخفي **المنهجَ** عمّن يريد أن يراه: من يسأل «ماذا في هذا الكورس؟» لا
+   يريد أسماءَ عشرِ موادّ، يريد أن يمرّ على ما فيها.
+
+   فصارت كلُّ مادّةٍ لوحاً فيه دروسُها تحتها — يُمسح المنهجُ كلُّه بتمريرةٍ
+   واحدة.
+
+   **واللوحُ يُطوى** بـ`<details>` لا بحالةٍ في جافاسكربت: منهجٌ من اثنتي
+   عشرةَ مادّةً في كلٍّ عشرةُ دروسٍ يصير مئةً وعشرين سطراً، والطيُّ يُبقي
+   الاختيارَ للطالب. و`<details>` يعمل قبل أن تُحمَّل جافاسكربت، ويُبلغه
+   قارئُ الشاشة مطويّاً ومفتوحاً بلا `aria` تُكتب باليد.
+   ============================================================ */
+
+/* ــ لوحُ الكورس ــ */
+.ch {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 7;
+  margin-block-end: 1.5rem;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  background: hsl(var(--muted));
+  box-shadow: inset 0 0 0 1px hsl(var(--border));
+}
+.ch-art,
+.ch-art img,
+.ch-art svg {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+/*
+  الظلُّ يحمل النصّ.
+  نصٌّ أبيضُ على صورةٍ لا يُعرف تباينُه — قد تكون فاتحةً فيختفي — والتدرّجُ
+  يضمن أرضاً داكنةً تحته مهما كانت.
+*/
+.ch-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    hsl(220 43% 8% / 0.9) 0%,
+    hsl(220 43% 8% / 0.5) 34%,
+    hsl(220 43% 8% / 0.05) 66%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+.ch-body {
+  position: absolute;
+  inset-inline: 1.1rem;
+  inset-block-end: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+}
+.ch-g {
+  padding: 0.2rem 0.6rem;
+  border-radius: 0.5rem;
+  background: hsl(var(--gold));
+  color: hsl(var(--primary));
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.ch-t {
+  font-family: var(--font-display, inherit);
+  font-size: clamp(1.05rem, 2.6vw, 1.6rem);
+  font-weight: 800;
+  line-height: 1.4;
+  color: #fff;
+  text-shadow: 0 1px 4px hsl(220 43% 8% / 0.6);
+}
+
+.ch-h {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-block-end: 0.9rem;
+  font-family: var(--font-display, inherit);
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+/* ــ لوحُ المادّة ــ */
+.cu-list { display: grid; gap: 0.75rem; }
+
+.cu {
+  border-radius: 1rem;
+  overflow: hidden;
+  background: hsl(var(--card));
+  box-shadow: inset 0 0 0 1px hsl(var(--border));
+}
+.cu[open] { box-shadow: inset 0 0 0 1px hsl(var(--gold) / 0.5); }
+
+.cu-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 0.95rem;
+  cursor: pointer;
+  list-style: none;
+  background: hsl(var(--muted) / 0.4);
+  transition: background 0.18s ease;
+}
+.cu-head::-webkit-details-marker { display: none; }
+.cu-head:hover { background: hsl(var(--muted) / 0.75); }
+
+.cu-n {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 2.1rem;
+  block-size: 2.1rem;
+  border-radius: 0.65rem;
+  background: hsl(var(--gold) / 0.25);
+  color: hsl(var(--primary));
+  font-family: var(--font-display, inherit);
+  font-size: 0.85rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.cu[data-locked="1"] .cu-n { background: hsl(var(--muted)); color: hsl(var(--muted-foreground)); }
+
+.cu-hb { min-width: 0; flex: 1 1 auto; }
+.cu-t {
+  display: block;
+  font-family: var(--font-display, inherit);
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cu-s {
+  display: block;
+  margin-block-start: 0.1rem;
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.cu-pct {
+  flex: none;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: hsl(var(--primary));
+  font-variant-numeric: tabular-nums;
+}
+.cu-lock {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.45rem;
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+/* السهمُ يدور مع الفتح — علامةُ الطيّ تُرى ولا تُقرأ */
+.cu-chev {
+  flex: none;
+  color: hsl(var(--muted-foreground));
+  transform: rotate(-90deg);
+  transition: transform 0.22s ease;
+}
+.cu[open] .cu-chev { transform: rotate(90deg); }
+
+/* ــ الدروس ــ */
+.cu-ls { display: grid; }
+.cu-l {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 0.95rem;
+  border-block-start: 1px solid hsl(var(--border) / 0.7);
+  transition: background 0.15s ease;
+}
+.cu-l:hover { background: hsl(var(--gold) / 0.08); }
+.cu-l-i {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 1.6rem;
+  block-size: 1.6rem;
+  color: hsl(var(--primary));
+}
+.cu-l[data-state="done"] .cu-l-i { color: hsl(var(--gold)); }
+.cu-l[data-state="locked"] .cu-l-i { color: hsl(var(--muted-foreground)); }
+.cu-l-t {
+  min-width: 0;
+  flex: 1 1 auto;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cu-l[data-state="done"] .cu-l-t { color: hsl(var(--muted-foreground)); font-weight: 500; }
+.cu-l[data-state="locked"] .cu-l-t { color: hsl(var(--muted-foreground)); }
+.cu-l-free {
+  flex: none;
+  padding: 0.05rem 0.4rem;
+  border-radius: 0.4rem;
+  background: hsl(var(--gold) / 0.2);
+  color: hsl(var(--primary));
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.cu-l-d {
+  flex: none;
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  font-variant-numeric: tabular-nums;
+}
+
+/* المقفلةُ تُختم بسبيل فتحها — لا يُترك الطالبُ أمام أقفال */
+.cu-buy {
+  display: flex;
+  justify-content: center;
+  padding: 0.75rem 0.95rem;
+  border-block-start: 1px solid hsl(var(--border) / 0.7);
+  background: hsl(var(--muted) / 0.35);
+}
+.cu-buy-b {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-block-size: 2.4rem;
+  padding-inline: 1rem;
+  border-radius: 0.7rem;
+  background: hsl(var(--primary));
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.cu-buy-n { font-size: 0.78rem; color: hsl(var(--muted-foreground)); }
+
+@media (pointer: coarse) {
+  .cu-l { min-block-size: 2.9rem; }
+  .cu-buy-b { min-block-size: 2.75rem; }
+}

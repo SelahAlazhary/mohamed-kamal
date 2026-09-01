@@ -17,7 +17,7 @@
  * تُتكلَّف.
  */
 
-import { use } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { IconArrowLeft, IconCheckCircle, IconListVideo, IconGift, IconPlay } from "@/components/brand/icons";
@@ -45,6 +45,20 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
 
   const sub = subscriptionFor(me, id);
   const left = daysLeft(sub?.expiresAt);
+
+  /*
+    أيُّ الألواح مفتوح.
+    ------------------------------------------------------------------
+    كُتب أوّلاً `open={i === 0}` على `<details>` — وهو خطأ: React يُعيد
+    كتابة السمة عند كلّ إعادة رسم، فأيُّ تغيّرٍ في الحالة (كوضع علامة
+    «تمّت» على درس) يُطبق ما فتحه الطالبُ ويفتح الأوّلَ مكانَه.
+
+    فالفتحُ حالةٌ تُدار: بذرتُها أوّلُ لوح، و`onToggle` يُحدّثها. ولا
+    تُبنى من `units` في `useState` مباشرةً لأنّها تُحسب في كلّ رسم —
+    فتُقرأ من دالّةٍ تُنفَّذ مرّةً واحدة.
+  */
+  const [openUnits, setOpenUnits] = useState<Set<string>>(() => new Set());
+  const [seeded, setSeeded] = useState(false);
 
   if (!subject) return <NotFound msg="الكورس غير موجود." />;
 
@@ -137,153 +151,145 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
       {header}
       {buyBanner}
 
-      <p className="mb-4 flex items-center gap-2 font-display font-extrabold">
-        <IconListVideo className="size-5 text-primary" /> موادّ الكورس
+      {/*
+        لوحُ الكورس — غلافُه واسمُه وصفُّه.
+        ------------------------------------------------------------------
+        الغلافُ يُرسم بـ`CourseArt` نفسِها التي تُرسم بها بطاقةُ الكورس،
+        فما ضُبط في اللوحة يظهر هنا كما يظهر هناك.
+      */}
+      <div className="ch">
+        <CourseArt
+          seed={subject.id}
+          title={subject.name}
+          cover={subject.cover}
+          coverFit={subject.coverFit}
+          coverRatio={subject.coverRatio}
+          coverColor={subject.coverColor}
+          coverPattern={subject.coverPattern}
+          coverText={subject.coverText}
+          coverStickers={subject.coverStickers}
+          className="ch-art"
+        />
+        <span className="ch-scrim" aria-hidden="true" />
+        <span className="ch-body">
+          {subject.grade && <span className="ch-g">{subject.grade}</span>}
+          <span className="ch-t">{subject.name}</span>
+        </span>
+      </div>
+
+      <p className="ch-h">
+        <IconListVideo className="size-5 text-primary" /> محتوى الكورس
       </p>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      {/*
+        الموادُّ ودروسُها في مكانٍ واحد.
+        ------------------------------------------------------------------
+        كانت الموادُّ بطاقاتٍ تُضغط فتُفتح صفحةُ المادّة ثمّ تُقرأ دروسُها.
+        وذلك يُخفي **المنهجَ** عمّن يريد أن يراه: من يسأل «ماذا في هذا
+        الكورس؟» لا يريد أسماءَ عشرِ موادّ، يريد أن يمرّ على ما فيها.
+
+        فصارت كلُّ مادّةٍ لوحاً فيه دروسُها مسرودةً تحتها — يُمسح المنهجُ
+        كلُّه بتمريرةٍ واحدة، والضغطُ على درسٍ يفتحه هو لا أوّلَ مادّته.
+
+        **واللوحُ يُطوى.** منهجٌ من اثنتي عشرةَ مادّةً في كلٍّ عشرةُ دروسٍ
+        يصير مئةً وعشرين سطراً — والطيُّ يُبقي الاختيارَ للطالب. والمفتوحُ
+        أوّلاً ما فيه درسُه الحاليّ، فيجد نفسَه حيث وقف.
+      */}
+      <div className="cu-list">
         {units.map((u, i) => {
           const inUnit = u.lessons ?? [];
           const doneHere = inUnit.filter((l) => done.has(l.id)).length;
           const pct = inUnit.length ? Math.round((doneHere / inUnit.length) * 100) : 0;
           const freeCount = inUnit.filter((l) => l.isFree).length;
-          /*
-            المادّةُ مفتوحةٌ باشتراك الكورس أو باشتراكها هي.
-            و«المقفلة» تُعرض ولا تُخفى: الطالبُ يرى ما في المنهج ويعرف ما
-            يشتري — وإخفاؤها يجعله يشتري ما لا يعرف.
-          */
           const mine = unitActive(me, id, u.id, Date.now(), subject.term);
           const priced = (u.prices ?? []).filter((p) => (p.label ?? "").trim());
           const cheapest = priced.length
             ? priced.reduce((a, b) => (planPrice({ price: a.price, discount: a.discount }).price
                 <= planPrice({ price: b.price, discount: b.discount }).price ? a : b))
             : null;
+          const unitHref = `/student/course/${id}/${encodeURIComponent(u.id)}`;
 
           return (
-            <motion.div
+            <motion.details
               key={u.id}
-              initial={{ opacity: 0, y: 14 }}
+              open={seeded ? openUnits.has(u.id) : i === 0}
+              onToggle={(ev) => {
+                const on = (ev.currentTarget as HTMLDetailsElement).open;
+                setSeeded(true);
+                setOpenUnits((prev) => {
+                  const next = new Set(seeded ? prev : units.filter((_, k) => k === 0).map((x) => x.id));
+                  if (on) next.add(u.id); else next.delete(u.id);
+                  return next;
+                });
+              }}
+              className="cu"
+              data-locked={!mine ? "1" : "0"}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ delay: i * 0.04, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             >
-              {/*
-                المقفلةُ التي لا درسَ مجّانيَّ فيها تذهب إلى شرائها مباشرةً:
-                فتحُها على مسارٍ كلُّه أقفالٌ ضغطةٌ ضائعة. وما فيه درسٌ
-                مجّانيٌّ يُفتح ليُجرَّب قبل الشراء.
-              */}
-              <Link
-                href={
-                  mine || freeCount > 0
-                    ? `/student/course/${id}/${encodeURIComponent(u.id)}`
-                    : `/student/pay?subject=${id}&unit=${encodeURIComponent(u.id)}`
-                }
-                className="uc"
-              >
-                {/*
-                  غلافُ الكورس على رأس كلّ مادّة.
-                  ------------------------------------------------------------
-                  كانت البطاقةُ نصّاً على ورقٍ أبيض: رقمٌ وعنوانٌ وسطرُ
-                  عدادٍ وشريطٌ — ولا شيءَ يُميّز مادّةً من أختها إلّا حرفٌ في
-                  العنوان. فالبصرُ لا يجد ما يمسك به، ويقرأ البطاقاتِ كلَّها
-                  ليعرف أيَّها يريد.
-
-                  والغلافُ يُرسم بـ`CourseArt` نفسِها التي تُرسم بها بطاقةُ
-                  الكورس — لا نسخةً ثانيةً منها: فما ضبطه المشرفُ من قصٍّ
-                  وإزاحةٍ ولونٍ وزخرفةٍ ونصٍّ وملصقات يظهر هنا كما يظهر هناك،
-                  ولا يفترق الغلافُ باختلاف الشاشة التي يُعرض فيها.
-
-                  والرقمُ والحالةُ يُلصقان فوقه: الرقمُ في ركنٍ والقفلُ في
-                  المقابل — فيُقرآن قبل النصّ.
-                */}
-                <span className="uc-art">
-                  <CourseArt
-                    seed={`${subject.id}-${u.id}`}
-                    title={u.title}
-                    cover={subject.cover}
-                    coverFit={subject.coverFit}
-                    coverRatio={subject.coverRatio}
-                    coverColor={subject.coverColor}
-                    coverPattern={subject.coverPattern}
-                    coverText={subject.coverText}
-                    coverStickers={subject.coverStickers}
-                    locked={!mine && freeCount === 0}
-                    className="uc-art-i"
-                  />
-
-                  {/*
-                    شارةٌ واحدةٌ تقول الحالة — والغلافُ يبقى مكشوفاً.
-                    كان العنوانُ يُكتب فوق الغلاف تحت ظلٍّ داكن، فيحجب
-                    ثلثَه ويُخفي ما رُسم فيه. والغلافُ صورةُ الكورس التي
-                    ضبطها المشرفُ بيده — تُرى كاملةً أو لا تُوضع.
-                  */}
-                  <span className={`uc-tag ${!mine ? "is-lock" : pct === 100 ? "is-done" : "is-in"}`}>
-                    {!mine ? <><IconLock className="size-3" /> مقفلة</>
-                      : pct === 100 ? <><IconCheckCircle className="size-3" /> اكتملت</>
-                        : "مسجَّل"}
+              <summary className="cu-head">
+                <span className="cu-n">{(i + 1).toLocaleString("ar-EG")}</span>
+                <span className="cu-hb">
+                  <span className="cu-t">{u.title}</span>
+                  <span className="cu-s">
+                    {inUnit.length.toLocaleString("ar-EG")} درساً
+                    {doneHere > 0 && <> · {doneHere.toLocaleString("ar-EG")} تمّت</>}
+                    {!mine && freeCount > 0 && <> · {freeCount.toLocaleString("ar-EG")} مجّاناً</>}
                   </span>
                 </span>
 
-                <span className="uc-body">
-                  {/* سطرُ الصفّ فوق العنوان — يُعرف لمن الكورسُ قبل ما فيه */}
-                  <span className="uc-g">{subject.grade}</span>
-                  <span className="uc-t">{u.title}</span>
-                  {u.desc && <span className="uc-d">{u.desc}</span>}
+                {mine ? (
+                  pct > 0 && <span className="cu-pct">{pct.toLocaleString("ar-EG")}٪</span>
+                ) : (
+                  <span className="cu-lock"><IconLock className="size-3" /> مقفلة</span>
+                )}
+                <IconArrowLeft className="cu-chev size-4" />
+              </summary>
 
-                  <span className="uc-meta">
-                    <span className="uc-meta-i">
-                      <IconPlay className="size-3.5" /> {inUnit.length.toLocaleString("ar-EG")} درساً
-                    </span>
-                    {doneHere > 0 && (
-                      <span className="uc-meta-i is-done">
-                        <IconCheckCircle className="size-3.5" /> {doneHere.toLocaleString("ar-EG")} تمّت
-                      </span>
-                    )}
-                    {mine && freeCount > 0 && (
-                      <span className="uc-meta-i is-free">
-                        <IconGift className="size-3.5" /> {freeCount.toLocaleString("ar-EG")} مجاناً
-                      </span>
-                    )}
-                  </span>
-
-                  {/*
-                    المقفلةُ تعرض سعرَها لا تقدّمَها: التقدّمُ صفرٌ دائماً في
-                    مادّةٍ لم تُشترَ، وشريطٌ فارغٌ لا يقول شيئاً. والسعرُ يقول
-                    ما يلزم لفتحها.
-                  */}
-                  {!mine ? (
-                    <span className="uc-foot">
-                      {cheapest ? (
-                        <>
-                          <span className="uc-price">
-                            {planPrice({ price: cheapest.price, discount: cheapest.discount }).price.toLocaleString("ar-EG")}
-                            <b className="uc-price-c">ج.م</b>
-                          </span>
-                          <span className="uc-cta is-buy">
-                            <IconCart className="size-3.5" /> اشترِ المادّة
-                          </span>
-                        </>
-                      ) : (
-                        <span className="uc-note">تُفتح باشتراك الكورس</span>
-                      )}
-                    </span>
-                  ) : (
-                    <>
-                      {/* الشريطُ بعرض البطاقة ثمّ سطرُ النسبة والمتابعة */}
-                      <span className="uc-bar">
-                        <span className="uc-bar-i" style={{ inlineSize: `${pct}%` }} />
-                      </span>
-                      <span className="uc-foot is-prog">
-                        <span className="uc-pct">{pct.toLocaleString("ar-EG")}٪</span>
-                        <span className="uc-cta">
-                          {pct === 0 ? "ابدأ" : pct === 100 ? "راجِع" : "متابعة"}
-                          <IconArrowLeft className="size-3.5" />
+              <ul className="cu-ls">
+                {inUnit.map((l) => {
+                  const open = mine || l.isFree;
+                  const isDone = done.has(l.id);
+                  return (
+                    <li key={l.id}>
+                      {/*
+                        الرابطُ يحمل الدرسَ لا المادّةَ وحدَها — فيُفتح ما
+                        ضُغط عليه، لا أوّلُ دروسها.
+                      */}
+                      <Link
+                        href={open ? `${unitHref}?lesson=${encodeURIComponent(l.id)}` : `/student/pay?subject=${id}&unit=${encodeURIComponent(u.id)}`}
+                        className="cu-l"
+                        data-state={isDone ? "done" : open ? "open" : "locked"}
+                      >
+                        <span className="cu-l-i">
+                          {isDone ? <IconCheckCircle className="size-4" />
+                            : open ? <IconPlay className="size-4" />
+                              : <IconLock className="size-3.5" />}
                         </span>
-                      </span>
-                    </>
-                  )}
-                </span>
-              </Link>
-            </motion.div>
+                        <span className="cu-l-t">{l.title}</span>
+                        {l.isFree && <span className="cu-l-free">مجّاني</span>}
+                        {l.duration && <span className="cu-l-d">{l.duration}</span>}
+                      </Link>
+                    </li>
+                  );
+                })}
+
+                {/* المقفلةُ تُختم بسبيل فتحها — لا يُترك الطالبُ أمام أقفال */}
+                {!mine && (
+                  <li className="cu-buy">
+                    {cheapest ? (
+                      <Link href={`/student/pay?subject=${id}&unit=${encodeURIComponent(u.id)}`} className="cu-buy-b">
+                        <IconCart className="size-3.5" />
+                        افتح «{u.title}» — {planPrice({ price: cheapest.price, discount: cheapest.discount }).price.toLocaleString("ar-EG")} ج.م
+                      </Link>
+                    ) : (
+                      <span className="cu-buy-n">تُفتح باشتراك الكورس</span>
+                    )}
+                  </li>
+                )}
+              </ul>
+            </motion.details>
           );
         })}
       </div>

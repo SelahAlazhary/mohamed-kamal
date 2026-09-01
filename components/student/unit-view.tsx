@@ -241,13 +241,20 @@ function OpenRow({
 }
 
 export function UnitView({
-  course, unit, owned, backHref, backLabel,
+  course, unit, owned, backHref, backLabel, initialLessonId,
 }: {
   course: Subject;
   unit: Unit;
   owned: boolean;
   backHref: string;
   backLabel: string;
+  /**
+   * الدرسُ الذي يُفتح عليه.
+   * من ضغط درساً في صفحة الكورس يريده هو — لا أوّلَ دروس مادّته. وبدون
+   * هذا يفتح المشغّلُ على الدرس الأوّل دائماً، فيبحث الطالبُ في المسار
+   * عمّا ضغط عليه قبل قليل.
+   */
+  initialLessonId?: string;
 }) {
   const { db, session, refresh } = useContent();
   const me = db?.users.find((u) => u.id === session?.uid);
@@ -257,7 +264,10 @@ export function UnitView({
   const courseTotal = allLessons(course).length;
   const { done, mark } = useDone(course.id, session?.uid);
 
-  const [idx, setIdx] = useState(0);
+  const [idx, setIdx] = useState(() => {
+    const at = initialLessonId ? lessons.findIndex((l) => l.id === initialLessonId) : -1;
+    return at >= 0 ? at : 0;
+  });
   const current: Lesson | undefined = lessons[idx];
   const embed = useMemo(() => (current ? toEmbed(current.url) : null), [current]);
 

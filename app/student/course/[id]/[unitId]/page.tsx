@@ -14,6 +14,7 @@
 
 import { use } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { IconArrowLeft, IconCheckCircle } from "@/components/brand/icons";
 import { EmptyLock } from "@/components/brand/illustrations";
 import { PageHeader, Card } from "@/components/dashboard/ui";
@@ -24,6 +25,8 @@ import { courseUnits } from "@/lib/course-units";
 
 export default function UnitPage({ params }: { params: Promise<{ id: string; unitId: string }> }) {
   const { id, unitId } = use(params);
+  /* `?lesson=` يأتي من صفحة الكورس — فيُفتح ما ضُغط عليه لا أوّلُ المادّة */
+  const wantLesson = useSearchParams().get("lesson") ?? undefined;
   const { db, session, content } = useContent();
   const me = db?.users.find((u) => u.id === session?.uid);
   const subject = db?.subjects.find((s) => s.id === id);
@@ -91,7 +94,14 @@ export default function UnitPage({ params }: { params: Promise<{ id: string; uni
         }
       />
 
-      <UnitView course={subject} unit={unit} owned={mine} backHref={back} backLabel="موادّ الكورس" />
+      <UnitView
+        course={subject}
+        unit={unit}
+        owned={mine}
+        backHref={back}
+        backLabel="موادّ الكورس"
+        initialLessonId={wantLesson ? decodeURIComponent(wantLesson) : undefined}
+      />
     </>
   );
 }
