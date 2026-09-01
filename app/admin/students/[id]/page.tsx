@@ -16,6 +16,10 @@ import Link from "next/link";
 import { PageHeader, Card, Progress, StatusBadge } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
 import {
+  reportFor, homeworkFor, homeworkTally, levelOf,
+  LEVEL_LABEL, STATE_LABEL, AWAY_DAYS,
+} from "@/lib/student-report";
+import {
   KIND_LABEL, KIND_ICON, isOnline, sinceText, kindCounts, byWeekday, WEEKDAYS,
 } from "@/lib/activity";
 import { activeSubs, daysLeft, subjectActive } from "@/lib/access";
@@ -50,6 +54,16 @@ export default function StudentReport({ params }: { params: Promise<{ id: string
   const subjects = db?.subjects ?? [];
   const pays = (db?.payments ?? []).filter((p) => p.userId === id);
   const ticket = (db?.tickets ?? []).find((t) => t.userId === id);
+
+  /*
+    المؤشّراتُ من `lib/student-report` نفسِها التي تُبنى منها صفحةُ
+    التقارير — فلا يفترق رقمٌ بين الصفحتين. ورقمان مختلفان لطالبٍ واحدٍ
+    في شاشتين يُفقدان الثقةَ في الاثنتين.
+  */
+  const rep = u ? reportFor(u, subjects, db?.payments ?? []) : null;
+  const hw = u ? homeworkFor(u, subjects) : [];
+  const hwT = homeworkTally(hw);
+  const level = levelOf(hwT.avg);
 
   if (!db) return <Card className="py-16 text-center text-sm text-muted-foreground">جارٍ التحميل…</Card>;
   if (!u) {
@@ -212,6 +226,91 @@ export default function StudentReport({ params }: { params: Promise<{ id: string
         )}
       </Card>
 
+      {/* ---------------- المستوى ومتابعةُ المذاكرة ---------------- */}
+      {/*
+        أربعةُ أرقامٍ تُقرأ قبل الجداول.
+        والمستوى **من الدرجات وحدَها** لا من التقدّم: من شاهد الكورسَ
+        كلَّه ولم يحلّ واجباً واحداً ليس «ممتازاً». ومن لم يحلّ لا يُقيَّم
+        أصلاً — «لم يُقيَّم» لا «متعثّر»، فوسمُ من لم يُسأل بالتعثّر حكمٌ
+        بلا بيّنة.
+      */}
+      <Card className="mt-5">
+        <p className="font-display mb-3 font-bold">المستوى والمتابعة</p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="rp-stat" data-k={level}>
+            <span className="rp-stat-n">{LEVEL_LABEL[level]}</span>
+            <span className="rp-stat-l">المستوى</span>
+          </div>
+          <div className="rp-stat">
+            <span className="rp-stat-n">{hwT.avg === null ? "—" : `${ar(hwT.avg)}٪`}</span>
+            <span className="rp-stat-l">متوسّط الواجبات</span>
+          </div>
+          <div className="rp-stat" data-k={hwT.pending > 0 ? "weak" : undefined}>
+            <span className="rp-stat-n">{ar(hwT.pending)}</span>
+            <span className="rp-stat-l">واجبٌ لم يُحلّ</span>
+          </div>
+          <div className="rp-stat" data-k={rep && rep.daysSinceSeen !== null && rep.daysSinceSeen >= AWAY_DAYS ? "weak" : undefined}>
+            <span className="rp-stat-n">
+              {!rep || rep.daysSinceSeen === null ? "—"
+                : rep.daysSinceSeen === 0 ? "اليوم" : ar(rep.daysSinceSeen)}
+            </span>
+            <span className="rp-stat-l">
+              {!rep || rep.daysSinceSeen === null ? "آخر ظهور" : rep.daysSinceSeen === 0 ? "آخر ظهور" : "يوماً منذ ظهوره"}
+            </span>
+          </div>
+        </div>
+        {rep && (
+          <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+            حالتُه الآن: <b>{STATE_LABEL[rep.state]}</b> — {ar(rep.activeCourses)} كورساً مفتوحاً،
+            وتقدّمُه فيها {ar(rep.progress)}٪. والمستوى محسوبٌ من درجات الواجبات لا من نسبة المشاهدة.
+          </p>
+        )}
+      </Card>
+
+      {/* ---------------- الواجبات ---------------- */}
+      {/*
+        تُبنى من **دروس الكورسات** لا من نتائج الطالب: عرضُ المحلول وحدَه
+        يُخفي ما يُبحث عنه — والمشرفُ يفتح التقريرَ ليعرف ما **لم** يُحلّ.
+        فيظهر الفارغُ فارغاً، وغيرُ المحلول أوّلاً ثمّ الأضعفُ درجة.
+      */}
+      <Card className="mt-5">
+        <p className="font-display mb-1 font-bold">واجباتُ الدروس ({ar(hwT.total)})</p>
+        <p className="mb-3 text-[11px] text-muted-foreground">
+          {hwT.total === 0
+            ? "لا واجباتٍ على دروس كورساته."
+            : <>حلّ {ar(hwT.solved)} — نجح في {ar(hwT.passed)} ورسب في {ar(hwT.failed)}، وبقي {ar(hwT.pending)} لم يُحلّ.</>}
+        </p>
+
+        {hwT.total === 0 ? null : (
+          <div className="grid gap-2">
+            {hw.slice(0, 30).map((h) => (
+              <div key={`${h.subjectId}-${h.lessonId}`} className="hw-row" data-k={h.percent === null ? "none" : h.passed ? "pass" : "fail"}>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-xs font-bold">{h.lessonTitle}</span>
+                  <span className="block truncate text-[10px] text-muted-foreground">
+                    {h.subjectName} · {h.unitTitle} · {ar(h.questions)} {h.questions === 1 ? "سؤال" : "أسئلة"}
+                  </span>
+                </span>
+                {h.percent === null ? (
+                  <span className="hw-tag">لم يُحلّ</span>
+                ) : (
+                  <>
+                    <span className="hw-n">{ar(h.score ?? 0)}/{ar(h.total ?? 0)}</span>
+                    <span className="hw-p">{ar(h.percent)}٪</span>
+                    <span className="hw-tag" data-k={h.passed ? "pass" : "fail"}>{h.passed ? "نجح" : "لم ينجح"}</span>
+                  </>
+                )}
+              </div>
+            ))}
+            {hw.length > 30 && (
+              <p className="pt-1 text-center text-[11px] text-muted-foreground">
+                وعُرض ثلاثون من {ar(hw.length)} — والباقي مثلُها.
+              </p>
+            )}
+          </div>
+        )}
+      </Card>
+
       {/* ---------------- المدفوعات ---------------- */}
       <Card className="mt-5">
         <p className="font-display mb-3 font-bold">تحويلاته ({ar(pays.length)})</p>
@@ -241,13 +340,31 @@ export default function StudentReport({ params }: { params: Promise<{ id: string
           {(u.examAttempts ?? []).length === 0 ? (
             <p className="text-xs text-muted-foreground">لم يدخل اختباراً بعد.</p>
           ) : (
+            /*
+              الدرجةُ وحدَها لا تُقرأ: «١٢» أهي من عشرين أم من خمسة عشر؟
+              فتُعرض النسبةُ معها، وتُؤخذ العلامةُ الكاملةُ من الاختبار
+              نفسِه — وإن لم تُعرف عُرضت الدرجةُ مجرّدةً ولم تُخترع نسبة.
+            */
             <div className="grid gap-2">
-              {(u.examAttempts ?? []).slice(-8).reverse().map((a, i) => (
-                <div key={i} className="flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-xs">
-                  <b>{db.exams?.find((e) => e.id === a.examId)?.title ?? a.examId}</b>
-                  <span className="mr-auto font-bold text-primary">{ar(a.score)}</span>
-                </div>
-              ))}
+              {(u.examAttempts ?? []).slice(-8).reverse().map((a, i) => {
+                const ex = db.exams?.find((e) => e.id === a.examId);
+                const outOf = (ex?.questions ?? []).length || null;
+                const pct = outOf ? Math.round((a.score / outOf) * 100) : null;
+                return (
+                  <div key={i} className="hw-row" data-k={pct === null ? "none" : pct >= 50 ? "pass" : "fail"}>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-xs font-bold">{ex?.title ?? a.examId}</span>
+                      {a.at && (
+                        <span className="block text-[10px] text-muted-foreground">
+                          {new Date(a.at).toLocaleDateString("ar-EG")}
+                        </span>
+                      )}
+                    </span>
+                    <span className="hw-n">{ar(a.score)}{outOf ? `/${ar(outOf)}` : ""}</span>
+                    {pct !== null && <span className="hw-p">{ar(pct)}٪</span>}
+                  </div>
+                );
+              })}
             </div>
           )}
         </Card>

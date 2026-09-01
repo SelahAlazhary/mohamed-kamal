@@ -14,6 +14,7 @@ import { emailHint } from "../lib/email-hint.ts";
 import { gradeInStage, gradeHasTrack } from "../lib/data.ts";
 import { depthFilter, depthLit } from "../lib/art-depth.ts";
 import { courseUnits, isSplit } from "../lib/course-units.ts";
+import { levelOf, stateOf, homeworkFor, homeworkTally } from "../lib/student-report.ts";
 
 let pass = 0, fail = 0;
 const t = (name, got, want) => {
@@ -84,6 +85,39 @@ t("المسطّحةُ بلا مرشّح", depthFilter("flat"), "");
 t("والمجسَّمةُ تُضيء", depthLit("deep"), true);
 t("والظلُّ الخفيفُ لا يُضيء", depthLit("soft"), false);
 
+console.log("\n== تقريرُ الطالب ==");
+/* من لم يحلّ لا يُقيَّم — ووسمُ من لم يُسأل بالتعثّر حكمٌ بلا بيّنة */
+t("لم يحلّ ⇒ لم يُقيَّم", levelOf(null), "unknown");
+t("٤٩ متعثّر", levelOf(49), "weak");
+t("٨٥ ممتاز", levelOf(85), "top");
+/* وبلا اشتراكٍ لا حالةَ تعثّر: تقدّمُه صفرٌ لأنّه لا يملك شيئاً */
+t("بلا اشتراك", stateOf({ open: 0, progress: 0, daysSinceSeen: 400 }), "none");
+t("ولا ظهورَ مسجَّل ليس غياباً", stateOf({ open: 1, progress: 40, daysSinceSeen: null }), "active");
+
+{
+  const qz = (n) => ({ enabled: true, passScore: 60, questions: Array.from({ length: n }, (_, i) => ({ id: String(i) })) });
+  const subs = [
+    { id: "S1", name: "الفقه", units: [{ id: "u1", title: "الطهارة", lessons: [
+      { id: "l1", title: "أ", url: "", quiz: qz(2) },
+      { id: "l2", title: "ب", url: "", quiz: qz(3) },
+      { id: "l3", title: "بلا واجب", url: "" },
+    ] }] },
+    { id: "S2", name: "غيرُ مملوك", units: [{ id: "u9", title: "و", lessons: [{ id: "l9", title: "د", url: "", quiz: qz(4) }] }] },
+  ];
+  const stu = {
+    id: "U", name: "ط",
+    subscriptions: [{ id: "s", subjectId: "S1", plan: "ترم", activatedAt: "", expiresAt: null }],
+    quizResults: [{ subjectId: "S1", lessonId: "l1", score: 1, total: 2, percent: 50, passed: false, at: "" }],
+  };
+  const hw = homeworkFor(stu, subs);
+  t("الدرسُ بلا واجبٍ يُستثنى", hw.some((h) => h.lessonId === "l3"), false);
+  t("وكورسٌ غيرُ مملوكٍ يُستثنى", hw.some((h) => h.subjectId === "S2"), false);
+  /* الفارغُ يظهر فارغاً — والتقريرُ يُفتح لما لم يُحلّ */
+  t("غيرُ المحلول أوّلاً", hw[0].lessonId, "l2");
+  t("ونتيجتُه فارغة", hw[0].percent, null);
+  t("الخلاصة", homeworkTally(hw), { total: 2, solved: 1, pending: 1, passed: 0, failed: 1, avg: 50 });
+}
+
 /*
   ==================================================================
   أصنافٌ في الترميز بلا قاعدةٍ في الأنماط
@@ -131,7 +165,7 @@ console.log("\n== أصنافُ الهوية لها قواعدُها ==");
     وهي ليست أصنافاً أصلاً.
   */
   const ATTR = /className\s*=\s*(?:"([^"]*)"|'([^']*)'|\{`([^`]*)`\})/g;
-  const PREFIX = /\b((?:lp|uc|cu|ch|tb|rp|pay|pg|sp|lm|pnl)-[a-z0-9-]+)\b/g;
+  const PREFIX = /\b((?:lp|uc|cu|ch|tb|rp|hw|xs|pay|pg|sp|lm|pnl)-[a-z0-9-]+)\b/g;
   const used = new Set();
   for (const a of code.matchAll(ATTR)) {
     const value = a[1] ?? a[2] ?? a[3] ?? "";

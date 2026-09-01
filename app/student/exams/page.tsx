@@ -10,6 +10,9 @@ import { PageHeader, Card, StatusBadge } from "@/components/dashboard/ui";
 import { useContent } from "@/components/content/content-provider";
 import { useMaintGate } from "@/components/brand/maint-gate";
 
+/* الأرقامُ بالهنديّة كبقيّة المنصّة — لا بالّاتينيّة */
+const ar = (n: number) => n.toLocaleString("ar-EG");
+
 export default function StudentExamsPage() {
   /* بوّابةُ الصيانة — المشرفون يمرّون والطلاب يرون اللوح. */
   const maintGate = useMaintGate("exams");
@@ -41,10 +44,52 @@ export default function StudentExamsPage() {
     <>
       <PageHeader title="الاختبارات" subtitle={`${y("حلّ")} اختباراتك داخل المنصّة — النتيجة تظهر فوراً`} />
 
-      <div className="mb-6 grid gap-3 sm:grid-cols-3">
-        <Summary icon={<IconClipboardCheck className="size-5" />} label="اختبارات متاحة" value={exams.length} tone="bg-primary/12 text-primary" bar="bg-primary/70" />
-        <Summary icon={<IconCheckCircle className="size-5" />} label="تم حلّها" value={solved} tone="bg-sky-500/12 text-sky-500" bar="bg-sky-500/70" />
-        <Summary icon={<IconCheckCircle className="size-5" />} label="نجحت فيها" value={passed} tone="bg-emerald-500/12 text-emerald-500" bar="bg-emerald-500/70" />
+      {/*
+        الأرقامُ الثلاثةُ متداخلةٌ لا متجاورة.
+        ------------------------------------------------------------------
+        «متاحة» و«حُلّت» و«نجحت» ليست ثلاثةَ مقادير مستقلّة — بل مجموعةٌ
+        وجزؤها وجزءُ جزئها: من نجح فقد حلّ، ومن حلّ فقد كان متاحاً له.
+
+        وعرضُها ثلاثَ بطاقاتٍ منفصلةٍ لكلٍّ لونُها يُخفي هذا: يُقرأ ثلاثةَ
+        أخبارٍ لا خبراً واحداً، ولا يُعرف من «٧» أهي أكثرُ المتاح أم أقلُّه.
+        **والألوانُ الثلاثةُ لا تعني شيئاً**: أزرقُ الحلِّ وأخضرُ النجاح
+        اختياران بلا سند، وليسا من ألوان هذه الهوية أصلاً.
+
+        فصارت لوحاً واحداً: الأرقامُ في صفٍّ يفصله شعرة، وتحتها شريطٌ
+        **مركَّبٌ** يُري النسبةَ التي بينها — فيُقرأ «كم بقي» من الشكل قبل
+        أن يُحسب من الأرقام.
+      */}
+      <div className="xs-panel mb-6">
+        <div className="xs-row">
+          <span className="xs-c">
+            <span className="xs-n">{ar(exams.length)}</span>
+            <span className="xs-l">اختباراً متاحاً</span>
+          </span>
+          <span className="xs-c">
+            <span className="xs-n">{ar(solved)}</span>
+            <span className="xs-l">{y("حلَلْت")}</span>
+          </span>
+          <span className="xs-c">
+            <span className="xs-n" data-k="pass">{ar(passed)}</span>
+            <span className="xs-l">نجحت فيها</span>
+          </span>
+        </div>
+
+        {exams.length > 0 && (
+          <>
+            <span className="xs-bar" aria-hidden="true">
+              <span className="xs-bar-p" style={{ inlineSize: `${(passed / exams.length) * 100}%` }} />
+              <span className="xs-bar-s" style={{ inlineSize: `${((solved - passed) / exams.length) * 100}%` }} />
+            </span>
+            <p className="xs-note">
+              {solved === 0
+                ? <>لم {y("تبدأ")} بعد — {ar(exams.length)} في انتظارك.</>
+                : passed === solved
+                  ? <>نجحت في كلّ ما حلَلْت. وبقي {ar(exams.length - solved)} لم {y("تفتح")}ه.</>
+                  : <>نجحت في {ar(passed)} من {ar(solved)} حلَلْتها، وبقي {ar(exams.length - solved)} لم {y("تفتح")}ه.</>}
+            </p>
+          </>
+        )}
       </div>
 
       {exams.length === 0 && (
@@ -125,37 +170,3 @@ export default function StudentExamsPage() {
  * والترتيبُ يبدأ من اليمين: أيقونةٌ فعنوانٌ فرقم، عمودٌ واحدٌ تنزل فيه
  * العينُ بلا ارتداد. وشريطُ النبرة أسفلَها يفرّق الثلاثَ بلمحة.
  */
-function Summary({
-  icon,
-  label,
-  value,
-  tone,
-  bar,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: React.ReactNode;
-  tone: string;
-  /** لونُ الشريط السفليّ — يميّز البطاقةَ من جارتها بلا قراءة. */
-  bar: string;
-}) {
-  return (
-    <Card className="relative overflow-hidden !p-5">
-      <div className="mb-3.5 flex items-center gap-3">
-        <span className={`grid size-11 shrink-0 place-items-center rounded-2xl ${tone}`}>{icon}</span>
-        <span className="min-w-0 flex-1 text-[13px] font-bold leading-snug text-muted-foreground">
-          {label}
-        </span>
-      </div>
-
-      <p
-        className="font-display text-[2.25rem] font-extrabold leading-none"
-        style={{ fontVariantNumeric: "tabular-nums" }}
-      >
-        {typeof value === "number" ? value.toLocaleString("en-US") : value}
-      </p>
-
-      <span className={`absolute inset-x-0 bottom-0 block h-1 ${bar}`} />
-    </Card>
-  );
-}

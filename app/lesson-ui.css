@@ -876,3 +876,89 @@
   border-bottom-color: transparent;
   box-shadow: 0 1px 0 hsl(var(--border) / 0.85);
 }
+
+
+/* ============================================================
+   خلاصةُ الاختبارات
+   ------------------------------------------------------------
+   كانت ثلاثَ بطاقاتٍ مستقلّةٍ لكلٍّ لونُها: كحليٌّ للمتاح، وأزرقُ للحلّ،
+   وأخضرُ للنجاح، وشريطٌ ملوَّنٌ أسفلَ كلٍّ منها.
+
+   وثلاثُ علّاتٍ فيها:
+
+   ١) **الأرقامُ متداخلةٌ لا متجاورة** — من نجح فقد حلّ، ومن حلّ فقد كان
+      متاحاً له. وثلاثُ بطاقاتٍ منفصلةٍ تُخفي ذلك: تُقرأ ثلاثةَ أخبارٍ لا
+      خبراً واحداً، ولا يُعرف من «٧» أهي أكثرُ المتاح أم أقلُّه.
+
+   ٢) **والألوانُ الثلاثةُ لا تعني شيئاً**: أزرقُ الحلِّ وأخضرُ النجاح
+      اختياران بلا سند، وليسا من ألوان هذه الهوية أصلاً.
+
+   ٣) **والأرقامُ كانت لاتينيّة** (`toLocaleString("en-US")`) في منصّةٍ
+      كلُّ أرقامها هنديّة — وهو أظهرُ ما يُرى فيها.
+
+   فصارت لوحاً واحداً: أرقامٌ في صفٍّ يفصله شعرة، وتحتها شريطٌ **مركَّبٌ**
+   يُري النسبةَ التي بينها. والذهبُ للنجاح وحدَه — وهو لونُ التمام في هذه
+   الهوية — وما دونه حبرٌ ورماد.
+   ============================================================ */
+
+.xs-panel {
+  border-radius: 1.1rem;
+  padding: 1.1rem 1.15rem;
+  background: hsl(var(--card));
+  box-shadow: inset 0 0 0 1px hsl(var(--border));
+}
+
+.xs-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+/* شعرةٌ بين الخانات — لا فجوةٌ ولا بطاقاتٌ منفصلة */
+.xs-c {
+  display: grid;
+  gap: 0.2rem;
+  padding-inline: 0.75rem;
+  text-align: center;
+}
+.xs-c + .xs-c { border-inline-start: 1px solid hsl(var(--border)); }
+
+.xs-n {
+  font-family: var(--font-display, inherit);
+  font-size: clamp(1.5rem, 5cqw, 2rem);
+  font-weight: 800;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  color: hsl(var(--foreground));
+}
+/* الذهبُ للنجاح وحدَه — لونُ التمام في هذه الهوية */
+.xs-n[data-k="pass"] { color: hsl(var(--gold-deep, var(--gold))); }
+.xs-l {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: hsl(var(--muted-foreground));
+}
+
+/*
+  شريطٌ مركَّب: الناجحُ ذهبٌ، والمحلولُ غيرُ الناجح حبرٌ خافت، والباقي
+  مجرًى. فيُقرأ «كم بقي» من الشكل قبل أن يُحسب من الأرقام.
+*/
+.xs-bar {
+  display: flex;
+  margin-block-start: 1rem;
+  block-size: 0.4rem;
+  border-radius: 999px;
+  background: hsl(var(--muted));
+  overflow: hidden;
+}
+.xs-bar-p { display: block; block-size: 100%; background: hsl(var(--gold)); }
+.xs-bar-s { display: block; block-size: 100%; background: hsl(var(--primary) / 0.35); }
+
+.xs-note {
+  margin-block-start: 0.6rem;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: hsl(var(--muted-foreground));
+}
+
+@container (max-width: 26rem) {
+  .xs-c { padding-inline: 0.4rem; }
+}

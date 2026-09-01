@@ -187,3 +187,125 @@ export function reportsToCsv(rows: StudentReport[]): string {
   ].map(cell).join(","));
   return "﻿" + [head.join(","), ...lines].join("\r\n");
 }
+
+
+/* ==================================================================
+   مستوى الطالب وواجباتُه — لتقريره المفصَّل
+   ================================================================== */
+
+/** مستوى الطالب — من درجاته لا من تقدّمه. */
+export type Level = "top" | "good" | "watch" | "weak" | "unknown";
+
+export const LEVEL_LABEL: Record<Level, string> = {
+  top: "ممتاز",
+  good: "جيّد",
+  watch: "يحتاج متابعة",
+  weak: "متعثّر",
+  unknown: "لم يُقيَّم بعد",
+};
+
+/**
+ * المستوى **من الدرجات وحدَها**.
+ * ------------------------------------------------------------------
+ * ولا يُخلط بالتقدّم: من شاهد الكورسَ كلَّه ولم يحلّ واجباً واحداً ليس
+ * «ممتازاً» — وخلطُهما يُخرج مستوًى مرتفعاً لمن لم يُختبر أصلاً.
+ *
+ * **ولا يُقيَّم من لم يحلّ**: `unknown` لا «متعثّر». ووسمُ من لم يُسأل
+ * بالتعثّر حكمٌ بلا بيّنة — وهذا تقريرٌ يُقرأ ويُبنى عليه.
+ */
+export function levelOf(quizAvg: number | null): Level {
+  if (quizAvg === null) return "unknown";
+  if (quizAvg >= 85) return "top";
+  if (quizAvg >= 70) return "good";
+  if (quizAvg >= 50) return "watch";
+  return "weak";
+}
+
+/** واجبٌ واحدٌ في تقرير الطالب. */
+export type Homework = {
+  lessonId: string;
+  lessonTitle: string;
+  unitTitle: string;
+  subjectId: string;
+  subjectName: string;
+  /** عددُ أسئلته — يُعرف قبل الحلّ. */
+  questions: number;
+  /** النتيجةُ إن حُلّ، و`null` إن لم يُحلّ. */
+  score: number | null;
+  total: number | null;
+  percent: number | null;
+  passed: boolean | null;
+  at: string | null;
+};
+
+/**
+ * واجباتُ الطالب في كورساته المفتوحة — **المحلولُ وغيرُ المحلول**.
+ * ------------------------------------------------------------------
+ * وعرضُ المحلول وحدَه يُخفي ما يُبحث عنه: المشرفُ يفتح التقريرَ ليعرف ما
+ * **لم** يُحلّ. فتُبنى القائمةُ من دروس الكورسات لا من نتائج الطالب، ثمّ
+ * تُوصل بها النتائجُ — فيظهر الفارغُ فارغاً.
+ *
+ * ولا يُعدّ درسٌ بلا واجبٍ نقصاً: يُستثنى من القائمة أصلاً.
+ */
+export function homeworkFor(
+  u: ReportedUser,
+  subjects: Subject[],
+): Homework[] {
+  const byLesson = new Map((u.quizResults ?? []).map((r) => [r.lessonId, r]));
+  const out: Homework[] = [];
+
+  for (const s of subjects) {
+    if (!subscriptionFor(u, s.id)) continue;
+    const units = (s.units ?? []).length
+      ? s.units ?? []
+      : [{ id: s.id, title: "دروس الكورس", lessons: s.videos ?? [] }];
+
+    for (const unit of units) {
+      for (const l of unit.lessons ?? []) {
+        const q = l.quiz;
+        const questions = q?.enabled ? (q.questions ?? []).length : 0;
+        if (questions === 0) continue;
+
+        const r = byLesson.get(l.id);
+        out.push({
+          lessonId: l.id,
+          lessonTitle: l.title,
+          unitTitle: unit.title,
+          subjectId: s.id,
+          subjectName: s.name,
+          questions,
+          score: r ? r.score : null,
+          total: r ? r.total : null,
+          percent: r ? r.percent : null,
+          passed: r ? r.passed : null,
+          at: r ? r.at : null,
+        });
+      }
+    }
+  }
+
+  /*
+    غيرُ المحلول أوّلاً ثمّ الأضعفُ درجةً: التقريرُ يُفتح لما يحتاج عملاً،
+    وما تمّ بامتياز يُقرأ آخراً أو لا يُقرأ.
+  */
+  return out.sort((a, b) => {
+    if ((a.percent === null) !== (b.percent === null)) return a.percent === null ? -1 : 1;
+    return (a.percent ?? 0) - (b.percent ?? 0);
+  });
+}
+
+/** خلاصةُ الواجبات — رقمٌ يُقرأ قبل الجدول. */
+export function homeworkTally(list: Homework[]) {
+  const solved = list.filter((h) => h.percent !== null);
+  const passed = solved.filter((h) => h.passed === true).length;
+  return {
+    total: list.length,
+    solved: solved.length,
+    pending: list.length - solved.length,
+    passed,
+    failed: solved.length - passed,
+    avg: solved.length
+      ? Math.round(solved.reduce((a, h) => a + (h.percent ?? 0), 0) / solved.length)
+      : null,
+  };
+}
