@@ -18,6 +18,7 @@ export const adminNav: NavItem[] = [
   { href: "/admin/live", label: "البث المباشر", icon: "Radio" },
   { href: "/admin/youtube", label: "قناة اليوتيوب", icon: "Youtube" },
   { href: "/admin/notifications", label: "الإشعارات", icon: "Bell" },
+  { href: "/admin/reports", label: "تقارير الطلاب", icon: "BarChart3" },
   { href: "/admin/analytics", label: "التحليلات", icon: "BarChart3" },
   { href: "/admin/security", label: "الأمان", icon: "Shield" },
   { href: "/admin/backup", label: "النسخ الاحتياطي", icon: "Database" },
@@ -61,7 +62,7 @@ const GROUPS: { id: string; label: string; icon: string; hrefs: string[] }[] = [
     id: "people",
     label: "الطلاب والاشتراكات",
     icon: "Users",
-    hrefs: ["/admin/students", "/admin/plans", "/admin/payments", "/admin/codes"],
+    hrefs: ["/admin/students", "/admin/reports", "/admin/plans", "/admin/payments", "/admin/codes"],
   },
   {
     id: "look",

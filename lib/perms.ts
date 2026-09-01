@@ -81,6 +81,9 @@ export function permForPath(href: string): AdminPerm | null {
     "/admin/customize": "customize",
     "/admin/appearance": "appearance",
     "/admin/students": "students",
+    /* التقاريرُ تعرض بياناتِ الطلاب أنفسِهم مجموعةً — فصلاحيّتُها
+       صلاحيّتُهم، لا صلاحيّةَ «التحليلات» التي هي أرقامٌ مجرّدة. */
+    "/admin/reports": "students",
     "/admin/grades": "subjects",
     "/admin/subjects": "subjects",
     "/admin/courses": "subjects",

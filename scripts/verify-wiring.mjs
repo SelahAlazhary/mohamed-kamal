@@ -131,7 +131,7 @@ console.log("\n== أصنافُ الهوية لها قواعدُها ==");
     وهي ليست أصنافاً أصلاً.
   */
   const ATTR = /className\s*=\s*(?:"([^"]*)"|'([^']*)'|\{`([^`]*)`\})/g;
-  const PREFIX = /\b((?:lp|uc|cu|ch|tb|pay|pg|sp|lm|pnl)-[a-z0-9-]+)\b/g;
+  const PREFIX = /\b((?:lp|uc|cu|ch|tb|rp|pay|pg|sp|lm|pnl)-[a-z0-9-]+)\b/g;
   const used = new Set();
   for (const a of code.matchAll(ATTR)) {
     const value = a[1] ?? a[2] ?? a[3] ?? "";
