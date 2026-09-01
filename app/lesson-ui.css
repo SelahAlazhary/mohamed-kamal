@@ -317,18 +317,19 @@
 
 
 /* ============================================================
-   بطاقةُ المادّة — بغلاف الكورس
+   بطاقةُ المادّة
    ------------------------------------------------------------
-   كانت نصّاً على ورقٍ أبيض: رقمٌ وعنوانٌ وسطرُ عدادٍ وشريطُ تقدّم. ولا
-   شيءَ يُميّز مادّةً من أختها إلّا حرفٌ في العنوان — فالبصرُ لا يجد ما
-   يمسك به، ويُضطرّ أن يقرأ البطاقاتِ كلَّها ليعرف أيَّها يريد.
+   الغلافُ كاملاً في الأعلى، والنصُّ كلُّه تحته على الورق.
 
-   والصورةُ تُقرأ قبل النصّ بمراتب. فصار الغلافُ رأسَ البطاقة، والرقمُ
-   والحالةُ ملصوقين فوقه، والعنوانُ على حافّته السفلى حيث الظلُّ يحمله.
+   **ولا يُكتب على الغلاف شيء.** كان العنوانُ يُكتب فوقه تحت ظلٍّ داكن
+   يمتدّ إلى ثلثه — والغلافُ صورةُ الكورس التي ضبطها المشرفُ بيده قصّاً
+   وإزاحةً ولوناً وملصقات. فما فائدةُ ضبطها إن حُجب ثلثُها؟ تُرى كاملةً
+   أو لا تُوضع. وشارةُ الحالة وحدَها تبقى في ركنها — سطرٌ واحدٌ لا يحجب.
 
-   **والغلافُ واحدٌ لكلّ الموادّ** — هو غلافُ الكورس. وذلك مقصود: البطاقاتُ
-   تُقرأ صفّاً واحداً تحت عنوان «موادّ الكورس»، فتشابُهُ أغلفتها يقول
-   إنّها من كورسٍ واحد، والرقمُ والعنوانُ يفرّقان.
+   والترتيبُ تحته: الصفُّ ← العنوانُ ← عددُ الدروس ← شريطُ التقدّم ←
+   النسبةُ والمتابعة. من الأعمّ إلى الأخصّ إلى الفعل.
+
+   ولا لونَ من خارج الهوية.
    ============================================================ */
 
 .uc {
@@ -361,97 +362,68 @@
   block-size: 100%;
   object-fit: cover;
 }
-.uc:hover .uc-art-i { transform: scale(1.03); }
 .uc-art-i { transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
+.uc:hover .uc-art-i { transform: scale(1.03); }
 
-/*
-  الظلُّ يحمل النصّ.
-  نصٌّ أبيضُ على صورةٍ لا يُعرف تباينُه: قد تكون فاتحةً فيختفي. والتدرّجُ
-  الأسودُ من الأسفل يضمن أرضاً داكنةً تحت النصّ مهما كانت الصورة.
-*/
-.uc-scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    hsl(220 43% 8% / 0.88) 0%,
-    hsl(220 43% 8% / 0.55) 32%,
-    hsl(220 43% 8% / 0.08) 62%,
-    transparent 100%
-  );
-  pointer-events: none;
-}
-
-.uc-n {
-  position: absolute;
-  inset-block-start: 0.6rem;
-  inset-inline-start: 0.6rem;
-  padding: 0.2rem 0.55rem;
-  border-radius: 0.5rem;
-  background: hsl(var(--gold));
-  color: hsl(var(--primary));
-  font-family: var(--font-display, inherit);
-  font-size: 0.72rem;
-  font-weight: 800;
-  line-height: 1.5;
-}
-
+/* شارةُ الحالة — في ركنٍ واحدٍ لا تحجب من الصورة إلّا موضعَها */
 .uc-tag {
   position: absolute;
   inset-block-start: 0.6rem;
-  inset-inline-end: 0.6rem;
+  inset-inline-start: 0.6rem;
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.2rem 0.5rem;
-  border-radius: 0.5rem;
-  font-size: 0.7rem;
+  padding: 0.22rem 0.6rem;
+  border-radius: 0.55rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  /* على الصورة مباشرةً — فالأرضُ مصمتةٌ لا شفّافة، وإلّا لم يُقرأ */
-  backdrop-filter: blur(6px);
+  line-height: 1.5;
+  backdrop-filter: blur(8px);
 }
-.uc-tag.is-lock { background: hsl(220 43% 8% / 0.7); color: #fff; }
+.uc-tag.is-in { background: hsl(var(--card) / 0.92); color: hsl(var(--primary)); }
 .uc-tag.is-done { background: hsl(var(--gold)); color: hsl(var(--primary)); }
-.uc-tag.is-free { background: hsl(var(--gold)); color: hsl(var(--primary)); }
-
-/* العنوانُ على حافّة الغلاف السفلى */
-.uc-t {
-  position: absolute;
-  inset-inline: 0.85rem;
-  inset-block-end: 0.7rem;
-  font-family: var(--font-display, inherit);
-  font-size: 1rem;
-  font-weight: 800;
-  line-height: 1.4;
-  color: #fff;
-  text-shadow: 0 1px 3px hsl(220 43% 8% / 0.55);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
+.uc-tag.is-lock { background: hsl(220 43% 8% / 0.72); color: #fff; }
 
 /* ــ المتن ــ */
 .uc-body {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 0.6rem;
-  padding: 0.85rem 0.9rem 0.9rem;
+  padding: 0.9rem 0.95rem 0.95rem;
 }
-.uc-d {
+/* سطرُ الصفّ — يُعرف لمن الكورسُ قبل ما فيه */
+.uc-g {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: hsl(var(--muted-foreground));
+}
+.uc-t {
+  margin-block-start: 0.15rem;
+  font-family: var(--font-display, inherit);
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.5;
+  color: hsl(var(--foreground));
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+.uc-d {
+  margin-block-start: 0.25rem;
   font-size: 0.78rem;
   line-height: 1.6;
   color: hsl(var(--muted-foreground));
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .uc-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem 0.75rem;
+  margin-block-start: 0.55rem;
   font-size: 0.75rem;
   color: hsl(var(--muted-foreground));
 }
@@ -459,43 +431,19 @@
 .uc-meta-i.is-done { color: hsl(var(--muted-foreground)); }
 .uc-meta-i.is-free { color: hsl(var(--primary)); }
 
-/* القدمُ يلتصق بأسفل البطاقة — فتستوي البطاقاتُ في الصفّ مهما اختلفت
-   أوصافُها طولاً */
-.uc-foot {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin-block-start: auto;
-  padding-block-start: 0.15rem;
-}
-.uc-price {
-  font-family: var(--font-display, inherit);
-  font-size: 1.15rem;
-  font-weight: 800;
-  line-height: 1;
-  color: hsl(var(--primary));
-  font-variant-numeric: tabular-nums;
-}
-.uc-price-c { margin-inline-start: 0.2rem; font-size: 0.7rem; font-weight: 700; color: hsl(var(--muted-foreground)); }
-.uc-cta {
-  margin-inline-start: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  min-block-size: 2.1rem;
-  padding-inline: 0.8rem;
-  border-radius: 0.6rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-.uc-cta.is-buy { background: hsl(var(--primary)); color: #fff; }
-.uc-note { font-size: 0.75rem; color: hsl(var(--muted-foreground)); }
-
-.uc-foot.is-prog { gap: 0.65rem; }
+/*
+  الشريطُ بعرض البطاقة، ويلتصق بأسفلها.
+  و`margin-block-start: auto` هو ما يُسوّي البطاقاتِ في الصفّ: وصفٌ من
+  سطرين وآخرُ من سطرٍ لا يُزيح الشريطَ عن موضعه، فتستوي الأقدامُ في خطّ.
+*/
 .uc-bar {
-  flex: 1 1 auto;
-  block-size: 0.35rem;
+  display: block;
+  /* `auto` هو ما يُسوّي البطاقاتِ في الصفّ: وصفٌ من سطرين وآخرُ من سطرٍ
+     لا يُزيح الشريطَ عن موضعه، فتستوي الأقدامُ في خطّ واحد. */
+  margin-block-start: auto;
+  margin-block-end: 0;
+  inline-size: 100%;
+  block-size: 0.3rem;
   border-radius: 999px;
   background: hsl(var(--muted));
   overflow: hidden;
@@ -507,111 +455,48 @@
   background: linear-gradient(to left, hsl(var(--primary)), hsl(var(--gold)));
   transition: inline-size 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
+.uc-foot {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-block-start: 0.6rem;
+}
+.uc-foot:not(.is-prog) { margin-block-start: auto; padding-block-start: 0.85rem; }
 .uc-pct {
-  flex: none;
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 800;
   color: hsl(var(--primary));
   font-variant-numeric: tabular-nums;
 }
+.uc-price {
+  font-family: var(--font-display, inherit);
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1;
+  color: hsl(var(--primary));
+  font-variant-numeric: tabular-nums;
+}
+.uc-price-c { margin-inline-start: 0.2rem; font-size: 0.7rem; font-weight: 700; color: hsl(var(--muted-foreground)); }
+/* «متابعة» في الطرف المقابل للنسبة — الفعلُ حيث ينتهي البصر */
+.uc-cta {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-block-size: 2rem;
+  border-radius: 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  color: hsl(var(--primary));
+}
+.uc-cta.is-buy {
+  padding-inline: 0.8rem;
+  background: hsl(var(--primary));
+  color: #fff;
+}
+.uc-note { font-size: 0.75rem; color: hsl(var(--muted-foreground)); }
 
 @media (pointer: coarse) {
   .uc-cta { min-block-size: 2.75rem; }
-}
-
-
-/* ============================================================
-   شريطُ الأدوات — يحمل ما يُغني
-   ------------------------------------------------------------
-   كان ألفاً وخمسَ مئةِ بكسلٍ فيها ثلاثةُ أزرارٍ صغيرةٍ في الطرفين وفراغٌ
-   بينها. وشريطٌ يشغل أعلى كلِّ شاشةٍ ولا يقول شيئاً ضريبةٌ تُدفع من
-   ارتفاع الصفحة بلا مقابل — يُحذف أو يُملأ بما يُغني، ولا ثالث.
-
-   فحُمّل اثنين: **أين أنت** في جهةٍ، و**من أنت** في الأخرى.
-
-   والهيئاتُ التي يضبطها المشرفُ (`tb-*`) تبقى تعمل: هذه أصنافٌ جديدةٌ
-   بجانبها لا بدلاً منها.
-   ============================================================ */
-
-/* ــ أين أنت ــ */
-.tb-here {
-  align-items: center;
-  gap: 0.5rem;
-  min-width: 0;
-  margin-inline-end: 0.35rem;
-}
-.tb-here-t {
-  font-family: var(--font-display, inherit);
-  font-size: 0.95rem;
-  font-weight: 800;
-  line-height: 1.3;
-  white-space: nowrap;
-  color: hsl(var(--foreground));
-}
-
-/* ــ من أنت ــ */
-.tb-me {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  min-width: 0;
-  padding: 0.25rem;
-  border-radius: 999px;
-  transition: background 0.18s ease, box-shadow 0.18s ease;
-}
-.tb-me:hover { background: hsl(var(--muted) / 0.7); }
-.tb-me-a {
-  display: grid;
-  place-items: center;
-  flex: none;
-  inline-size: 2.4rem;
-  block-size: 2.4rem;
-  border-radius: 999px;
-  background: hsl(var(--primary));
-  color: #fff;
-  font-family: var(--font-display, inherit);
-  font-size: 0.9rem;
-  font-weight: 800;
-  line-height: 1;
-  box-shadow: inset 0 0 0 1px hsl(var(--gold) / 0.45);
-}
-/*
-  الاسمُ والصفةُ يظهران حيث يتّسع.
-  وعرضٌ محسوبٌ لا مفتوح: اسمٌ طويلٌ يدفع البحثَ والأزرارَ ويكسر الصفّ،
-  فيُقصّ عند حدٍّ ويُقرأ أوّلُه — وأوّلُ الاسم يكفي لمعرفة صاحبه.
-*/
-.tb-me-n { display: none; min-width: 0; }
-.tb-me-t {
-  display: block;
-  max-inline-size: 11rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.8rem;
-  font-weight: 700;
-  line-height: 1.3;
-}
-.tb-me-s {
-  display: block;
-  max-inline-size: 11rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.7rem;
-  line-height: 1.35;
-  color: hsl(var(--muted-foreground));
-}
-@media (min-width: 640px) {
-  .tb-me { padding-inline-end: 0.7rem; }
-  .tb-me-n { display: block; }
-}
-
-/*
-  ــ حدُّ الشريط ــ
-  خطٌّ مصمتٌ بعرض الشاشة يقطعها قطعاً. والحدُّ يفصل ولا يُعلن عن نفسه:
-  يخفت عند طرفيه فيُحسّ ولا يُرى.
-*/
-.app-body > header {
-  border-bottom-color: transparent;
-  box-shadow: 0 1px 0 hsl(var(--border) / 0.85);
 }

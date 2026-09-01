@@ -209,30 +209,24 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
                     locked={!mine && freeCount === 0}
                     className="uc-art-i"
                   />
-                  <span className="uc-scrim" aria-hidden="true" />
 
-                  <span className="uc-n">
-                    المادّة {(i + 1).toLocaleString("ar-EG")}
+                  {/*
+                    شارةٌ واحدةٌ تقول الحالة — والغلافُ يبقى مكشوفاً.
+                    كان العنوانُ يُكتب فوق الغلاف تحت ظلٍّ داكن، فيحجب
+                    ثلثَه ويُخفي ما رُسم فيه. والغلافُ صورةُ الكورس التي
+                    ضبطها المشرفُ بيده — تُرى كاملةً أو لا تُوضع.
+                  */}
+                  <span className={`uc-tag ${!mine ? "is-lock" : pct === 100 ? "is-done" : "is-in"}`}>
+                    {!mine ? <><IconLock className="size-3" /> مقفلة</>
+                      : pct === 100 ? <><IconCheckCircle className="size-3" /> اكتملت</>
+                        : "مسجَّل"}
                   </span>
-
-                  {!mine ? (
-                    <span className="uc-tag is-lock">
-                      <IconLock className="size-3" /> مقفلة
-                    </span>
-                  ) : pct === 100 ? (
-                    <span className="uc-tag is-done">
-                      <IconCheckCircle className="size-3" /> اكتملت
-                    </span>
-                  ) : freeCount > 0 ? (
-                    <span className="uc-tag is-free">
-                      <IconGift className="size-3" /> {freeCount.toLocaleString("ar-EG")} مجاناً
-                    </span>
-                  ) : null}
-
-                  <span className="uc-t">{u.title}</span>
                 </span>
 
                 <span className="uc-body">
+                  {/* سطرُ الصفّ فوق العنوان — يُعرف لمن الكورسُ قبل ما فيه */}
+                  <span className="uc-g">{subject.grade}</span>
+                  <span className="uc-t">{u.title}</span>
                   {u.desc && <span className="uc-d">{u.desc}</span>}
 
                   <span className="uc-meta">
@@ -273,12 +267,19 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
                       )}
                     </span>
                   ) : (
-                    <span className="uc-foot is-prog">
+                    <>
+                      {/* الشريطُ بعرض البطاقة ثمّ سطرُ النسبة والمتابعة */}
                       <span className="uc-bar">
                         <span className="uc-bar-i" style={{ inlineSize: `${pct}%` }} />
                       </span>
-                      <span className="uc-pct">{pct.toLocaleString("ar-EG")}٪</span>
-                    </span>
+                      <span className="uc-foot is-prog">
+                        <span className="uc-pct">{pct.toLocaleString("ar-EG")}٪</span>
+                        <span className="uc-cta">
+                          {pct === 0 ? "ابدأ" : pct === 100 ? "راجِع" : "متابعة"}
+                          <IconArrowLeft className="size-3.5" />
+                        </span>
+                      </span>
+                    </>
                   )}
                 </span>
               </Link>
