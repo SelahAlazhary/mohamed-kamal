@@ -151,7 +151,9 @@ function PayInner() {
   };
 
   return (
-    <>
+    /* `pay-shell` يُصقل أغلفةَ البطاقات معها — بوّابةٌ حادّةٌ داخل صندوقٍ
+       مستدير أسوأُ من الاستدارة كلِّها. انظر `app/pay-ui.css`. */
+    <div className="pay-shell">
       <PageHeader
         title={unit ? `شراء «${unit.title}»` : `الاشتراك في «${subject.name}»`}
         subtitle={unit ? `${subject.name} · ${(unit.lessons ?? []).length.toLocaleString("ar-EG")} درساً` : `${subject.teacher} · ${subject.grade}`}
@@ -233,6 +235,6 @@ function PayInner() {
           </Card>
         </div>
       )}
-    </>
+    </div>
   );
 }
