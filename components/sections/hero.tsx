@@ -28,11 +28,15 @@ import type { HeroShape } from "@/lib/home-layouts";
 import { findHeroStyle, heroClass } from "@/lib/hero-styles";
 import { ShariBackdrop } from "@/components/brand/shari-art";
 
-/** يحوّل رابط يوتيوب إلى صيغة تضمين للنافذة المنبثقة. */
+/**
+ * يحوّل رابط يوتيوب إلى صيغة تضمين للنافذة المنبثقة.
+ * ومقطعُ الواجهة عامٌّ لا يُحمى — لكنّ `rel=0` يُبقي المقترحاتِ في قناة
+ * الأستاذ، و`nocookie` لا يكتب كوكيَ تتبّعٍ لزائرٍ لم يُشغّل شيئاً.
+ */
 function toEmbedSrc(url?: string): string | undefined {
   if (!url) return undefined;
   const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{6,})/);
-  if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+  if (yt) return `https://www.youtube-nocookie.com/embed/${yt[1]}?rel=0&modestbranding=1&iv_load_policy=3&playsinline=1`;
   return url;
 }
 

@@ -33,7 +33,19 @@ import type { Lesson, Material, Subject, Unit } from "@/lib/types";
 import { setPref } from "@/lib/consent";
 
 /** تحويل رابط الفيديو إلى صيغة تضمين (YouTube / Vimeo / Bunny Stream / mp4). */
-export function toEmbed(url: string): { kind: "video" | "iframe"; src: string; drive?: boolean } {
+/**
+ * مُعامِلاتُ تضمين يوتيوب — تُقلّل ما يظهر فوق المقطع.
+ * ------------------------------------------------------------------
+ * `rel=0` يحصر «المزيد من الفيديوهات» في قناة الأستاذ نفسِها — ولا
+ * يُلغيها: يوتيوب أبطل الإلغاءَ سنة ٢٠١٨ ولا سبيلَ إليه بمُعامِل.
+ * `modestbranding=1` يُصغّر شعارَه، و`iv_load_policy=3` يمنع التعليقاتِ
+ * المنبثقة، و`disablekb=1` يمنع اختصاراتِ لوحة المفاتيح.
+ *
+ * والنطاقُ `youtube-nocookie.com` لا يكتب كوكيَ تتبّعٍ قبل التشغيل.
+ */
+const YT_PARAMS = "rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&playsinline=1";
+
+export function toEmbed(url: string): { kind: "video" | "iframe"; src: string; drive?: boolean; yt?: boolean } {
   const u = url.trim();
   // Bunny Stream (iframe.mediadelivery.net) — نحوّل /play/ إلى /embed/
   if (u.includes("mediadelivery.net")) {
@@ -50,7 +62,7 @@ export function toEmbed(url: string): { kind: "video" | "iframe"; src: string; d
   if (bunny) return { kind: "iframe", src: `https://iframe.mediadelivery.net/embed/${bunny[1]}/${bunny[2]}` };
   if (/\.(mp4|webm|ogg)(\?|$)/i.test(u)) return { kind: "video", src: u };
   const yt = u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{6,})/);
-  if (yt) return { kind: "iframe", src: `https://www.youtube.com/embed/${yt[1]}` };
+  if (yt) return { kind: "iframe", src: `https://www.youtube-nocookie.com/embed/${yt[1]}?${YT_PARAMS}`, yt: true };
   const vm = u.match(/vimeo\.com\/(\d+)/);
   if (vm) return { kind: "iframe", src: `https://player.vimeo.com/video/${vm[1]}` };
   return { kind: "iframe", src: u };
@@ -339,6 +351,44 @@ export function UnitView({
               {embed?.drive && (
                 <span aria-hidden="true" className="absolute right-0 top-0 z-10 h-14 w-24 cursor-default"
                   onContextMenu={(e) => e.preventDefault()} />
+              )}
+
+              {/*
+                طبقتان تحجبان روابطَ يوتيوب الخارجة.
+                ------------------------------------------------------------
+                على الإيقاف يعرض يوتيوب شريطاً فيه **عنوانُ المقطع** وزرَّي
+                «مشاهدة لاحقاً» و«مشاركة»، وشعارَه أسفلَ اليسار — وكلُّها
+                روابطُ تخرج بالطالب إلى يوتيوب، فيجد المقطعَ هناك ويشاركه
+                بلا اشتراك.
+
+                فطبقتان: شريطٌ أعلى المشغّل يبتلع ضغطَ العنوان والزرّين،
+                ومربّعٌ أسفلَ اليسار يبتلع ضغطَ الشعار. والوسطُ متروك —
+                الضغطُ فيه تشغيلٌ وإيقافٌ لا خروج.
+
+                ــــــــــــــــــــــــــــــــــــــــــــــــــــــــــــــ
+                **وهذا إخفاءٌ لا تأمين، وينبغي أن يُقال صريحاً.**
+                معرّفُ المقطع مكتوبٌ في مصدر الصفحة، ومن فتح «عناصر
+                المطوِّر» قرأه في ثوانٍ ومضى إلى يوتيوب. والطبقةُ تمنع
+                الضغطةَ العابرة — وهي أكثرُ ما يقع فعلاً — ولا تمنع من
+                قصَد.
+
+                **والتأمينُ الحقيقيُّ أن يُرفع المقطعُ على Bunny Stream**
+                بروابطَ موقَّعةٍ تنتهي صلاحيتُها: هذه المنصّةُ تدعمه أصلاً
+                (انظر `toEmbed`)، ولا يُغني عنه حجبٌ ولا علامةٌ مائيّة.
+              */}
+              {embed?.yt && (
+                <>
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-0 top-0 z-10 h-16 cursor-default"
+                    onContextMenu={(ev) => ev.preventDefault()}
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="absolute bottom-0 left-0 z-10 h-11 w-28 cursor-default"
+                    onContextMenu={(ev) => ev.preventDefault()}
+                  />
+                </>
               )}
               {/*
                 اسمُ المشاهد فوق المقطع — لا يمنع التصوير، لكنّه يجعل
