@@ -43,6 +43,16 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
   const [coverUploading, setCoverUploading] = useState(false);
   const bannerRef = useRef<HTMLInputElement>(null);
   const [bannerUploading, setBannerUploading] = useState(false);
+  /*
+    مقاسُ اللافتة المرفوعة — يُقرأ من الصورة نفسِها.
+    ------------------------------------------------------------------
+    وقولُ المقاس المطلوب لا يكفي: المشرفُ يرفع ما عنده ولا يعرف أوافق أم
+    خالف حتّى يرى النتيجة. فتُقاس الصورةُ ويُقال له صراحةً: كم مقاسُها،
+    وكم يُقصّ منها، وأين.
+  */
+  const [bannerSize, setBannerSize] = useState<{ w: number; h: number } | null>(null);
+  /* «نُسخ ✓» يظهر لحظةً ثمّ يعود — الزرُّ يقول إنّه عمل */
+  const [copied, setCopied] = useState<string | null>(null);
   const [quizFor, setQuizFor] = useState<string | null>(null);
   /*
     المادّةُ المفتوحة.
@@ -246,6 +256,19 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
     if (url) save({ subjects: subjects.map((s) => (s.id === id ? { ...subject, cover: url } : s)) });
     if (coverRef.current) coverRef.current.value = "";
   };
+
+  useEffect(() => {
+    const src = subject?.banner?.trim();
+    if (!src) { setBannerSize(null); return; }
+    let alive = true;
+    /* `document.createElement` لا `new Image()`: الاسمُ `Image` مأخوذٌ في
+       هذا الملفّ لأيقونةٍ مستوردة، فيُحلّ إليها لا إلى صورة المتصفّح. */
+    const img = document.createElement("img");
+    img.onload = () => { if (alive) setBannerSize({ w: img.naturalWidth, h: img.naturalHeight }); };
+    img.onerror = () => { if (alive) setBannerSize(null); };
+    img.src = src;
+    return () => { alive = false; };
+  }, [subject?.banner]);
 
   /** رفعُ لافتة صفحة الكورس — مستقلّةٌ عن غلاف البطاقة. */
   const uploadBanner = async (file: File) => {
@@ -490,10 +513,58 @@ export default function CourseManage({ params }: { params: Promise<{ id: string 
             تكذب أسوأُ من ألّا تكون.
           */}
           <Collapse className="mb-3" title="لافتة صفحة الكورس" subtitle="شريطٌ عريضٌ يُرى في صدر صفحة الكورس — غيرُ غلاف البطاقة" icon={<ImageIcon className="size-4" />} storageKey="crs-banner">
-            <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
-              نسبتُها <b>٢١:٨</b> — أي عريضةٌ قصيرة. وأنسبُ مقاسٍ نحو <b>١٦٨٠×٦٤٠</b>.
-              وإن تُركت فارغةً فلا يُعرض شريطٌ أصلاً، ويبقى اسمُ الكورس في ترويسة الصفحة.
-            </p>
+            {/*
+              المقاسُ مكتوبٌ ليُنسَخ لا ليُقرأ.
+              ------------------------------------------------------------
+              من يصنع الصورةَ يفتح برنامجَه ويكتب الرقمين، فيُعطى الرقمان
+              بصيغةٍ تُنسخ بضغطة. والبديلان مذكوران لأنّ من يصمّم على
+              الجوّال لا يُنتج ١٦٨٠ عرضاً غالباً.
+            */}
+            <div className="bn-spec mb-4">
+              <div className="bn-spec-r">
+                <span className="bn-spec-l">المقاس المطلوب</span>
+                <span className="bn-spec-v">١٦٨٠ × ٦٤٠</span>
+                <button
+                  type="button"
+                  onClick={() => { void navigator.clipboard?.writeText("1680x640"); setCopied("1680x640"); setTimeout(() => setCopied(null), 1500); }}
+                  className="bn-copy"
+                >
+                  {copied === "1680x640" ? "نُسخ ✓" : "انسخ"}
+                </button>
+              </div>
+              <p className="bn-spec-n">
+                النسبة <b>٢١ : ٨</b> — عريضةٌ قصيرة. ويصحّ كلُّ ما كان على نسبتها:
+                <span className="bn-alt">١٢٦٠×٤٨٠</span>
+                <span className="bn-alt">٢١٠٠×٨٠٠</span>
+                — والأعرضُ أوضحُ على الشاشات الكبيرة.
+              </p>
+              <p className="bn-spec-n">
+                وما خالف النسبةَ <b>يُقصّ لا يُمسخ</b>: يبقى ما يسع الشريطَ ويُحذف الباقي،
+                وموضعُ القصّ يُضبط بالمقياس أسفلَه. وإن تُركت فارغةً فلا يُعرض شريطٌ أصلاً.
+              </p>
+
+              {/* ما رُفع فعلاً — يُقاس ويُقارن */}
+              {subject.banner?.trim() && bannerSize && (() => {
+                const r = bannerSize.w / bannerSize.h;
+                const want = 21 / 8;
+                const ok = Math.abs(r - want) < 0.06;
+                /* كم يُقصّ رأسيّاً حين تكون الصورةُ أطولَ من النسبة */
+                const cutPct = ok ? 0 : r < want
+                  ? Math.round((1 - (bannerSize.w / want) / bannerSize.h) * 100)
+                  : 0;
+                return (
+                  <p className="bn-real" data-k={ok ? "ok" : "off"}>
+                    صورتُك <b>{bannerSize.w.toLocaleString("ar-EG")} × {bannerSize.h.toLocaleString("ar-EG")}</b>
+                    {" "}(نسبة {r.toFixed(2)})
+                    {ok
+                      ? " — مطابقةٌ للنسبة، تُعرض كاملةً."
+                      : r < want
+                        ? ` — أطولُ من النسبة، فيُقصّ منها نحو ${cutPct.toLocaleString("ar-EG")}٪ رأسيّاً. اضبط موضعَ القصّ بالأسفل.`
+                        : " — أعرضُ من النسبة، فيُقصّ من جانبيها قليلاً."}
+                  </p>
+                );
+              })()}
+            </div>
 
             {subject.banner?.trim() ? (
               <div className="mb-4 overflow-hidden rounded-2xl border border-border">
