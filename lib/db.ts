@@ -574,6 +574,13 @@ export function gradeQuiz(userId: string, subjectId: string, lessonId: string, a
     subjectId, lessonId, score, total, percent,
     passed: percent >= (lesson.quiz.passScore ?? 60),
     at: new Date().toISOString(),
+    /*
+      وتُحفظ إجاباتُه ليُعرف **أين** أخطأ لا أنّه أخطأ.
+      وتُقصّ على عدد الأسئلة وتُطبَّع: ما وصل من المتصفّح لا يُصدَّق طولُه
+      ولا نوعُه — مصفوفةٌ أطولُ من الأسئلة تُخزَّن في القاعدة أبداً، وقيمةٌ
+      ليست رقماً تكسر العرضَ عند القراءة.
+    */
+    answers: questions.map((_, i) => (Number.isInteger(answers[i]) ? answers[i] : -1)),
   };
 
   /*

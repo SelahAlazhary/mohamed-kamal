@@ -609,3 +609,80 @@
   color: hsl(0 72% 45%);
 }
 .hw-tag[data-k="pass"] { background: hsl(var(--gold) / 0.25); color: hsl(var(--primary)); }
+
+
+/* ــ تفصيلُ الإجابات: أين أخطأ لا أنّه أخطأ ــ */
+.hw-d {
+  border-radius: 0.7rem;
+  box-shadow: inset 0 0 0 1px hsl(var(--border));
+  overflow: hidden;
+}
+.hw-d[data-k="none"] { box-shadow: inset 0 0 0 1px hsl(0 72% 51% / 0.3); }
+.hw-d[data-k="fail"] { box-shadow: inset 0 0 0 1px hsl(0 72% 51% / 0.25); }
+.hw-d > .hw-row {
+  box-shadow: none;
+  cursor: pointer;
+  list-style: none;
+}
+.hw-d > .hw-row::-webkit-details-marker { display: none; }
+.hw-d > .hw-row:hover { background: hsl(var(--muted) / 0.5); }
+.hw-chev {
+  flex: none;
+  color: hsl(var(--muted-foreground));
+  transform: rotate(-90deg);
+  transition: transform 0.2s ease;
+}
+.hw-d[open] .hw-chev { transform: rotate(90deg); }
+
+/* ما لا تفصيلَ له يُقال صراحةً ولا يُعطى سهمَ فتح */
+.hw-none {
+  flex: none;
+  font-size: 0.7rem;
+  color: hsl(var(--muted-foreground));
+  opacity: 0.8;
+}
+
+.hw-qs {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.7rem 0.8rem 0.8rem;
+  border-block-start: 1px solid hsl(var(--border));
+  background: hsl(var(--muted) / 0.35);
+}
+.hw-q {
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.6rem;
+  background: hsl(var(--card));
+  box-shadow: inset 0 0 0 1px hsl(var(--border) / 0.8);
+}
+/* الخطأُ والمتروكُ يُعلَّمان — والصوابُ يُترك هادئاً، فهو ليس ما يُبحث عنه */
+.hw-q[data-k="wrong"] { box-shadow: inset 0 0 0 1px hsl(0 72% 51% / 0.4); }
+.hw-q[data-k="skip"] { box-shadow: inset 0 0 0 1px hsl(var(--border)); opacity: 0.85; }
+
+.hw-q-n {
+  flex: none;
+  inline-size: 1.4rem;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: hsl(var(--muted-foreground));
+}
+.hw-q[data-k="right"] .hw-q-n { color: hsl(var(--gold-deep, var(--gold))); }
+.hw-q[data-k="wrong"] .hw-q-n { color: hsl(0 72% 45%); }
+.hw-q-t {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.6;
+}
+.hw-q-a {
+  display: block;
+  margin-block-start: 0.15rem;
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: hsl(var(--muted-foreground));
+}
+.hw-q-c { color: hsl(var(--gold-deep, var(--gold))); }
